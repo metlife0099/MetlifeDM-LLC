@@ -1,0 +1,222 @@
+import mongoose from 'mongoose';
+import { config } from '../config/index.js';
+import connectDatabase, { disconnectDatabase } from '../config/database.js';
+import logger from '../config/logger.js';
+import {
+  User, Service, Settings, FAQ, Testimonial, Industry, Portfolio, CaseStudy, EmailTemplate, BlogCategory,
+} from '../models/index.js';
+import { USER_ROLES, USER_STATUS } from '../utils/constants.js';
+
+const upsert = async (Model, filter, doc) => {
+  const existing = await Model.findOne(filter);
+  if (existing) {
+    logger.info(`↔  ${Model.modelName} exists: ${JSON.stringify(filter)}`);
+    return existing;
+  }
+  const created = await Model.create(doc);
+  logger.info(`✓  ${Model.modelName} created`);
+  return created;
+};
+
+const seedSuperAdmin = async () => {
+  const email = config.seed.superAdminEmail;
+  const password = config.seed.superAdminPassword;
+  if (!email || !password) {
+    logger.warn('⚠️  SEED_SUPER_ADMIN_EMAIL / _PASSWORD not set — skipping super admin');
+    return;
+  }
+  const existing = await User.findOne({ email });
+  if (existing) {
+    logger.info(`↔  Super admin already exists: ${email}`);
+    return existing;
+  }
+  const admin = await User.create({
+    firstName: 'Super',
+    lastName: 'Admin',
+    email,
+    password,
+    role: USER_ROLES.SUPER_ADMIN,
+    status: USER_STATUS.ACTIVE,
+    emailVerified: true,
+    emailVerifiedAt: new Date(),
+  });
+  logger.info(`✓  Super admin created: ${email}`);
+  return admin;
+};
+
+const seedSettings = async () =>
+  upsert(Settings, { key: 'global' }, {
+    key: 'global',
+    site: {
+      name: 'MetlifeDM LLC',
+      tagline: 'Enterprise Digital Marketing for USA Businesses',
+      description: 'Full-service digital marketing agency helping US brands scale through SEO, PPC, content, and AI.',
+    },
+    contact: {
+      email: 'hello@metlifedm.com',
+      supportEmail: 'support@metlifedm.com',
+      salesEmail: 'sales@metlifedm.com',
+      phone: '+1 (800) 555-0199',
+      officeHours: 'Mon-Fri 9AM-6PM EST',
+    },
+    homepage: {
+      hero: {
+        eyebrow: 'Digital Marketing Excellence',
+        title: 'Scale Your Business with Data-Driven Growth',
+        subtitle: 'Trusted by 200+ USA businesses to deliver measurable ROI through SEO, paid media, and AI-powered marketing.',
+        ctaPrimary: { label: 'Get Free Audit', url: '/consultation' },
+        ctaSecondary: { label: 'View Case Studies', url: '/case-studies' },
+      },
+      stats: [
+        { label: 'US clients served', value: '200', suffix: '+' },
+        { label: 'Avg ROI increase', value: '312', suffix: '%' },
+        { label: 'Team members', value: '45', suffix: '' },
+        { label: 'Years of experience', value: '12', suffix: '+' },
+      ],
+    },
+  });
+
+const seedServices = async () => {
+  const services = [
+    {
+      title: 'Enterprise SEO',
+      shortDescription: 'Dominate Google with data-driven SEO strategies designed for US businesses.',
+      description: 'Full-funnel SEO covering technical audits, content strategy, link building, and CRO — engineered for measurable ranking growth in competitive US markets.',
+      category: 'seo',
+      startingPrice: 2500,
+      icon: '🚀',
+      isFeatured: true,
+      isPublished: true,
+      pricingPlans: [
+        { name: 'Starter', price: 2500, billingCycle: 'monthly', features: [{ label: 'Technical audit', included: true }, { label: '10 target keywords', included: true }, { label: 'Monthly reports', included: true }] },
+        { name: 'Growth', price: 5000, billingCycle: 'monthly', isPopular: true, features: [{ label: '30 target keywords', included: true }, { label: 'Content strategy', included: true }, { label: 'Link building', included: true }, { label: 'Weekly reports', included: true }] },
+        { name: 'Enterprise', price: 12000, billingCycle: 'monthly', features: [{ label: 'Unlimited keywords', included: true }, { label: 'Dedicated strategist', included: true }, { label: 'Custom dashboards', included: true }] },
+      ],
+    },
+    {
+      title: 'Google Ads Management',
+      shortDescription: 'Data-driven PPC campaigns that turn ad spend into revenue.',
+      description: 'Full-funnel Google Ads management: search, display, shopping, YouTube, Performance Max — with dedicated strategists optimizing daily for ROAS.',
+      category: 'ppc',
+      startingPrice: 1500,
+      icon: '💰',
+      isFeatured: true,
+      isPublished: true,
+    },
+    {
+      title: 'Social Media Marketing',
+      shortDescription: 'Grow your brand on Instagram, TikTok, LinkedIn, and Facebook.',
+      description: 'End-to-end social media management with content creation, community engagement, paid social, and influencer partnerships.',
+      category: 'social_media',
+      startingPrice: 1800,
+      icon: '📱',
+      isPublished: true,
+    },
+    {
+      title: 'Custom Web Development',
+      shortDescription: 'High-performance websites built with React, Next.js, and modern stacks.',
+      description: 'Fast, accessible, SEO-optimized websites and web applications with modern React/Next.js stacks — designed for conversions.',
+      category: 'web_development',
+      startingPrice: 8000,
+      icon: '💻',
+      isPublished: true,
+    },
+    {
+      title: 'AI Marketing Solutions',
+      shortDescription: 'Deploy AI-powered chatbots, personalization, and predictive analytics.',
+      description: 'Leverage AI to automate customer engagement, personalize journeys, and predict buying behavior.',
+      category: 'ai_solutions',
+      startingPrice: 3500,
+      icon: '🤖',
+      isFeatured: true,
+      isPublished: true,
+    },
+  ];
+
+  for (const svc of services) {
+    await upsert(Service, { title: svc.title }, svc);
+  }
+};
+
+const seedIndustries = async () => {
+  const industries = [
+    { name: 'E-Commerce', shortDescription: 'Scale online stores with SEO, PPC, and CRO built for D2C brands.', icon: '🛒' },
+    { name: 'SaaS', shortDescription: 'Growth marketing for SaaS: content, SEO, product-led growth, and paid.', icon: '☁️' },
+    { name: 'Healthcare', shortDescription: 'HIPAA-aware marketing for clinics, telehealth, and health brands.', icon: '⚕️' },
+    { name: 'Real Estate', shortDescription: 'Local SEO, IDX websites, and lead-gen for realtors and brokerages.', icon: '🏡' },
+    { name: 'Legal Services', shortDescription: 'Ethical marketing for law firms — SEO, content, and PPC.', icon: '⚖️' },
+    { name: 'Financial Services', shortDescription: 'Compliance-friendly marketing for fintech and financial advisors.', icon: '💵' },
+  ];
+  for (const i of industries) await upsert(Industry, { name: i.name }, { ...i, isPublished: true });
+};
+
+const seedFAQs = async () => {
+  const faqs = [
+    { question: 'How long until I see results?', answer: 'SEO typically shows results in 3-6 months; paid ads can deliver same-week traffic and leads.', category: 'general' },
+    { question: 'Do you sign contracts?', answer: 'We offer month-to-month agreements as well as 6/12-month options with discounted rates.', category: 'billing' },
+    { question: 'Are you based in the USA?', answer: 'Yes! MetlifeDM LLC is a US-registered agency with team members across North America.', category: 'general' },
+    { question: 'Do you offer white-label services?', answer: 'Yes, we partner with agencies looking to white-label our SEO, PPC, and content services.', category: 'services' },
+    { question: 'What industries do you specialize in?', answer: 'E-commerce, SaaS, healthcare, real estate, legal, and financial services — but we work across most B2B and B2C niches.', category: 'services' },
+  ];
+  for (const f of faqs) await upsert(FAQ, { question: f.question }, { ...f, isPublished: true });
+};
+
+const seedTestimonials = async () => {
+  const testimonials = [
+    { authorName: 'Sarah Mitchell', authorTitle: 'CEO', authorCompany: 'Wellness Co', rating: 5, quote: 'MetlifeDM tripled our organic traffic in 8 months. Their SEO team is world-class.', isFeatured: true, isPublished: true },
+    { authorName: 'David Chen', authorTitle: 'Marketing Director', authorCompany: 'ShopTrend', rating: 5, quote: 'Our ROAS jumped from 2.1x to 6.4x within 3 months. Best PPC partner we\'ve ever hired.', isFeatured: true, isPublished: true },
+    { authorName: 'Amanda Rodriguez', authorTitle: 'Founder', authorCompany: 'FinPath Advisors', rating: 5, quote: 'Their content strategy positioned us as thought leaders in fintech. Lead quality is off the charts.', isFeatured: true, isPublished: true },
+  ];
+  for (const t of testimonials) await upsert(Testimonial, { authorName: t.authorName, authorCompany: t.authorCompany }, t);
+};
+
+const seedBlogCategories = async () => {
+  const cats = [
+    { name: 'SEO', color: '#1E40AF', icon: '🔍' },
+    { name: 'PPC & Paid Media', color: '#DC2626', icon: '💰' },
+    { name: 'Content Marketing', color: '#059669', icon: '📝' },
+    { name: 'Social Media', color: '#7C3AED', icon: '📱' },
+    { name: 'Growth Strategy', color: '#EA580C', icon: '📈' },
+    { name: 'AI & Marketing', color: '#0891B2', icon: '🤖' },
+  ];
+  for (const c of cats) await upsert(BlogCategory, { name: c.name }, c);
+};
+
+const seedEmailTemplates = async () => {
+  const templates = [
+    { key: 'WELCOME_EMAIL', name: 'Welcome Email', category: 'auth', subject: 'Welcome to MetlifeDM 👋', html: '<h1>Welcome {{firstName}}!</h1>', isSystem: true },
+    { key: 'EMAIL_VERIFICATION', name: 'Email Verification', category: 'auth', subject: 'Verify your email', html: '<a href="{{verifyUrl}}">Verify</a>', isSystem: true },
+    { key: 'PASSWORD_RESET', name: 'Password Reset', category: 'auth', subject: 'Reset your password', html: '<a href="{{resetUrl}}">Reset</a>', isSystem: true },
+    { key: 'ORDER_CONFIRMATION', name: 'Order Confirmation', category: 'order', subject: 'Order {{orderNumber}} confirmed', html: '<p>Thanks for your order!</p>', isSystem: true },
+    { key: 'PAYMENT_RECEIPT', name: 'Payment Receipt', category: 'payment', subject: 'Receipt {{invoiceNumber}}', html: '<p>Payment received</p>', isSystem: true },
+    { key: 'CONSULTATION_CONFIRMED', name: 'Consultation Confirmed', category: 'consultation', subject: 'Your consultation is confirmed', html: '<p>See you soon!</p>', isSystem: true },
+    { key: 'TICKET_CREATED', name: 'Ticket Created', category: 'ticket', subject: 'Ticket {{ticketNumber}}', html: '<p>Ticket opened</p>', isSystem: true },
+    { key: 'NEWSLETTER_WELCOME', name: 'Newsletter Welcome', category: 'marketing', subject: 'Welcome to our newsletter', html: '<p>You\'re in!</p>', isSystem: true },
+  ];
+  for (const t of templates) await upsert(EmailTemplate, { key: t.key }, t);
+};
+
+const run = async () => {
+  logger.info('🌱  Starting database seeder...');
+  await connectDatabase();
+
+  try {
+    await seedSuperAdmin();
+    await seedSettings();
+    await seedServices();
+    await seedIndustries();
+    await seedFAQs();
+    await seedTestimonials();
+    await seedBlogCategories();
+    await seedEmailTemplates();
+    logger.info('🎉  Seeder complete');
+  } catch (err) {
+    logger.error(`Seeder failed: ${err.message}`);
+    logger.error(err.stack);
+  } finally {
+    await disconnectDatabase();
+    process.exit(0);
+  }
+};
+
+run();
