@@ -3,28 +3,53 @@ import Lenis from '@studio-freight/lenis';
 
 export default function SmoothScrollProvider({ children }) {
   useEffect(() => {
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReduced) return;
+    if (typeof window === 'undefined') return;
+
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+
+    if (prefersReducedMotion) return;
 
     const lenis = new Lenis({
-      duration: 1.05,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      duration: 0.9,
+      easing: (t) => 1 - Math.pow(1 - t, 3),
       smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 1.5,
+      smoothTouch: false,
+      wheelMultiplier: 0.9,
+      touchMultiplier: 1,
+      normalizeWheel: true,
+      infinite: false,
     });
 
-    let rafId;
+    document.documentElement.classList.add('lenis');
+    document.documentElement.classList.add('lenis-smooth');
+
+    let rafId = null;
+
     const raf = (time) => {
       lenis.raf(time);
       rafId = requestAnimationFrame(raf);
     };
+
     rafId = requestAnimationFrame(raf);
 
+    const handleResize = () => {
+      lenis.resize();
+    };
+
+    window.addEventListener('resize', handleResize);
+
     return () => {
-      cancelAnimationFrame(rafId);
+      if (rafId) cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', handleResize);
+
+      document.documentElement.classList.remove('lenis');
+      document.documentElement.classList.remove('lenis-smooth');
+
       lenis.destroy();
     };
   }, []);
+
   return children;
 }
