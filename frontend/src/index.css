@@ -5,7 +5,6 @@
  * Locked in during design planning; do not change casually.
  * ------------------------------------------------------------- */
 @theme {
-  /* Brand colors */
   --color-ivory: #f5f1e8;
   --color-ivory-soft: #faf7f0;
   --color-sand: #eae4d4;
@@ -19,27 +18,22 @@
   --color-ultra-tint: #dbe3ff;
   --color-cream-border: #d9d1bd;
 
-  /* Semantic */
   --color-success: #0d9b6c;
   --color-warn: #d97706;
   --color-danger: #dc2626;
 
-  /* Typography */
   --font-display: 'Fraunces', 'Georgia', serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
 
-  /* Radii — restrained; agency = trust = geometry */
   --radius-none: 0;
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 16px;
   --radius-xl: 24px;
 
-  /* Container */
   --container-8xl: 88rem;
 
-  /* Motion */
   --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -53,6 +47,7 @@
     text-rendering: optimizeLegibility;
     scroll-behavior: smooth;
   }
+
   html.lenis-loading {
     scroll-behavior: auto;
   }
@@ -70,7 +65,12 @@
     color: var(--color-ivory);
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
     line-height: 1.05;
@@ -78,8 +78,14 @@
     font-variation-settings: 'opsz' 144;
   }
 
-  a { color: inherit; text-decoration: none; }
-  button { font-family: inherit; }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button {
+    font-family: inherit;
+  }
 
   :focus-visible {
     outline: 2px solid var(--color-ultra);
@@ -87,9 +93,10 @@
     border-radius: 2px;
   }
 
-  /* Reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
+    *,
+    *::before,
+    *::after {
       animation-duration: 0.001ms !important;
       transition-duration: 0.001ms !important;
       scroll-behavior: auto !important;
@@ -100,106 +107,125 @@
 /* ---------------------------------------------------------------
  * Custom utilities
  * ------------------------------------------------------------- */
-@utility text-display-hero {
-  font-family: var(--font-display);
-  font-size: clamp(2.75rem, 7vw, 6.5rem);
-  line-height: 0.95;
-  letter-spacing: -0.035em;
-  font-weight: 400;
-  font-variation-settings: 'opsz' 144, 'SOFT' 30;
-}
-@utility text-display-lg {
-  font-family: var(--font-display);
-  font-size: clamp(2.25rem, 5vw, 4.5rem);
-  line-height: 1;
-  letter-spacing: -0.03em;
-  font-weight: 400;
-}
-@utility text-display-md {
-  font-family: var(--font-display);
-  font-size: clamp(1.75rem, 3.5vw, 3rem);
-  line-height: 1.05;
-  letter-spacing: -0.025em;
-}
-@utility text-display-sm {
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 2.5vw, 2.25rem);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-}
-@utility text-eyebrow {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--color-slate);
-}
-@utility text-mono {
-  font-family: var(--font-mono);
-  font-feature-settings: 'tnum';
-}
-@utility text-italic-fraunces {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-variation-settings: 'opsz' 144, 'SOFT' 100;
+@layer utilities {
+  .text-display-hero {
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 7vw, 6.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    font-weight: 400;
+    font-variation-settings: 'opsz' 144, 'SOFT' 30;
+  }
+
+  .text-display-lg {
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 5vw, 4.5rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-weight: 400;
+  }
+
+  .text-display-md {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3.5vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+  }
+
+  .text-display-sm {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .text-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-slate);
+  }
+
+  .text-mono {
+    font-family: var(--font-mono);
+    font-feature-settings: 'tnum';
+  }
+
+  .text-italic-fraunces {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-variation-settings: 'opsz' 144, 'SOFT' 100;
+  }
+
+  .ticker-scroll {
+    animation: ticker 45s linear infinite;
+  }
+
+  .border-hairline {
+    border-color: var(--color-cream-border);
+  }
+
+  .border-hairline-ink {
+    border-color: color-mix(in srgb, var(--color-ink) 12%, transparent);
+  }
+
+  .divide-editorial > * + * {
+    border-top: 1px solid var(--color-cream-border);
+  }
+
+  .link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-size: 100% 1px;
+    transition: background-size 0.4s var(--ease-editorial);
+  }
+
+  .link-underline:hover {
+    background-size: 100% 2px;
+  }
+
+  .fade-up {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity 0.9s var(--ease-editorial),
+      transform 0.9s var(--ease-editorial);
+  }
+
+  .fade-up[data-visible='true'] {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .grid-rule {
+    background-image: linear-gradient(
+      to right,
+      var(--color-cream-border) 1px,
+      transparent 1px
+    );
+    background-size: calc(100% / 12) 100%;
+  }
+
+  .num-plate {
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1, 'zero' 1;
+  }
 }
 
-/* Ticker animation */
-@utility ticker-scroll {
-  animation: ticker 45s linear infinite;
-}
+/* ---------------------------------------------------------------
+ * Keyframes
+ * ------------------------------------------------------------- */
 @keyframes ticker {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
+  from {
+    transform: translateX(0);
+  }
 
-/* Hairline border, editorial style */
-@utility border-hairline {
-  border-color: var(--color-cream-border);
-}
-@utility border-hairline-ink {
-  border-color: color-mix(in srgb, var(--color-ink) 12%, transparent);
-}
-
-/* Section divider */
-@utility divide-editorial > * + * {
-  border-top: 1px solid var(--color-cream-border);
-}
-
-/* Signature underline (link hover) */
-@utility link-underline {
-  background-image: linear-gradient(currentColor, currentColor);
-  background-position: 0 100%;
-  background-repeat: no-repeat;
-  background-size: 100% 1px;
-  transition: background-size 0.4s var(--ease-editorial);
-}
-@utility link-underline:hover {
-  background-size: 100% 2px;
-}
-
-/* Fade-in on scroll (used via IntersectionObserver) */
-@utility fade-up {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.9s var(--ease-editorial), transform 0.9s var(--ease-editorial);
-}
-@utility fade-up[data-visible='true'] {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Grid ruling — editorial guides */
-@utility grid-rule {
-  background-image: linear-gradient(to right, var(--color-cream-border) 1px, transparent 1px);
-  background-size: calc(100% / 12) 100%;
-}
-
-/* Number treatment */
-@utility num-plate {
-  font-family: var(--font-mono);
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum' 1, 'zero' 1;
+  to {
+    transform: translateX(-50%);
+  }
 }

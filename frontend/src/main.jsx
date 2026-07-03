@@ -11,7 +11,7 @@ import QueryProvider from '@/providers/QueryProvider.jsx';
 import SmoothScrollProvider from '@/providers/SmoothScrollProvider.jsx';
 import ErrorBoundary from '@/components/ui/ErrorBoundary.jsx';
 
-import '@/index.css';
+import './index.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
