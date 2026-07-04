@@ -89,3 +89,11 @@ export const getById = asyncHandler(async (req, res) => {
   if (!service) throw ApiError.notFound('Service not found');
   return ApiResponse.ok(res, { service }, 'Service');
 });
+
+export const reorder = asyncHandler(async (req, res) => {
+  const { ids } = req.body;
+  if (!Array.isArray(ids) || !ids.length) throw ApiError.badRequest('ids array required');
+  await Promise.all(ids.map((id, order) => Service.updateOne({ _id: id }, { order })));
+  await bust();
+  return ApiResponse.ok(res, null, 'Order updated');
+});

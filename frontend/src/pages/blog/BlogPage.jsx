@@ -144,12 +144,12 @@ export default function BlogPage() {
                         <span>{featured.author?.firstName || 'MetlifeDM'}</span>
                         <span className="opacity-40">·</span>
                         <span>{formatDate(featured.publishedAt || featured.createdAt, 'medium')}</span>
-                        {featured.readTime && (
+                        {featured.readingTime && (
                           <>
                             <span className="opacity-40">·</span>
                             <span className="inline-flex items-center gap-1">
                               <Clock size={10} strokeWidth={1.5} />
-                              {featured.readTime} min
+                              {featured.readingTime} min
                             </span>
                           </>
                         )}
@@ -183,18 +183,18 @@ export default function BlogPage() {
                           </div>
                         )}
                       </div>
-                      {post.categories?.[0] && (
-                        <div className="text-eyebrow mt-4">{post.categories[0].name || post.categories[0]}</div>
+                      {post.category && (
+                        <div className="text-eyebrow mt-4">{post.category.name || post.category}</div>
                       )}
                       <h3 className="text-display-sm mt-2 group-hover:text-ultra transition-colors">
                         {post.title}
                       </h3>
                       <div className="mt-4 flex items-center gap-3 text-mono text-xs uppercase tracking-widest text-slate">
                         <span>{timeAgo(post.publishedAt || post.createdAt)}</span>
-                        {post.readTime && (
+                        {post.readingTime && (
                           <>
                             <span className="opacity-40">·</span>
-                            <span>{post.readTime} min read</span>
+                            <span>{post.readingTime} min read</span>
                           </>
                         )}
                       </div>

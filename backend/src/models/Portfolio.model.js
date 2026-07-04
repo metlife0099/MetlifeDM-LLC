@@ -7,13 +7,18 @@ const portfolioSchema = new Schema(
   {
     title: { type: String, required: true, trim: true, maxlength: 160 },
     slug: { type: String, unique: true, index: true },
+    tagline: { type: String, maxlength: 200 },
     client: { type: String, required: true },
     clientLogo: { url: String, publicId: String },
     industry: { type: String, index: true },
+    category: { type: String, index: true },
     services: [{ type: Schema.Types.ObjectId, ref: 'Service' }],
 
     shortDescription: { type: String, required: true, maxlength: 400 },
     description: String,
+    overview: String,
+    challenge: String,
+    solution: String,
 
     // Media
     coverImage: { url: String, publicId: String, alt: String },

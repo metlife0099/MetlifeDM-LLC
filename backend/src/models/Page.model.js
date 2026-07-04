@@ -44,6 +44,8 @@ const pageSchema = new Schema(
       enum: ['default', 'landing', 'legal', 'contact', 'sidebar'],
       default: 'default',
     },
+    excerpt: { type: String, maxlength: 500 },
+    content: String, // HTML from the admin rich-text editor
     sections: [sectionSchema],
 
     isPublished: { type: Boolean, default: false, index: true },

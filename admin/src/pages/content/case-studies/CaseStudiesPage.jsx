@@ -9,11 +9,11 @@ import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Breadcrumbs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
 import { StatusPill, Card, PageLoader } from '@/components/ui/index.jsx';
-import { Input, Textarea, Select, Switch, SearchInput, ImageUpload } from '@/components/form/index.jsx';
+import { Input, Textarea, Select, Switch, SearchInput, ImageUpload, MultiSelect } from '@/components/form/index.jsx';
 import RichEditor from '@/components/ui/RichEditor.jsx';
 import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import Button from '@/components/ui/Button.jsx';
-import { caseStudiesApi } from '@/api/index.js';
+import { caseStudiesApi, servicesApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { useDebounce } from '@/hooks/index.js';
 import { formatDate, slugify } from '@/utils/format.js';
@@ -26,14 +26,13 @@ export function CaseStudiesListPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(25);
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('');
   const [sort, setSort] = useState({ key: 'createdAt', direction: 'desc' });
   const [deleteId, setDeleteId] = useState(null);
   const debounced = useDebounce(search, 300);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'case-studies', { page, limit, debounced, status, sort }],
-    queryFn: () => caseStudiesApi.list({ page, limit, search: debounced, status, sortBy: sort.key, sortOrder: sort.direction }),
+    queryKey: ['admin', 'case-studies', { page, limit, debounced, sort }],
+    queryFn: () => caseStudiesApi.list({ page, limit, search: debounced, sortBy: sort.key, sortOrder: sort.direction }),
   });
 
   const remove = useMutation({
@@ -57,7 +56,7 @@ export function CaseStudiesListPage() {
       ),
     },
     { key: 'industry', label: 'Industry', render: (r) => <span className="text-xs text-slate">{r.industry || '—'}</span> },
-    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.status} /> },
+    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.isPublished ? 'published' : 'draft'} /> },
     { key: 'updatedAt', label: 'Updated', render: (r) => <span className="text-mono text-xs text-slate">{formatDate(r.updatedAt, 'short')}</span> },
     {
       key: 'actions', label: '', align: 'right',
@@ -75,12 +74,11 @@ export function CaseStudiesListPage() {
       <PageHeader
         eyebrow="Content / Case studies"
         title={<>Client <span className="text-italic-fraunces text-ultra">case studies</span></>}
-        subtitle="Long-form breakdowns of the work — challenge, strategy, outcome."
+        subtitle="Long-form breakdowns of the work — challenge, approach, result."
         actions={<Button to="/content/case-studies/new" icon={Plus}>New case study</Button>}
       />
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search case studies…" className="w-64" />
-        <Select className="w-32" options={[{ value: '', label: 'All statuses' }, { value: 'draft', label: 'Draft' }, { value: 'published', label: 'Published' }]} value={status} onChange={(e) => setStatus(e.target.value)} />
       </FilterBar>
       <DataTable
         columns={columns} rows={data?.data || []} loading={isLoading}
@@ -106,15 +104,19 @@ const editSchema = z.object({
   slug: z.string().min(1, 'Required'),
   client: z.string().optional(),
   industry: z.string().optional(),
+  tagline: z.string().optional(),
   duration: z.string().optional(),
-  status: z.enum(['draft', 'published']),
-  featured: z.boolean().optional(),
+  year: z.coerce.number().optional(),
+  isPublished: z.boolean().optional(),
+  isFeatured: z.boolean().optional(),
   challenge: z.string().optional(),
-  strategy: z.string().optional(),
-  execution: z.string().optional(),
-  outcome: z.string().optional(),
-  results: z.array(z.object({ metric: z.string(), value: z.string(), context: z.string().optional() })).optional(),
-  seo: z.object({ title: z.string().optional(), description: z.string().optional() }).optional(),
+  approach: z.string().optional(),
+  solution: z.string().optional(),
+  result: z.string().optional(),
+  services: z.array(z.string()).optional(),
+  kpis: z.array(z.object({ label: z.string(), before: z.string().optional(), after: z.string().optional(), change: z.string().optional(), icon: z.string().optional() })).optional(),
+  testimonial: z.object({ quote: z.string().optional(), author: z.string().optional(), role: z.string().optional() }).optional(),
+  seo: z.object({ metaTitle: z.string().optional(), metaDescription: z.string().optional() }).optional(),
 });
 
 export function CaseStudyEditPage() {
@@ -122,7 +124,7 @@ export function CaseStudyEditPage() {
   const isNew = id === 'new';
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const [coverImage, setCoverImage] = useState(null);
+  const [heroImage, setHeroImage] = useState(null);
 
   const { data: cs, isLoading } = useQuery({
     queryKey: ['admin', 'case-study', id],
@@ -130,17 +132,27 @@ export function CaseStudyEditPage() {
     enabled: !isNew,
   });
 
+  const { data: servicesData } = useQuery({
+    queryKey: ['admin', 'services', 'all'],
+    queryFn: () => servicesApi.list({ limit: 100 }),
+  });
+  const services = servicesData?.data || [];
+
   const { register, handleSubmit, control, reset, setValue, watch, formState: { errors, isDirty } } = useForm({
     resolver: zodResolver(editSchema),
-    defaultValues: { title: '', slug: '', status: 'draft', results: [], seo: {} },
+    defaultValues: { title: '', slug: '', isPublished: false, services: [], kpis: [], testimonial: {}, seo: {} },
   });
 
-  const resultsArr = useFieldArray({ control, name: 'results' });
+  const kpisArr = useFieldArray({ control, name: 'kpis' });
+  const servicesValue = watch('services') || [];
 
   useEffect(() => {
     if (cs && !isNew) {
-      reset(cs);
-      setCoverImage(cs.coverImage);
+      reset({
+        ...cs,
+        services: (cs.services || []).map((s) => (typeof s === 'string' ? s : s._id)),
+      });
+      setHeroImage(cs.heroImage);
     }
   }, [cs, isNew, reset]);
 
@@ -151,7 +163,7 @@ export function CaseStudyEditPage() {
 
   const save = useMutation({
     mutationFn: (payload) => {
-      const clean = { ...payload, coverImage: coverImage instanceof File ? undefined : coverImage };
+      const clean = { ...payload, heroImage };
       return isNew ? caseStudiesApi.create(clean) : caseStudiesApi.update(id, clean);
     },
     onSuccess: (data) => {
@@ -191,49 +203,69 @@ export function CaseStudyEditPage() {
             <div className="text-eyebrow mb-4">01 / Basics</div>
             <div className="space-y-4">
               <Input label="Title" required {...register('title')} error={errors.title?.message} />
+              <Input label="Tagline" placeholder="Short one-liner shown in listings" {...register('tagline')} />
               <div className="grid gap-4 sm:grid-cols-2">
                 <Input label="Slug" required prefix="/case-studies/" {...register('slug')} error={errors.slug?.message} />
                 <Input label="Client" {...register('client')} />
                 <Input label="Industry" {...register('industry')} />
                 <Input label="Duration" placeholder="e.g. 6 months" {...register('duration')} />
+                <Input label="Year" type="number" {...register('year')} />
               </div>
+              <MultiSelect
+                label="Services"
+                options={services.map((s) => ({ value: s._id, label: s.title }))}
+                value={servicesValue}
+                onChange={(next) => setValue('services', next, { shouldDirty: true })}
+              />
             </div>
           </Card>
 
           <Card>
             <div className="text-eyebrow mb-4">02 / Cover image</div>
-            <ImageUpload label="" value={coverImage} onChange={setCoverImage} />
+            <ImageUpload label="" value={heroImage} onChange={setHeroImage} />
           </Card>
 
           <Card>
             <div className="text-eyebrow mb-4">03 / Narrative</div>
             <div className="space-y-4">
               <Textarea label="Challenge" rows={4} {...register('challenge')} />
-              <Textarea label="Strategy" rows={4} {...register('strategy')} />
-              <Textarea label="Execution" rows={4} {...register('execution')} />
-              <Textarea label="Outcome" rows={4} {...register('outcome')} />
+              <Textarea label="Approach" rows={4} {...register('approach')} />
+              <Textarea label="Solution" rows={4} {...register('solution')} />
+              <Textarea label="Result" rows={4} {...register('result')} />
             </div>
           </Card>
 
           <Card>
             <div className="flex items-center justify-between mb-4">
-              <div className="text-eyebrow">04 / Results</div>
-              <Button type="button" variant="ghost" size="xs" icon={Plus} onClick={() => resultsArr.append({ metric: '', value: '' })}>Add</Button>
+              <div className="text-eyebrow">04 / KPIs</div>
+              <Button type="button" variant="ghost" size="xs" icon={Plus} onClick={() => kpisArr.append({ label: '', before: '', after: '', change: '', icon: '' })}>Add</Button>
             </div>
-            {resultsArr.fields.length === 0 ? (
+            {kpisArr.fields.length === 0 ? (
               <div className="text-slate text-sm">Add the measurable outcomes.</div>
             ) : (
               <div className="space-y-2">
-                {resultsArr.fields.map((f, i) => (
-                  <div key={f.id} className="grid gap-2 grid-cols-[1fr_1fr_1.5fr_auto] items-center">
-                    <input className="px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none" placeholder="Metric" {...register(`results.${i}.metric`)} />
-                    <input className="px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none num-plate" placeholder="Value" {...register(`results.${i}.value`)} />
-                    <input className="px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none" placeholder="Context (optional)" {...register(`results.${i}.context`)} />
-                    <button type="button" onClick={() => resultsArr.remove(i)} className="text-slate hover:text-danger p-2"><Trash2 size={13} /></button>
+                {kpisArr.fields.map((f, i) => (
+                  <div key={f.id} className="grid gap-2 grid-cols-[1.2fr_1fr_1fr_1fr_auto] items-center">
+                    <input className="px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none" placeholder="Label" {...register(`kpis.${i}.label`)} />
+                    <input className="px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none num-plate" placeholder="Before" {...register(`kpis.${i}.before`)} />
+                    <input className="px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none num-plate" placeholder="After" {...register(`kpis.${i}.after`)} />
+                    <input className="px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none" placeholder="Change (optional)" {...register(`kpis.${i}.change`)} />
+                    <button type="button" onClick={() => kpisArr.remove(i)} className="text-slate hover:text-danger p-2"><Trash2 size={13} /></button>
                   </div>
                 ))}
               </div>
             )}
+          </Card>
+
+          <Card>
+            <div className="text-eyebrow mb-4">05 / Client quote</div>
+            <div className="space-y-4">
+              <Textarea label="Quote" rows={3} {...register('testimonial.quote')} />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input label="Author" {...register('testimonial.author')} />
+                <Input label="Role" {...register('testimonial.role')} />
+              </div>
+            </div>
           </Card>
         </div>
 
@@ -241,15 +273,15 @@ export function CaseStudyEditPage() {
           <Card>
             <div className="text-eyebrow mb-4">Publish</div>
             <div className="space-y-4">
-              <Select label="Status" options={[{ value: 'draft', label: 'Draft' }, { value: 'published', label: 'Published' }]} {...register('status')} />
-              <Switch label="Featured" {...register('featured')} />
+              <Switch label="Published" {...register('isPublished')} />
+              <Switch label="Featured" {...register('isFeatured')} />
             </div>
           </Card>
           <Card>
             <div className="text-eyebrow mb-4">SEO</div>
             <div className="space-y-4">
-              <Input label="Meta title" {...register('seo.title')} />
-              <Textarea label="Meta description" rows={3} {...register('seo.description')} />
+              <Input label="Meta title" {...register('seo.metaTitle')} />
+              <Textarea label="Meta description" rows={3} {...register('seo.metaDescription')} />
             </div>
           </Card>
         </aside>

@@ -1,6 +1,8 @@
 import { forwardRef, useState, useRef } from 'react';
-import { Upload, X, Check, ChevronDown } from 'lucide-react';
+import { Upload, X, Check, ChevronDown, Loader2 } from 'lucide-react';
 import { cn } from '@/utils/format.js';
+import { mediaApi } from '@/api/index.js';
+import { getErrorMessage } from '@/api/client.js';
 
 /* ————— Label ————— */
 export const Label = ({ children, required, className, ...props }) => (
@@ -268,12 +270,38 @@ export const FileUpload = ({
   );
 };
 
-/* ————— ImageUpload (single) ————— */
-export const ImageUpload = ({ label, value, onChange, hint, error }) => {
+/* ————— ImageUpload (single) —————
+ * Uploads the picked file to the media library immediately (mediaApi.upload)
+ * and reports back a persisted { url, publicId } object — never a raw File,
+ * so callers can save the value as-is straight onto a Mongoose doc.
+ */
+export const ImageUpload = ({ label, value, onChange, hint, error, folder = 'general' }) => {
   const ref = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [localError, setLocalError] = useState('');
   const url = value?.url || (typeof value === 'string' ? value : null);
+
+  const handleFile = async (file) => {
+    if (!file) return;
+    setLocalError('');
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', folder);
+      const result = await mediaApi.upload(fd);
+      const doc = result?.media?.[0];
+      if (!doc?.url) throw new Error('Upload failed');
+      onChange?.({ url: doc.url, publicId: doc.publicId });
+    } catch (e) {
+      setLocalError(getErrorMessage(e));
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
-    <Field label={label} error={error} hint={hint}>
+    <Field label={label} error={error || localError} hint={hint}>
       <input
         ref={ref}
         type="file"
@@ -281,26 +309,34 @@ export const ImageUpload = ({ label, value, onChange, hint, error }) => {
         hidden
         onChange={(e) => {
           const file = e.target.files?.[0];
-          if (file) onChange?.(file);
+          e.target.value = '';
+          if (file) handleFile(file);
         }}
       />
       {url ? (
         <div className="relative w-full max-w-md border border-hairline bg-ivory-soft">
           <img src={url} alt="" className="w-full aspect-video object-cover" />
+          {uploading && (
+            <div className="absolute inset-0 bg-ink/60 grid place-items-center">
+              <Loader2 size={20} className="text-ivory animate-spin" />
+            </div>
+          )}
           <div className="absolute inset-x-0 bottom-0 bg-ink/70 p-3 flex items-center justify-between">
             <span className="text-mono text-xs text-ivory">Uploaded</span>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => ref.current?.click()}
-                className="text-mono text-xs uppercase tracking-widest text-ivory hover:text-ultra-soft"
+                disabled={uploading}
+                className="text-mono text-xs uppercase tracking-widest text-ivory hover:text-ultra-soft disabled:opacity-50"
               >
                 Change
               </button>
               <button
                 type="button"
                 onClick={() => onChange?.(null)}
-                className="text-mono text-xs uppercase tracking-widest text-ivory hover:text-danger"
+                disabled={uploading}
+                className="text-mono text-xs uppercase tracking-widest text-ivory hover:text-danger disabled:opacity-50"
               >
                 Remove
               </button>
@@ -311,10 +347,20 @@ export const ImageUpload = ({ label, value, onChange, hint, error }) => {
         <button
           type="button"
           onClick={() => ref.current?.click()}
-          className="w-full max-w-md aspect-video border border-dashed border-hairline-strong hover:border-ink bg-surface transition-colors flex flex-col items-center justify-center gap-2"
+          disabled={uploading}
+          className="w-full max-w-md aspect-video border border-dashed border-hairline-strong hover:border-ink bg-surface transition-colors flex flex-col items-center justify-center gap-2 disabled:opacity-60"
         >
-          <Upload size={20} strokeWidth={1.25} className="text-slate" />
-          <span className="text-mono text-xs uppercase tracking-widest text-slate">Upload image</span>
+          {uploading ? (
+            <>
+              <Loader2 size={20} className="text-slate animate-spin" />
+              <span className="text-mono text-xs uppercase tracking-widest text-slate">Uploading…</span>
+            </>
+          ) : (
+            <>
+              <Upload size={20} strokeWidth={1.25} className="text-slate" />
+              <span className="text-mono text-xs uppercase tracking-widest text-slate">Upload image</span>
+            </>
+          )}
         </button>
       )}
     </Field>

@@ -157,12 +157,13 @@ export const SERVICE_CATEGORIES = [
   { value: 'seo', label: 'SEO', icon: '🔍' },
   { value: 'ppc', label: 'PPC', icon: '📊' },
   { value: 'social_media', label: 'Social media', icon: '💬' },
+  { value: 'local_seo', label: 'Local SEO', icon: '📍' },
   { value: 'content_marketing', label: 'Content', icon: '✏️' },
   { value: 'email_marketing', label: 'Email', icon: '📧' },
   { value: 'web_development', label: 'Web dev', icon: '💻' },
   { value: 'branding', label: 'Branding', icon: '🎨' },
   { value: 'analytics', label: 'Analytics', icon: '📈' },
-  { value: 'consulting', label: 'Consulting', icon: '🧭' },
+  { value: 'ai_solutions', label: 'AI Solutions', icon: '🤖' },
   { value: 'video_marketing', label: 'Video', icon: '🎬' },
 ];
 

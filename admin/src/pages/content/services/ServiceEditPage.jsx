@@ -8,7 +8,7 @@ import { ArrowLeft, Save, Plus, Trash2, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader, Breadcrumbs } from '@/components/ui/PageHeader.jsx';
 import { Card, PageLoader } from '@/components/ui/index.jsx';
-import { Input, Textarea, Select, Switch } from '@/components/form/index.jsx';
+import { Input, Textarea, Select, Switch, ImageUpload } from '@/components/form/index.jsx';
 import RichEditor from '@/components/ui/RichEditor.jsx';
 import Button from '@/components/ui/Button.jsx';
 import { servicesApi } from '@/api/index.js';
@@ -16,12 +16,25 @@ import { getErrorMessage } from '@/api/client.js';
 import { slugify } from '@/utils/format.js';
 import { SERVICE_CATEGORIES } from '@/utils/constants.js';
 
+const BILLING_CYCLES = [
+  { value: 'one_time', label: 'One-time' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'quarterly', label: 'Quarterly' },
+  { value: 'yearly', label: 'Yearly' },
+  { value: 'custom', label: 'Custom' },
+];
+
 const planSchema = z.object({
   name: z.string().min(1, 'Required'),
+  tagline: z.string().optional(),
   price: z.coerce.number().min(0),
+  compareAtPrice: z.coerce.number().optional(),
+  currency: z.string().optional(),
   billingCycle: z.string().optional(),
-  description: z.string().optional(),
-  featured: z.boolean().optional(),
+  ctaLabel: z.string().optional(),
+  deliveryTimeDays: z.coerce.number().optional(),
+  revisions: z.coerce.number().optional(),
+  isPopular: z.boolean().optional(),
 });
 
 const schema = z.object({
@@ -32,17 +45,18 @@ const schema = z.object({
   shortDescription: z.string().optional(),
   description: z.string().optional(),
   startingPrice: z.coerce.number().min(0).optional(),
-  status: z.enum(['draft', 'active', 'archived']),
-  featured: z.boolean().optional(),
-  displayOrder: z.coerce.number().optional(),
+  isPublished: z.boolean().optional(),
+  isFeatured: z.boolean().optional(),
+  order: z.coerce.number().optional(),
   seo: z.object({
-    title: z.string().optional(),
-    description: z.string().optional(),
+    metaTitle: z.string().optional(),
+    metaDescription: z.string().optional(),
     keywords: z.string().optional(),
   }).optional(),
-  features: z.array(z.object({ value: z.string() })).optional(),
-  process: z.array(z.object({ title: z.string(), description: z.string() })).optional(),
-  plans: z.array(planSchema).optional(),
+  features: z.array(z.object({ title: z.string().min(1, 'Required'), description: z.string().optional(), icon: z.string().optional() })).optional(),
+  benefits: z.array(z.object({ title: z.string().min(1, 'Required'), description: z.string().optional(), icon: z.string().optional() })).optional(),
+  process: z.array(z.object({ title: z.string(), description: z.string().optional(), icon: z.string().optional(), duration: z.string().optional() })).optional(),
+  pricingPlans: z.array(planSchema).optional(),
 });
 
 export default function ServiceEditPage() {
@@ -51,6 +65,7 @@ export default function ServiceEditPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [content, setContent] = useState('');
+  const [heroImage, setHeroImage] = useState(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'service', id],
@@ -74,25 +89,40 @@ export default function ServiceEditPage() {
       title: '',
       slug: '',
       category: 'seo',
-      status: 'draft',
+      isPublished: true,
+      isFeatured: false,
+      order: 0,
       features: [],
+      benefits: [],
       process: [],
-      plans: [],
+      pricingPlans: [],
       seo: {},
     },
   });
 
   const featuresArr = useFieldArray({ control, name: 'features' });
+  const benefitsArr = useFieldArray({ control, name: 'benefits' });
   const processArr = useFieldArray({ control, name: 'process' });
-  const plansArr = useFieldArray({ control, name: 'plans' });
+  const plansArr = useFieldArray({ control, name: 'pricingPlans' });
 
   useEffect(() => {
     if (service && !isNew) {
       reset({
         ...service,
-        features: (service.features || []).map((f) => ({ value: typeof f === 'string' ? f : f.value })),
+        features: (service.features || []).map((f) =>
+          typeof f === 'string' ? { title: f, description: '', icon: '' } : f
+        ),
+        benefits: (service.benefits || []).map((b) =>
+          typeof b === 'string' ? { title: b, description: '', icon: '' } : b
+        ),
+        seo: {
+          metaTitle: service.seo?.metaTitle || '',
+          metaDescription: service.seo?.metaDescription || '',
+          keywords: Array.isArray(service.seo?.keywords) ? service.seo.keywords.join(', ') : '',
+        },
       });
       setContent(service.description || '');
+      setHeroImage(service.heroImage || null);
     }
   }, [service, isNew, reset]);
 
@@ -106,7 +136,18 @@ export default function ServiceEditPage() {
       const clean = {
         ...payload,
         description: content,
-        features: (payload.features || []).map((f) => f.value).filter(Boolean),
+        heroImage,
+        seo: {
+          ...payload.seo,
+          keywords: (payload.seo?.keywords || '')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean),
+        },
+        process: (payload.process || []).map((step, index) => ({
+          ...step,
+          order: index,
+        })),
       };
       return isNew ? servicesApi.create(clean) : servicesApi.update(id, clean);
     },
@@ -175,40 +216,116 @@ export default function ServiceEditPage() {
             </div>
           </Card>
 
+          {/* Hero image */}
+          <Card>
+            <div className="text-eyebrow mb-4">02 / Hero image</div>
+            <ImageUpload
+              label="Hero image"
+              value={heroImage}
+              onChange={setHeroImage}
+              folder="services"
+              hint="Shown at the top of the service page"
+            />
+          </Card>
+
           {/* Description */}
           <Card>
-            <div className="text-eyebrow mb-4">02 / Long description</div>
+            <div className="text-eyebrow mb-4">03 / Long description</div>
             <RichEditor value={content} onChange={setContent} placeholder="Describe the service in detail…" />
           </Card>
 
           {/* Features */}
           <Card>
             <div className="flex items-center justify-between mb-4">
-              <div className="text-eyebrow">03 / Features</div>
-              <Button type="button" variant="ghost" size="xs" icon={Plus} onClick={() => featuresArr.append({ value: '' })}>
+              <div className="text-eyebrow">04 / Features</div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                icon={Plus}
+                onClick={() => featuresArr.append({ title: '', description: '', icon: '' })}
+              >
                 Add feature
               </Button>
             </div>
             {featuresArr.fields.length === 0 ? (
               <div className="text-slate text-sm">No features yet.</div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-4">
                 {featuresArr.fields.map((f, i) => (
-                  <div key={f.id} className="flex gap-2 items-center">
-                    <span className="num-plate text-slate text-xs w-8">{String(i + 1).padStart(2, '0')}</span>
-                    <input
-                      className="flex-1 px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none"
-                      placeholder="Feature description"
-                      {...register(`features.${i}.value`)}
-                    />
+                  <div key={f.id} className="border border-hairline p-4 relative">
+                    <div className="absolute -top-3 left-4 bg-surface px-2 num-plate text-slate text-xs">
+                      {String(i + 1).padStart(2, '0')}
+                    </div>
                     <button
                       type="button"
                       onClick={() => featuresArr.remove(i)}
-                      className="text-slate hover:text-danger p-2"
+                      className="absolute top-3 right-3 text-slate hover:text-danger"
                       aria-label="Remove"
                     >
                       <Trash2 size={13} strokeWidth={1.5} />
                     </button>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Input
+                        label="Title"
+                        required
+                        {...register(`features.${i}.title`)}
+                        error={errors.features?.[i]?.title?.message}
+                      />
+                      <Input label="Icon" {...register(`features.${i}.icon`)} />
+                      <div className="sm:col-span-2">
+                        <Textarea label="Description" rows={2} {...register(`features.${i}.description`)} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          {/* Benefits */}
+          <Card>
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-eyebrow">05 / Benefits</div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                icon={Plus}
+                onClick={() => benefitsArr.append({ title: '', description: '', icon: '' })}
+              >
+                Add benefit
+              </Button>
+            </div>
+            {benefitsArr.fields.length === 0 ? (
+              <div className="text-slate text-sm">No benefits yet.</div>
+            ) : (
+              <div className="space-y-4">
+                {benefitsArr.fields.map((f, i) => (
+                  <div key={f.id} className="border border-hairline p-4 relative">
+                    <div className="absolute -top-3 left-4 bg-surface px-2 num-plate text-slate text-xs">
+                      {String(i + 1).padStart(2, '0')}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => benefitsArr.remove(i)}
+                      className="absolute top-3 right-3 text-slate hover:text-danger"
+                      aria-label="Remove"
+                    >
+                      <Trash2 size={13} strokeWidth={1.5} />
+                    </button>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Input
+                        label="Title"
+                        required
+                        {...register(`benefits.${i}.title`)}
+                        error={errors.benefits?.[i]?.title?.message}
+                      />
+                      <Input label="Icon" {...register(`benefits.${i}.icon`)} />
+                      <div className="sm:col-span-2">
+                        <Textarea label="Description" rows={2} {...register(`benefits.${i}.description`)} />
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -218,8 +335,8 @@ export default function ServiceEditPage() {
           {/* Process steps */}
           <Card>
             <div className="flex items-center justify-between mb-4">
-              <div className="text-eyebrow">04 / Process</div>
-              <Button type="button" variant="ghost" size="xs" icon={Plus} onClick={() => processArr.append({ title: '', description: '' })}>
+              <div className="text-eyebrow">06 / Process</div>
+              <Button type="button" variant="ghost" size="xs" icon={Plus} onClick={() => processArr.append({ title: '', description: '', icon: '', duration: '' })}>
                 Add step
               </Button>
             </div>
@@ -240,9 +357,13 @@ export default function ServiceEditPage() {
                     >
                       <Trash2 size={13} strokeWidth={1.5} />
                     </button>
-                    <div className="grid gap-3">
+                    <div className="grid gap-3 sm:grid-cols-2">
                       <Input label="Step title" {...register(`process.${i}.title`)} />
-                      <Textarea label="Description" rows={2} {...register(`process.${i}.description`)} />
+                      <Input label="Duration" placeholder="e.g. 3 days" {...register(`process.${i}.duration`)} />
+                      <div className="sm:col-span-2">
+                        <Textarea label="Description" rows={2} {...register(`process.${i}.description`)} />
+                      </div>
+                      <Input label="Icon" {...register(`process.${i}.icon`)} />
                     </div>
                   </div>
                 ))}
@@ -253,7 +374,7 @@ export default function ServiceEditPage() {
           {/* Pricing plans */}
           <Card>
             <div className="flex items-center justify-between mb-4">
-              <div className="text-eyebrow">05 / Pricing plans</div>
+              <div className="text-eyebrow">07 / Pricing plans</div>
               <Button
                 type="button"
                 variant="ghost"
@@ -278,23 +399,21 @@ export default function ServiceEditPage() {
                       <Trash2 size={13} strokeWidth={1.5} />
                     </button>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <Input label="Plan name" {...register(`plans.${i}.name`)} />
-                      <Input label="Price" type="number" prefix="$" {...register(`plans.${i}.price`)} />
+                      <Input label="Plan name" {...register(`pricingPlans.${i}.name`)} />
+                      <Input label="Tagline" {...register(`pricingPlans.${i}.tagline`)} />
+                      <Input label="Price" type="number" prefix="$" {...register(`pricingPlans.${i}.price`)} />
+                      <Input label="Compare-at price" type="number" prefix="$" {...register(`pricingPlans.${i}.compareAtPrice`)} />
+                      <Input label="Currency" placeholder="USD" {...register(`pricingPlans.${i}.currency`)} />
                       <Select
                         label="Billing cycle"
-                        options={[
-                          { value: 'monthly', label: 'Monthly' },
-                          { value: 'quarterly', label: 'Quarterly' },
-                          { value: 'annually', label: 'Annually' },
-                          { value: 'once', label: 'One-time' },
-                        ]}
-                        {...register(`plans.${i}.billingCycle`)}
+                        options={BILLING_CYCLES}
+                        {...register(`pricingPlans.${i}.billingCycle`)}
                       />
+                      <Input label="CTA label" placeholder="Get Started" {...register(`pricingPlans.${i}.ctaLabel`)} />
+                      <Input label="Delivery time (days)" type="number" {...register(`pricingPlans.${i}.deliveryTimeDays`)} />
+                      <Input label="Revisions" type="number" {...register(`pricingPlans.${i}.revisions`)} />
                       <div className="flex items-center pt-6">
-                        <Switch label="Featured" {...register(`plans.${i}.featured`)} />
-                      </div>
-                      <div className="sm:col-span-2">
-                        <Textarea label="Description" rows={2} {...register(`plans.${i}.description`)} />
+                        <Switch label="Popular" {...register(`pricingPlans.${i}.isPopular`)} />
                       </div>
                     </div>
                   </div>
@@ -309,17 +428,9 @@ export default function ServiceEditPage() {
           <Card>
             <div className="text-eyebrow mb-4">Publish</div>
             <div className="space-y-4">
-              <Select
-                label="Status"
-                options={[
-                  { value: 'draft', label: 'Draft' },
-                  { value: 'active', label: 'Active' },
-                  { value: 'archived', label: 'Archived' },
-                ]}
-                {...register('status')}
-              />
-              <Switch label="Featured" {...register('featured')} />
-              <Input label="Display order" type="number" {...register('displayOrder')} />
+              <Switch label="Published" {...register('isPublished')} />
+              <Switch label="Featured" {...register('isFeatured')} />
+              <Input label="Display order" type="number" {...register('order')} />
             </div>
           </Card>
 
@@ -340,8 +451,8 @@ export default function ServiceEditPage() {
           <Card>
             <div className="text-eyebrow mb-4">SEO</div>
             <div className="space-y-4">
-              <Input label="Meta title" {...register('seo.title')} />
-              <Textarea label="Meta description" rows={3} {...register('seo.description')} />
+              <Input label="Meta title" {...register('seo.metaTitle')} />
+              <Textarea label="Meta description" rows={3} {...register('seo.metaDescription')} />
               <Input label="Keywords" hint="Comma-separated" {...register('seo.keywords')} />
             </div>
           </Card>

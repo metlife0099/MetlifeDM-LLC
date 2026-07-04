@@ -13,10 +13,14 @@ import { cn } from '@/utils/format.js';
 const CATEGORIES = [
   { value: '', label: 'All' },
   { value: 'general', label: 'General' },
+  { value: 'pricing', label: 'Pricing' },
   { value: 'services', label: 'Services' },
-  { value: 'billing', label: 'Billing' },
-  { value: 'technical', label: 'Technical' },
-  { value: 'account', label: 'Account' },
+  { value: 'process', label: 'Process' },
+  { value: 'payment', label: 'Payment' },
+  { value: 'support', label: 'Support' },
+  { value: 'seo', label: 'SEO' },
+  { value: 'ppc', label: 'PPC' },
+  { value: 'ai', label: 'AI' },
 ];
 
 export default function FaqPage() {

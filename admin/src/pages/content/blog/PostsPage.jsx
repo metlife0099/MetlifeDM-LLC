@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Breadcrumbs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
 import { StatusPill, Card, PageLoader, Badge } from '@/components/ui/index.jsx';
-import { Input, Textarea, Select, Switch, SearchInput, ImageUpload, MultiSelect } from '@/components/form/index.jsx';
+import { Input, Textarea, Select, Switch, SearchInput, ImageUpload } from '@/components/form/index.jsx';
 import RichEditor from '@/components/ui/RichEditor.jsx';
 import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import Button from '@/components/ui/Button.jsx';
@@ -69,13 +69,9 @@ export function PostsListPage() {
       render: (r) => <span className="text-xs">{r.author?.firstName ? `${r.author.firstName} ${r.author.lastName || ''}` : '—'}</span>,
     },
     {
-      key: 'categories', label: 'Categories',
+      key: 'category', label: 'Category',
       render: (r) => (
-        <div className="flex flex-wrap gap-1">
-          {(r.categories || []).slice(0, 2).map((c) => (
-            <Badge key={c._id || c} tone="outline">{c.name || c}</Badge>
-          ))}
-        </div>
+        r.category ? <Badge tone="outline">{r.category.name || r.category}</Badge> : <span className="text-slate">—</span>
       ),
     },
     { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.status} /> },
@@ -138,10 +134,10 @@ const postSchema = z.object({
   excerpt: z.string().optional(),
   status: z.enum(['draft', 'scheduled', 'published', 'archived']),
   publishedAt: z.string().optional(),
-  featured: z.boolean().optional(),
+  isFeatured: z.boolean().optional(),
   tags: z.string().optional(),
-  readTime: z.coerce.number().optional(),
-  seo: z.object({ title: z.string().optional(), description: z.string().optional() }).optional(),
+  category: z.string().optional(),
+  seo: z.object({ metaTitle: z.string().optional(), metaDescription: z.string().optional() }).optional(),
 });
 
 export function PostEditPage() {
@@ -151,7 +147,6 @@ export function PostEditPage() {
   const qc = useQueryClient();
   const [content, setContent] = useState('');
   const [coverImage, setCoverImage] = useState(null);
-  const [categoryIds, setCategoryIds] = useState([]);
 
   const { data: post, isLoading } = useQuery({
     queryKey: ['admin', 'post', id],
@@ -175,10 +170,10 @@ export function PostEditPage() {
         ...post,
         tags: (post.tags || []).join(', '),
         publishedAt: post.publishedAt ? post.publishedAt.slice(0, 16) : '',
+        category: post.category?._id || post.category || '',
       });
       setContent(post.content || '');
       setCoverImage(post.coverImage);
-      setCategoryIds((post.categories || []).map((c) => c._id || c));
     }
   }, [post, isNew, reset]);
 
@@ -192,8 +187,8 @@ export function PostEditPage() {
       const clean = {
         ...payload,
         content,
-        coverImage: coverImage instanceof File ? undefined : coverImage,
-        categories: categoryIds,
+        coverImage,
+        category: payload.category || null,
         tags: (payload.tags || '').split(',').map((t) => t.trim()).filter(Boolean),
       };
       return isNew ? blogApi.createPost(clean) : blogApi.updatePost(id, clean);
@@ -244,10 +239,7 @@ export function PostEditPage() {
             <div className="text-eyebrow mb-4">01 / Basics</div>
             <div className="space-y-4">
               <Input label="Title" required {...register('title')} error={errors.title?.message} />
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Input label="Slug" required prefix="/blog/" {...register('slug')} error={errors.slug?.message} />
-                <Input label="Read time (min)" type="number" {...register('readTime')} />
-              </div>
+              <Input label="Slug" required prefix="/blog/" {...register('slug')} error={errors.slug?.message} />
               <Textarea label="Excerpt" rows={2} hint="Shown in listings & meta description fallback" {...register('excerpt')} />
             </div>
           </Card>
@@ -269,16 +261,15 @@ export function PostEditPage() {
             <div className="space-y-4">
               <Select label="Status" options={POST_STATUSES} {...register('status')} />
               <Input label="Publish date" type="datetime-local" {...register('publishedAt')} />
-              <Switch label="Featured" {...register('featured')} />
+              <Switch label="Featured" {...register('isFeatured')} />
             </div>
           </Card>
           <Card>
-            <div className="text-eyebrow mb-4">Categories</div>
-            <MultiSelect
+            <div className="text-eyebrow mb-4">Category</div>
+            <Select
               label=""
-              options={categories.map((c) => ({ value: c._id, label: c.name }))}
-              value={categoryIds}
-              onChange={setCategoryIds}
+              options={[{ value: '', label: 'No category' }, ...categories.map((c) => ({ value: c._id, label: c.name }))]}
+              {...register('category')}
             />
           </Card>
           <Card>
@@ -288,8 +279,8 @@ export function PostEditPage() {
           <Card>
             <div className="text-eyebrow mb-4">SEO</div>
             <div className="space-y-4">
-              <Input label="Meta title" {...register('seo.title')} />
-              <Textarea label="Meta description" rows={3} {...register('seo.description')} />
+              <Input label="Meta title" {...register('seo.metaTitle')} />
+              <Textarea label="Meta description" rows={3} {...register('seo.metaDescription')} />
             </div>
           </Card>
         </aside>

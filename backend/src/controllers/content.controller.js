@@ -22,6 +22,14 @@ export const industry = {
     if (!ind) throw ApiError.notFound('Industry not found');
     return ApiResponse.ok(res, { industry: ind }, 'Industry');
   }),
+  listAdmin: asyncHandler(async (req, res) => {
+    const opts = getPaginationOptions(req.query);
+    const filter = {};
+    if (req.query.featured === 'true') filter.isFeatured = true;
+    if (opts.search) filter.name = { $regex: opts.search, $options: 'i' };
+    const { items, meta } = await paginate(Industry, filter, opts);
+    return ApiResponse.ok(res, items, 'Industries (admin)', meta);
+  }),
   create: asyncHandler(async (req, res) => {
     const ind = await Industry.create(req.body);
     return ApiResponse.created(res, { industry: ind }, 'Industry created');
@@ -63,6 +71,17 @@ export const portfolio = {
     if (!p) throw ApiError.notFound('Project not found');
     return ApiResponse.ok(res, { portfolio: p }, 'Project');
   }),
+  listAdmin: asyncHandler(async (req, res) => {
+    const opts = getPaginationOptions(req.query);
+    const filter = {};
+    if (req.query.industry) filter.industry = req.query.industry;
+    if (req.query.featured === 'true') filter.isFeatured = true;
+    if (opts.search) filter.$text = { $search: opts.search };
+    const { items, meta } = await paginate(Portfolio, filter, opts, {
+      populate: [{ path: 'services', select: 'title slug' }],
+    });
+    return ApiResponse.ok(res, items, 'Portfolio (admin)', meta);
+  }),
   create: asyncHandler(async (req, res) => {
     const p = await Portfolio.create(req.body);
     return ApiResponse.created(res, { portfolio: p }, 'Project created');
@@ -102,6 +121,15 @@ export const caseStudy = {
       .populate('portfolio', 'title slug coverImage');
     if (!cs) throw ApiError.notFound('Case study not found');
     return ApiResponse.ok(res, { caseStudy: cs }, 'Case study');
+  }),
+  listAdmin: asyncHandler(async (req, res) => {
+    const opts = getPaginationOptions(req.query);
+    const filter = {};
+    if (req.query.featured === 'true') filter.isFeatured = true;
+    if (req.query.industry) filter.industry = req.query.industry;
+    if (opts.search) filter.title = { $regex: opts.search, $options: 'i' };
+    const { items, meta } = await paginate(CaseStudy, filter, opts);
+    return ApiResponse.ok(res, items, 'Case studies (admin)', meta);
   }),
   create: asyncHandler(async (req, res) => {
     const cs = await CaseStudy.create(req.body);

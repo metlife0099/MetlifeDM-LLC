@@ -33,7 +33,7 @@ export default function CaseStudyDetailsPage() {
 
   return (
     <>
-      <Seo title={cs.title} description={cs.summary} image={cs.coverImage?.url} />
+      <Seo title={cs.title} description={cs.tagline} image={cs.heroImage?.url} />
 
       {/* Hero */}
       <Section tone="ivory" spacing="lg" divider={false}>
@@ -47,12 +47,12 @@ export default function CaseStudyDetailsPage() {
             {cs.year && <Badge tone="ultra">{cs.year}</Badge>}
           </div>
           <h1 className="text-display-hero mt-8 max-w-4xl">{cs.title}</h1>
-          {cs.summary && <p className="mt-8 max-w-2xl text-lg text-slate leading-relaxed">{cs.summary}</p>}
+          {cs.tagline && <p className="mt-8 max-w-2xl text-lg text-slate leading-relaxed">{cs.tagline}</p>}
         </Container>
       </Section>
 
       {/* Key results grid — the money shot */}
-      {cs.results?.length > 0 && (
+      {cs.kpis?.length > 0 && (
         <Section tone="ink" spacing="lg" divider={false}>
           <Container>
             <div className="text-eyebrow text-ivory/50 mb-4">01 / Results</div>
@@ -60,18 +60,18 @@ export default function CaseStudyDetailsPage() {
               What we <span className="text-italic-fraunces text-ultra-soft">moved.</span>
             </h2>
             <div className="grid gap-px bg-ivory/10 border border-ivory/10 md:grid-cols-3">
-              {cs.results.map((r, i) => (
+              {cs.kpis.map((r, i) => (
                 <div key={i} className="bg-ink p-10">
                   <div className="text-mono text-xs uppercase tracking-widest text-ivory/50 mb-3">
                     {String(i + 1).padStart(2, '0')}
                   </div>
                   <div className="text-display-hero num-plate text-ivory leading-none">
-                    {r.value}
+                    {r.after}
                   </div>
                   <div className="text-sm text-ivory/70 mt-5">{r.label}</div>
-                  {r.timeframe && (
+                  {r.change && (
                     <div className="text-mono text-xs uppercase tracking-widest text-ultra-soft mt-3">
-                      {r.timeframe}
+                      {r.change}
                     </div>
                   )}
                 </div>
@@ -82,10 +82,10 @@ export default function CaseStudyDetailsPage() {
       )}
 
       {/* Cover */}
-      {cs.coverImage?.url && (
+      {cs.heroImage?.url && (
         <Container>
           <div className="aspect-[16/9] bg-sand overflow-hidden">
-            <img src={cs.coverImage.url} alt={cs.title} className="h-full w-full object-cover" />
+            <img src={cs.heroImage.url} alt={cs.title} className="h-full w-full object-cover" />
           </div>
         </Container>
       )}
@@ -104,22 +104,22 @@ export default function CaseStudyDetailsPage() {
                   <p className="text-lg text-slate leading-relaxed whitespace-pre-line">{cs.challenge}</p>
                 </div>
               )}
-              {cs.strategy && (
+              {cs.approach && (
                 <div>
-                  <h3 className="text-display-sm mb-4">The strategy</h3>
-                  <p className="text-lg text-slate leading-relaxed whitespace-pre-line">{cs.strategy}</p>
+                  <h3 className="text-display-sm mb-4">The approach</h3>
+                  <p className="text-lg text-slate leading-relaxed whitespace-pre-line">{cs.approach}</p>
                 </div>
               )}
-              {cs.execution && (
+              {cs.solution && (
                 <div>
-                  <h3 className="text-display-sm mb-4">The execution</h3>
-                  <p className="text-lg text-slate leading-relaxed whitespace-pre-line">{cs.execution}</p>
+                  <h3 className="text-display-sm mb-4">The solution</h3>
+                  <p className="text-lg text-slate leading-relaxed whitespace-pre-line">{cs.solution}</p>
                 </div>
               )}
-              {cs.outcome && (
+              {cs.result && (
                 <div>
-                  <h3 className="text-display-sm mb-4">The outcome</h3>
-                  <p className="text-lg text-slate leading-relaxed whitespace-pre-line">{cs.outcome}</p>
+                  <h3 className="text-display-sm mb-4">The result</h3>
+                  <p className="text-lg text-slate leading-relaxed whitespace-pre-line">{cs.result}</p>
                 </div>
               )}
             </div>
@@ -139,7 +139,7 @@ export default function CaseStudyDetailsPage() {
             </p>
             {cs.testimonial.author && (
               <div className="mt-8 text-mono text-xs uppercase tracking-widest text-slate">
-                {cs.testimonial.author} · {cs.testimonial.title}
+                {cs.testimonial.author} · {cs.testimonial.role}
               </div>
             )}
           </Container>
@@ -158,7 +158,6 @@ export default function CaseStudyDetailsPage() {
                   to={`/services/${s.slug}`}
                   className="border border-hairline hover:border-ink px-5 py-3 flex items-center gap-2 text-sm transition-colors"
                 >
-                  {s.icon && <span>{s.icon}</span>}
                   {s.title || s}
                 </Link>
               ))}

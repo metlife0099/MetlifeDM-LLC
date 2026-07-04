@@ -7,7 +7,7 @@ import { PageHeader, FilterBar } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
 import { StatusPill, Badge } from '@/components/ui/index.jsx';
 import { Modal, ConfirmDialog } from '@/components/ui/Modal.jsx';
-import { Input, Textarea, Select, Switch, SearchInput } from '@/components/form/index.jsx';
+import { Input, Textarea, Select, Switch, SearchInput, ImageUpload } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import { testimonialsApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
@@ -21,6 +21,8 @@ export default function TestimonialsPage() {
   const [status, setStatus] = useState('');
   const [editOpen, setEditOpen] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
+  const [avatar, setAvatar] = useState(null);
+  const [companyLogo, setCompanyLogo] = useState(null);
   const debounced = useDebounce(search, 300);
 
   const { register, handleSubmit, reset } = useForm();
@@ -53,17 +55,16 @@ export default function TestimonialsPage() {
 
   const openEdit = (t) => {
     setEditOpen(t || {});
-    reset(t || { quote: '', authorName: '', authorTitle: '', authorCompany: '', rating: 5, status: 'published', featured: false });
+    setAvatar(t?.avatar || null);
+    setCompanyLogo(t?.companyLogo || null);
+    reset(t || { quote: '', name: '', role: '', company: '', rating: 5, isPublished: true, isFeatured: false });
   };
 
   useEffect(() => {
     if (editOpen && editOpen._id) {
-      reset({
-        ...editOpen,
-        authorName: editOpen.author?.name || editOpen.authorName,
-        authorTitle: editOpen.author?.title || editOpen.authorTitle,
-        authorCompany: editOpen.author?.company || editOpen.authorCompany,
-      });
+      reset({ ...editOpen });
+      setAvatar(editOpen.avatar || null);
+      setCompanyLogo(editOpen.companyLogo || null);
     }
   }, [editOpen, reset]);
 
@@ -80,10 +81,10 @@ export default function TestimonialsPage() {
       key: 'author', label: 'Author',
       render: (r) => (
         <div>
-          <div className="text-sm">{r.author?.name || r.name}</div>
+          <div className="text-sm">{r.name}</div>
           <div className="text-mono text-xs text-slate mt-0.5">
-            {r.author?.title || r.title}
-            {(r.author?.company || r.company) && ` · ${r.author?.company || r.company}`}
+            {r.role}
+            {r.company && ` · ${r.company}`}
           </div>
         </div>
       ),
@@ -98,8 +99,8 @@ export default function TestimonialsPage() {
         </div>
       ),
     },
-    { key: 'featured', label: '', render: (r) => r.featured && <Badge tone="ultra">Featured</Badge> },
-    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.status || 'published'} /> },
+    { key: 'featured', label: '', render: (r) => r.isFeatured && <Badge tone="ultra">Featured</Badge> },
+    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.isPublished ? 'published' : 'draft'} /> },
     {
       key: 'actions', label: '', align: 'right',
       render: (row) => (
@@ -141,8 +142,9 @@ export default function TestimonialsPage() {
             <Button onClick={handleSubmit((d) => {
               const payload = {
                 ...d,
-                author: { name: d.authorName, title: d.authorTitle, company: d.authorCompany },
                 rating: Number(d.rating),
+                avatar: avatar || null,
+                companyLogo: companyLogo || null,
               };
               save.mutate(payload);
             })} loading={save.isPending}>Save</Button>
@@ -152,15 +154,21 @@ export default function TestimonialsPage() {
         <div className="space-y-4">
           <Textarea label="Quote" required rows={4} {...register('quote')} />
           <div className="grid gap-4 sm:grid-cols-3">
-            <Input label="Author name" required {...register('authorName')} />
-            <Input label="Title" {...register('authorTitle')} />
-            <Input label="Company" {...register('authorCompany')} />
+            <Input label="Name" required {...register('name', { required: true })} />
+            <Input label="Role" {...register('role')} />
+            <Input label="Company" {...register('company')} />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <ImageUpload label="Avatar" value={avatar} onChange={setAvatar} folder="testimonials" />
+            <ImageUpload label="Company logo" value={companyLogo} onChange={setCompanyLogo} folder="testimonials" />
           </div>
           <div className="grid gap-4 sm:grid-cols-3 items-end">
             <Select label="Rating" options={[1, 2, 3, 4, 5].map((n) => ({ value: n, label: `${n} ★` }))} {...register('rating')} />
-            <Select label="Status" options={[{ value: 'published', label: 'Published' }, { value: 'draft', label: 'Draft' }]} {...register('status')} />
             <div className="pt-2">
-              <Switch label="Featured" {...register('featured')} />
+              <Switch label="Published" {...register('isPublished')} />
+            </div>
+            <div className="pt-2">
+              <Switch label="Featured" {...register('isFeatured')} />
             </div>
           </div>
         </div>

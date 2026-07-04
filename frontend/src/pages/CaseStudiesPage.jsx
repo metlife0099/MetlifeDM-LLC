@@ -104,17 +104,17 @@ export default function CaseStudiesPage() {
                     >
                       {c.title}
                     </Link>
-                    {c.summary && <p className="mt-4 text-slate text-sm max-w-xl leading-relaxed">{c.summary}</p>}
+                    {c.tagline && <p className="mt-4 text-slate text-sm max-w-xl leading-relaxed">{c.tagline}</p>}
                   </div>
                   <div>
-                    {c.keyResult && (
+                    {c.kpis?.[0] && (
                       <div className="border border-hairline p-6 flex items-center justify-between gap-4">
                         <div>
                           <div className="text-mono text-xs uppercase tracking-widest text-slate">
-                            {c.keyResult.label || 'Key result'}
+                            {c.kpis[0].label || 'Key result'}
                           </div>
                           <div className="text-display-md num-plate text-ink mt-2">
-                            {c.keyResult.value}
+                            {c.kpis[0].after}
                           </div>
                         </div>
                         <Link to={`/case-studies/${c.slug}`} aria-label="Read case study">

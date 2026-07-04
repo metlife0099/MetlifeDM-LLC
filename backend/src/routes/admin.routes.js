@@ -69,6 +69,7 @@ router.get('/analytics/services', adminPanel.analyticsServices);
  * SERVICES
  * ═══════════════════════════════════════════════════════════ */
 router.get('/services', serviceCtrl.listAllAdmin);
+router.post('/services/reorder', serviceCtrl.reorder);
 router.get('/services/:id', serviceCtrl.getById);
 router.post('/services', serviceCtrl.createService);
 router.put('/services/:id', serviceCtrl.updateService);
@@ -79,7 +80,7 @@ router.delete('/services/:id', serviceCtrl.deleteService);
  * PORTFOLIO / CASE STUDIES / INDUSTRIES
  * ═══════════════════════════════════════════════════════════ */
 const mountContent = (path, ctrl) => {
-  router.get(path, ctrl.list);
+  router.get(path, ctrl.listAdmin);
   router.get(`${path}/:id`, ctrl.getById);
   router.post(path, ctrl.create);
   router.put(`${path}/:id`, ctrl.update);
@@ -115,13 +116,13 @@ router.delete('/blog/comments/:id', adminPanel.blogDeleteComment);
 /* ═══════════════════════════════════════════════════════════
  * TESTIMONIALS / FAQS
  * ═══════════════════════════════════════════════════════════ */
-router.get('/testimonials', testimonialCtrl.list);
+router.get('/testimonials', testimonialCtrl.listAdmin);
 router.post('/testimonials', testimonialCtrl.create);
 router.put('/testimonials/:id', testimonialCtrl.update);
 router.patch('/testimonials/:id', testimonialCtrl.update);
 router.delete('/testimonials/:id', testimonialCtrl.remove);
 
-router.get('/faqs', faqCtrl.list);
+router.get('/faqs', faqCtrl.listAdmin);
 router.post('/faqs', faqCtrl.create);
 router.put('/faqs/:id', faqCtrl.update);
 router.patch('/faqs/:id', faqCtrl.update);

@@ -13,6 +13,14 @@ export const testimonial = {
     const { items, meta } = await paginate(Testimonial, filter, opts);
     return ApiResponse.ok(res, items, 'Testimonials', meta);
   }),
+  listAdmin: asyncHandler(async (req, res) => {
+    const opts = getPaginationOptions(req.query);
+    const filter = {};
+    if (req.query.featured === 'true') filter.isFeatured = true;
+    if (opts.search) filter.name = { $regex: opts.search, $options: 'i' };
+    const { items, meta } = await paginate(Testimonial, filter, opts);
+    return ApiResponse.ok(res, items, 'Testimonials (admin)', meta);
+  }),
   create: asyncHandler(async (req, res) => {
     const t = await Testimonial.create(req.body);
     return ApiResponse.created(res, { testimonial: t }, 'Testimonial created');
@@ -97,6 +105,12 @@ export const faq = {
     if (req.query.category) filter.category = req.query.category;
     const items = await FAQ.find(filter).sort({ order: 1, createdAt: -1 });
     return ApiResponse.ok(res, items, 'FAQs');
+  }),
+  listAdmin: asyncHandler(async (req, res) => {
+    const filter = {};
+    if (req.query.category) filter.category = req.query.category;
+    const items = await FAQ.find(filter).sort({ order: 1, createdAt: -1 });
+    return ApiResponse.ok(res, items, 'FAQs (admin)');
   }),
   helpful: asyncHandler(async (req, res) => {
     const inc = req.body.helpful ? { helpful: 1 } : { notHelpful: 1 };

@@ -73,7 +73,7 @@ export default function PortfolioListPage() {
     },
     { key: 'category', label: 'Category', render: (r) => <Badge tone="outline">{r.category || '—'}</Badge> },
     { key: 'year', label: 'Year', render: (r) => <span className="text-mono text-xs">{r.year || '—'}</span> },
-    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.status} /> },
+    { key: 'isPublished', label: 'Status', render: (r) => <StatusPill status={r.isPublished ? 'published' : 'draft'} /> },
     { key: 'updatedAt', label: 'Updated', render: (r) => <span className="text-mono text-xs text-slate">{formatDate(r.updatedAt, 'short')}</span> },
     {
       key: 'actions',

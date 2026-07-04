@@ -62,14 +62,14 @@ export default function TestimonialsPage() {
                   viewport={{ once: true }}
                   className={cn(
                     'bg-ivory p-8 md:p-10 flex flex-col',
-                    t.featured && 'bg-ink text-ivory md:col-span-2'
+                    t.isFeatured && 'bg-ink text-ivory md:col-span-2'
                   )}
                 >
                   <div className={cn('flex items-center justify-between mb-6')}>
                     <Quote
                       size={20}
                       strokeWidth={1.25}
-                      className={cn(t.featured ? 'text-ultra-soft' : 'text-ultra')}
+                      className={cn(t.isFeatured ? 'text-ultra-soft' : 'text-ultra')}
                     />
                     {t.rating > 0 && (
                       <div className="flex gap-0.5">
@@ -80,7 +80,7 @@ export default function TestimonialsPage() {
                             strokeWidth={1.5}
                             className={cn(
                               j < t.rating
-                                ? t.featured
+                                ? t.isFeatured
                                   ? 'fill-ultra-soft text-ultra-soft'
                                   : 'fill-ultra text-ultra'
                                 : 'text-slate/30'
@@ -94,31 +94,25 @@ export default function TestimonialsPage() {
                   <blockquote
                     className={cn(
                       'text-italic-fraunces flex-1 leading-snug',
-                      t.featured ? 'text-display-md' : 'text-lg'
+                      t.isFeatured ? 'text-display-md' : 'text-lg'
                     )}
                   >
                     “{t.quote || t.content}”
                   </blockquote>
 
-                  <figcaption className={cn('mt-8 pt-6 border-t', t.featured ? 'border-ivory/15' : 'border-hairline')}>
-                    <div className={cn('font-medium text-sm', t.featured ? 'text-ivory' : 'text-ink')}>
-                      {t.author?.name || t.name}
+                  <figcaption className={cn('mt-8 pt-6 border-t', t.isFeatured ? 'border-ivory/15' : 'border-hairline')}>
+                    <div className={cn('font-medium text-sm', t.isFeatured ? 'text-ivory' : 'text-ink')}>
+                      {t.name}
                     </div>
-                    <div className={cn('text-mono text-xs uppercase tracking-widest mt-1', t.featured ? 'text-ivory/60' : 'text-slate')}>
-                      {t.author?.title || t.title}
-                      {(t.author?.company || t.company) && (
+                    <div className={cn('text-mono text-xs uppercase tracking-widest mt-1', t.isFeatured ? 'text-ivory/60' : 'text-slate')}>
+                      {t.role}
+                      {t.company && (
                         <>
                           <span className="opacity-40 mx-1.5">·</span>
-                          {t.author?.company || t.company}
+                          {t.company}
                         </>
                       )}
                     </div>
-                    {t.metric && (
-                      <div className={cn('mt-4 flex items-center gap-2 text-mono text-xs', t.featured ? 'text-ultra-soft' : 'text-ultra')}>
-                        <span className="num-plate">{t.metric.value}</span>
-                        <span className="uppercase tracking-widest">{t.metric.label}</span>
-                      </div>
-                    )}
                   </figcaption>
                 </motion.figure>
               ))}

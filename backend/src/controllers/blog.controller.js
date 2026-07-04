@@ -81,8 +81,11 @@ export const listAdmin = asyncHandler(async (req, res) => {
   const filter = {};
   if (req.query.status) filter.status = req.query.status;
   const { items, meta } = await paginate(Blog, filter, opts, {
-    select: 'title slug status publishedAt views author',
-    populate: [{ path: 'author', select: 'firstName lastName' }],
+    select: 'title slug status coverImage category isFeatured publishedAt readingTime views author',
+    populate: [
+      { path: 'author', select: 'firstName lastName' },
+      { path: 'category', select: 'name slug color' },
+    ],
   });
   return ApiResponse.ok(res, items, 'Posts', meta);
 });

@@ -23,7 +23,7 @@ export default function ServicesListPage() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [status, setStatus] = useState('');
-  const [sort, setSort] = useState({ key: 'displayOrder', direction: 'asc' });
+  const [sort, setSort] = useState({ key: 'order', direction: 'asc' });
   const [deleteId, setDeleteId] = useState(null);
   const debounced = useDebounce(search, 300);
 
@@ -35,10 +35,18 @@ export default function ServicesListPage() {
         limit,
         search: debounced || undefined,
         category: category || undefined,
-        status: status || undefined,
         sortBy: sort.key,
         sortOrder: sort.direction,
       }),
+  });
+
+  // NOTE: the backend's listAllAdmin only filters on `category`/`search` — there's no
+  // server-side status filter. We filter the current page's rows client-side on
+  // `isPublished` instead; this only affects what's visible on the current page, it
+  // does not change pagination counts/totals from the server.
+  const rows = (data?.data || []).filter((row) => {
+    if (!status) return true;
+    return status === 'published' ? row.isPublished : !row.isPublished;
   });
 
   const remove = useMutation({
@@ -100,7 +108,7 @@ export default function ServicesListPage() {
     {
       key: 'status',
       label: 'Status',
-      render: (row) => <StatusPill status={row.status || 'draft'} />,
+      render: (row) => <StatusPill status={row.isPublished ? 'published' : 'draft'} />,
     },
     {
       key: 'updatedAt',
@@ -181,9 +189,8 @@ export default function ServicesListPage() {
           className="w-32"
           options={[
             { value: '', label: 'All statuses' },
+            { value: 'published', label: 'Published' },
             { value: 'draft', label: 'Draft' },
-            { value: 'active', label: 'Active' },
-            { value: 'archived', label: 'Archived' },
           ]}
           value={status}
           onChange={(e) => setStatus(e.target.value)}
@@ -192,7 +199,7 @@ export default function ServicesListPage() {
 
       <DataTable
         columns={columns}
-        rows={data?.data || []}
+        rows={rows}
         loading={isLoading}
         meta={data?.meta}
         onPageChange={setPage}

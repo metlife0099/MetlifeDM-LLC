@@ -149,7 +149,7 @@ export default function PortfolioDetailsPage() {
       )}
 
       {/* Results / KPIs */}
-      {p.results?.length > 0 && (
+      {p.metrics?.length > 0 && (
         <Section tone="ink" spacing="lg" divider={false}>
           <Container>
             <div className="text-eyebrow text-ivory/50 mb-4">02 / Results</div>
@@ -157,7 +157,7 @@ export default function PortfolioDetailsPage() {
               The <span className="text-italic-fraunces text-ultra-soft">numbers.</span>
             </h2>
             <div className="grid gap-px bg-ivory/10 border border-ivory/10 md:grid-cols-3">
-              {p.results.map((r, i) => (
+              {p.metrics.map((r, i) => (
                 <div key={i} className="bg-ink p-8">
                   <div className="text-mono text-xs uppercase tracking-widest text-ivory/50 mb-3">
                     {String(i + 1).padStart(2, '0')}

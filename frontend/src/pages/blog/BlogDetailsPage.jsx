@@ -12,7 +12,7 @@ import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
 import { contentApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
-import { formatDate, timeAgo, initials, cn } from '@/utils/format.js';
+import { formatDate, timeAgo, initials } from '@/utils/format.js';
 
 export default function BlogDetailsPage() {
   const { slug } = useParams();
@@ -83,7 +83,7 @@ export default function BlogDetailsPage() {
     <>
       <Seo
         title={post.title}
-        description={post.excerpt || post.metaDescription}
+        description={post.excerpt || post.seo?.metaDescription}
         image={post.coverImage?.url}
         jsonLd={{
           '@context': 'https://schema.org',
@@ -103,15 +103,15 @@ export default function BlogDetailsPage() {
             ← All posts
           </Link>
           <div className="mt-8 flex items-center gap-3 flex-wrap">
-            {post.categories?.map((c) => (
-              <Badge key={c._id || c} tone="outline">
-                {c.name || c}
+            {post.category && (
+              <Badge tone="outline">
+                {post.category.name || post.category}
               </Badge>
-            ))}
-            {post.readTime && (
+            )}
+            {post.readingTime && (
               <div className="text-mono text-xs uppercase tracking-widest text-slate inline-flex items-center gap-1">
                 <Clock size={10} strokeWidth={1.5} />
-                {post.readTime} min read
+                {post.readingTime} min read
               </div>
             )}
           </div>
@@ -142,8 +142,8 @@ export default function BlogDetailsPage() {
                 onClick={() => like.mutate(post._id)}
                 className="inline-flex items-center gap-2 border border-hairline hover:border-ink px-4 py-2 text-mono text-xs uppercase tracking-widest transition-colors"
               >
-                <Heart size={12} strokeWidth={1.5} className={cn(post.userLiked && 'fill-ultra text-ultra')} />
-                {post.likeCount || 0}
+                <Heart size={12} strokeWidth={1.5} />
+                {post.likes || 0}
               </button>
               <button
                 onClick={share}

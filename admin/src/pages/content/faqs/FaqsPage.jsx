@@ -14,7 +14,18 @@ import { getErrorMessage } from '@/api/client.js';
 import { useDebounce } from '@/hooks/index.js';
 import { truncate } from '@/utils/format.js';
 
-const CATEGORIES = ['general', 'services', 'billing', 'technical', 'account'];
+const CATEGORIES = ['general', 'pricing', 'services', 'process', 'payment', 'support', 'seo', 'ppc', 'ai'];
+const CATEGORY_LABELS = {
+  general: 'General',
+  pricing: 'Pricing',
+  services: 'Services',
+  process: 'Process',
+  payment: 'Payment',
+  support: 'Support',
+  seo: 'SEO',
+  ppc: 'PPC',
+  ai: 'AI',
+};
 
 export default function FaqsPage() {
   const qc = useQueryClient();
@@ -55,7 +66,7 @@ export default function FaqsPage() {
 
   const openEdit = (f) => {
     setEditOpen(f || {});
-    reset(f || { question: '', answer: '', category: 'general', displayOrder: 0, status: 'published' });
+    reset(f || { question: '', answer: '', category: 'general', order: 0, isPublished: true, isFeatured: false });
   };
 
   const columns = [
@@ -68,9 +79,9 @@ export default function FaqsPage() {
         </div>
       ),
     },
-    { key: 'category', label: 'Category', render: (r) => <Badge tone="outline">{r.category}</Badge> },
-    { key: 'displayOrder', label: 'Order', align: 'right', render: (r) => <span className="text-mono text-xs">{r.displayOrder || 0}</span> },
-    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.status || 'published'} /> },
+    { key: 'category', label: 'Category', render: (r) => <Badge tone="outline">{CATEGORY_LABELS[r.category] || r.category}</Badge> },
+    { key: 'order', label: 'Order', align: 'right', render: (r) => <span className="text-mono text-xs">{r.order || 0}</span> },
+    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.isPublished ? 'published' : 'draft'} /> },
     {
       key: 'actions', label: '', align: 'right',
       render: (row) => (
@@ -94,7 +105,7 @@ export default function FaqsPage() {
         <SearchInput value={search} onChange={setSearch} placeholder="Search FAQs…" className="w-64" />
         <Select
           className="w-40"
-          options={[{ value: '', label: 'All categories' }, ...CATEGORIES.map((c) => ({ value: c, label: c[0].toUpperCase() + c.slice(1) }))]}
+          options={[{ value: '', label: 'All categories' }, ...CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }))]}
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         />
@@ -122,9 +133,12 @@ export default function FaqsPage() {
           <Input label="Question" required {...register('question')} />
           <Textarea label="Answer" required rows={6} {...register('answer')} />
           <div className="grid gap-4 sm:grid-cols-3">
-            <Select label="Category" options={CATEGORIES.map((c) => ({ value: c, label: c[0].toUpperCase() + c.slice(1) }))} {...register('category')} />
-            <Input label="Display order" type="number" {...register('displayOrder')} />
-            <Select label="Status" options={[{ value: 'published', label: 'Published' }, { value: 'draft', label: 'Draft' }]} {...register('status')} />
+            <Select label="Category" options={CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }))} {...register('category')} />
+            <Input label="Order" type="number" {...register('order')} />
+            <div className="pt-2 flex items-center gap-6">
+              <Switch label="Published" {...register('isPublished')} />
+              <Switch label="Featured" {...register('isFeatured')} />
+            </div>
           </div>
         </div>
       </Modal>

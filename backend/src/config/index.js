@@ -9,6 +9,15 @@ dotenv.config();
  * If any required variable is missing/invalid, the process exits early.
  */
 
+// z.coerce.boolean() runs JS `Boolean(str)`, so the string "false" (any
+// non-empty string) coerces to `true`. Parse the literal "true"/"false"
+// instead so env values are honored as written.
+const zBoolean = (defaultValue) =>
+  z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => (v === undefined ? defaultValue : v === 'true'));
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'staging', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(5000),
@@ -37,7 +46,7 @@ const envSchema = z.object({
 
   COOKIE_SECRET: z.string().min(8),
   COOKIE_DOMAIN: z.string().default('localhost'),
-  COOKIE_SECURE: z.coerce.boolean().default(false),
+  COOKIE_SECURE: zBoolean(false),
 
   BCRYPT_SALT_ROUNDS: z.coerce.number().default(12),
 
@@ -80,9 +89,9 @@ const envSchema = z.object({
   SEED_SUPER_ADMIN_PASSWORD: z.string().min(8),
   SEED_SUPER_ADMIN_NAME: z.string().default('Super Admin'),
 
-  ENABLE_2FA: z.coerce.boolean().default(true),
-  ENABLE_SWAGGER: z.coerce.boolean().default(true),
-  ENABLE_REDIS_CACHE: z.coerce.boolean().default(true),
+  ENABLE_2FA: zBoolean(true),
+  ENABLE_SWAGGER: zBoolean(true),
+  ENABLE_REDIS_CACHE: zBoolean(true),
 });
 
 const parsed = envSchema.safeParse(process.env);

@@ -464,28 +464,39 @@ export const blogPublish = asyncHandler(async (req, res) => {
   return ApiResponse.ok(res, b, 'Post published');
 });
 
+const commentStatusMatch = (status) => {
+  if (status === 'approved') return { 'comments.isApproved': true, 'comments.isSpam': { $ne: true } };
+  if (status === 'spam') return { 'comments.isSpam': true };
+  if (status === 'pending') return { 'comments.isApproved': false, 'comments.isSpam': { $ne: true } };
+  return null;
+};
+
 export const blogListComments = asyncHandler(async (req, res) => {
   const opts = getPaginationOptions(req.query);
-  const status = req.query.status;
-  const match = status ? { 'comments.status': status } : {};
+  const match = commentStatusMatch(req.query.status);
   const rows = await Blog.aggregate([
     { $unwind: '$comments' },
-    ...(status ? [{ $match: { 'comments.status': status } }] : []),
-    { $sort: { 'comments.createdAt': -1 } },
+    ...(match ? [{ $match: match }] : []),
+    { $sort: { 'comments.at': -1 } },
     { $skip: (opts.page - 1) * opts.limit },
     { $limit: opts.limit },
     { $project: {
       _id: '$comments._id',
       content: '$comments.content',
-      status: '$comments.status',
-      author: { name: '$comments.name', email: '$comments.email' },
-      createdAt: '$comments.createdAt',
+      status: {
+        $cond: [
+          '$comments.isSpam', 'spam',
+          { $cond: ['$comments.isApproved', 'approved', 'pending'] },
+        ],
+      },
+      author: { name: '$comments.guestName', email: '$comments.guestEmail' },
+      createdAt: '$comments.at',
       post: { _id: '$_id', title: '$title', slug: '$slug' },
     } },
   ]);
   const totalAgg = await Blog.aggregate([
     { $unwind: '$comments' },
-    ...(status ? [{ $match: { 'comments.status': status } }] : []),
+    ...(match ? [{ $match: match }] : []),
     { $count: 'total' },
   ]);
   const total = totalAgg[0]?.total || 0;
@@ -500,7 +511,7 @@ export const blogListComments = asyncHandler(async (req, res) => {
 export const blogApproveComment = asyncHandler(async (req, res) => {
   const b = await Blog.findOneAndUpdate(
     { 'comments._id': req.params.id },
-    { $set: { 'comments.$.status': 'approved' } },
+    { $set: { 'comments.$.isApproved': true, 'comments.$.isSpam': false } },
     { new: true }
   );
   if (!b) throw ApiError.notFound('Comment not found');

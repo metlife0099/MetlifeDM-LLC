@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { PageHeader, Breadcrumbs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
 import { StatusPill, Card, PageLoader } from '@/components/ui/index.jsx';
-import { Input, Textarea, Select } from '@/components/form/index.jsx';
+import { Input, Textarea, Switch } from '@/components/form/index.jsx';
 import RichEditor from '@/components/ui/RichEditor.jsx';
 import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import Button from '@/components/ui/Button.jsx';
@@ -44,7 +44,7 @@ export function PagesListPage() {
         </div>
       ),
     },
-    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.status || 'published'} /> },
+    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.isPublished ? 'published' : 'draft'} /> },
     { key: 'updatedAt', label: 'Updated', render: (r) => <span className="text-mono text-xs text-slate">{formatDate(r.updatedAt, 'short')}</span> },
     {
       key: 'actions', label: '', align: 'right',
@@ -90,7 +90,7 @@ export function PageEditPage() {
   });
 
   const { register, handleSubmit, reset, watch, setValue, formState: { isDirty, errors } } = useForm({
-    defaultValues: { title: '', slug: '', status: 'published' },
+    defaultValues: { title: '', slug: '', isPublished: true },
   });
 
   useEffect(() => {
@@ -158,16 +158,13 @@ export function PageEditPage() {
         <aside className="space-y-6">
           <Card>
             <div className="text-eyebrow mb-4">Publish</div>
-            <Select label="Status" options={[
-              { value: 'published', label: 'Published' },
-              { value: 'draft', label: 'Draft' },
-            ]} {...register('status')} />
+            <Switch label="Published" {...register('isPublished')} />
           </Card>
           <Card>
             <div className="text-eyebrow mb-4">SEO</div>
             <div className="space-y-4">
-              <Input label="Meta title" {...register('seo.title')} />
-              <Textarea label="Meta description" rows={3} {...register('seo.description')} />
+              <Input label="Meta title" {...register('seo.metaTitle')} />
+              <Textarea label="Meta description" rows={3} {...register('seo.metaDescription')} />
             </div>
           </Card>
         </aside>
