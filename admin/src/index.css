@@ -1,0 +1,253 @@
+@import 'tailwindcss';
+
+/* ========================================================================
+ * ADMIN DESIGN SYSTEM — "Editorial Operator"
+ * Same MetlifeDM brand DNA as the public site, tuned for data density:
+ *   - Same palette (ivory / ink / ultra) but with additional data-viz tokens
+ *   - Same fonts (Fraunces / Inter / JetBrains Mono) for brand consistency
+ *   - Denser type scale, tighter spacing, workmanlike UI density
+ *   - Sidebar uses ink surface; main canvas stays ivory; cards on surface
+ * ======================================================================== */
+
+@theme {
+  /* ————— Color: brand ————— */
+  --color-ivory: #F5F1E8;
+  --color-ivory-soft: #FAF7F0;
+  --color-surface: #FFFFFF;
+  --color-canvas: #F5F1E8;
+  --color-ink: #0A1730;
+  --color-ink-soft: #16233F;
+  --color-graphite: #2A3452;
+  --color-ultra: #1547FF;
+  --color-ultra-hover: #1236CC;
+  --color-ultra-soft: #6B85FF;
+  --color-ultra-tint: #E8ECFF;
+  --color-sand: #EAE4D4;
+  --color-slate: #727D96;
+  --color-slate-soft: #A6ADBE;
+  --color-hairline: #E8E3D2;
+  --color-hairline-strong: #D6D0BE;
+  --color-hairline-ink: rgba(10, 23, 48, 0.08);
+
+  /* ————— Color: semantic (data-viz + status) ————— */
+  --color-success: #128260;
+  --color-success-soft: #E5F3EE;
+  --color-warn: #C87A1F;
+  --color-warn-soft: #FBEEDC;
+  --color-danger: #B4351B;
+  --color-danger-soft: #F9E5DE;
+  --color-info: #1547FF;
+  --color-info-soft: #E8ECFF;
+
+  /* Chart series */
+  --color-chart-1: #1547FF;
+  --color-chart-2: #128260;
+  --color-chart-3: #C87A1F;
+  --color-chart-4: #7D3AC1;
+  --color-chart-5: #0A1730;
+  --color-chart-6: #B4351B;
+
+  /* ————— Type: same as public site ————— */
+  --font-display: 'Fraunces', ui-serif, Georgia, serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+
+  /* ————— Spacing tokens ————— */
+  --spacing-page: 2rem;
+  --spacing-section: 4rem;
+
+  /* ————— Motion ————— */
+  --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ————— Radii (kept sparse — editorial defaults to sharp) ————— */
+  --radius-sm: 2px;
+  --radius: 4px;
+  --radius-lg: 6px;
+}
+
+/* ————— Base styles ————— */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-family: var(--font-body);
+    color: var(--color-ink);
+    background: var(--color-canvas);
+    font-feature-settings: 'ss01', 'cv11';
+  }
+  body {
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+    color: var(--color-ink);
+    font-weight: 500;
+  }
+  *:focus-visible {
+    outline: 2px solid var(--color-ultra);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--color-ultra);
+    color: var(--color-ivory);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ————— Utilities ————— */
+@utility text-display-hero {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  font-variation-settings: 'opsz' 144, 'SOFT' 30;
+}
+@utility text-display-lg {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.75rem, 2.5vw, 2.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  font-variation-settings: 'opsz' 100, 'SOFT' 40;
+}
+@utility text-display-md {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(1.375rem, 1.8vw, 1.75rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  font-variation-settings: 'opsz' 60, 'SOFT' 40;
+}
+@utility text-display-sm {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: 1.125rem;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-variation-settings: 'opsz' 24;
+}
+@utility text-italic-fraunces {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-variation-settings: 'opsz' 144, 'SOFT' 100;
+}
+@utility text-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-slate);
+  font-weight: 400;
+}
+@utility text-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'ss01';
+}
+
+/* Editorial borders */
+@utility border-hairline {
+  border-color: var(--color-hairline);
+}
+@utility border-hairline-strong {
+  border-color: var(--color-hairline-strong);
+}
+@utility border-hairline-ink {
+  border-color: var(--color-hairline-ink);
+}
+@utility divide-editorial {
+  & > * + * {
+    border-top: 1px solid var(--color-hairline);
+  }
+}
+
+/* Interaction */
+@utility link-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  transition: background-size 0.3s var(--ease-editorial);
+  &:hover {
+    background-size: 0% 1px;
+    background-position: 100% 100%;
+  }
+}
+
+/* Numeric plate — for KPIs, IDs, order numbers */
+@utility num-plate {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  font-feature-settings: 'ss01';
+}
+
+/* Row hover for table rows */
+@utility row-hover {
+  transition: background-color 0.15s ease;
+  &:hover {
+    background: var(--color-ivory-soft);
+  }
+}
+
+/* Sidebar link state */
+@utility sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.8125rem;
+  color: rgba(245, 241, 232, 0.65);
+  border-radius: 3px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+  position: relative;
+  &:hover {
+    color: rgba(245, 241, 232, 0.95);
+    background: rgba(245, 241, 232, 0.04);
+  }
+}
+@utility sidebar-link-active {
+  color: var(--color-ivory);
+  background: rgba(21, 71, 255, 0.15);
+  &::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 20%;
+    bottom: 20%;
+    width: 2px;
+    background: var(--color-ultra);
+  }
+}
+
+/* Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-hairline-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-hairline-strong);
+  border-radius: 4px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-slate);
+}
