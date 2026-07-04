@@ -6,6 +6,52 @@ import { setAccessToken, getAccessToken, STORAGE } from '@/api/client.js';
 import { setUser, clearAuth, setLoading } from '@/store/index.js';
 import { ADMIN_ROLES } from '@/utils/constants.js';
 
+/**
+ * Module-level hydration guard — ensures we only call /auth/me ONCE per app
+ * session, no matter how many components mount useAuth(). Without this the
+ * hook fires from every component (ProtectedAdminRoute, Topbar, DashboardPage,
+ * etc.), causing overlapping requests and stuck loading states.
+ */
+let hydrationPromise = null;
+
+const doHydrate = (dispatch) => {
+  if (hydrationPromise) return hydrationPromise;
+  if (!getAccessToken()) return Promise.resolve();
+
+  dispatch(setLoading(true));
+
+  hydrationPromise = authApi
+    .me()
+    .then((res) => {
+      const me = res?.user || res;
+      if (!me || !ADMIN_ROLES.includes(me.role)) {
+        setAccessToken(null);
+        localStorage.removeItem(STORAGE.USER);
+        dispatch(clearAuth());
+        return null;
+      }
+      dispatch(setUser(me));
+      return me;
+    })
+    .catch(() => {
+      setAccessToken(null);
+      localStorage.removeItem(STORAGE.USER);
+      dispatch(clearAuth());
+      return null;
+    })
+    .finally(() => {
+      // ALWAYS clear loading, no matter what. Guard against React StrictMode
+      // double-invocation cancelling this side-effect.
+      dispatch(setLoading(false));
+    });
+
+  return hydrationPromise;
+};
+
+const resetHydration = () => {
+  hydrationPromise = null;
+};
+
 export function useAuth() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -13,42 +59,15 @@ export function useAuth() {
   const isAuthenticated = useSelector((s) => s.auth.isAuthenticated);
   const loading = useSelector((s) => s.auth.loading);
 
-  /* Hydrate from /me on load */
+  /* Hydrate once from /auth/me — module-level dedupe prevents multiple calls */
   useEffect(() => {
-    if (!getAccessToken() && !user) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        dispatch(setLoading(true));
-        const res = await authApi.me();
-        const me = res.user || res;
-        if (cancelled) return;
-        // Reject non-admin users at hydration
-        if (!ADMIN_ROLES.includes(me?.role)) {
-          setAccessToken(null);
-          localStorage.removeItem(STORAGE.USER);
-          dispatch(clearAuth());
-          return;
-        }
-        dispatch(setUser(me));
-      } catch {
-        if (cancelled) return;
-        setAccessToken(null);
-        localStorage.removeItem(STORAGE.USER);
-        dispatch(clearAuth());
-      } finally {
-        if (!cancelled) dispatch(setLoading(false));
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    doHydrate(dispatch);
+  }, [dispatch]);
 
-  /* Listen for global logout events (from 401 interceptor) */
+  /* Listen for global logout events (from the 401 interceptor) */
   useEffect(() => {
     const onLogout = () => {
+      resetHydration();
       dispatch(clearAuth());
       navigate('/login', { replace: true });
     };
@@ -61,12 +80,14 @@ export function useAuth() {
       const res = await authApi.login(data);
       if (res?.requires2FA) return res;
       if (res?.accessToken) setAccessToken(res.accessToken);
-      const me = res.user || res;
-      if (!ADMIN_ROLES.includes(me?.role)) {
+      const me = res?.user || res;
+      if (!me?.role || !ADMIN_ROLES.includes(me.role)) {
         setAccessToken(null);
         throw new Error('This account does not have admin access.');
       }
       dispatch(setUser(me));
+      // Mark hydration as done so we don't refetch /me after login
+      hydrationPromise = Promise.resolve(me);
       return res;
     },
     [dispatch]
@@ -78,6 +99,7 @@ export function useAuth() {
     } catch {
       // ignore
     }
+    resetHydration();
     setAccessToken(null);
     localStorage.removeItem(STORAGE.USER);
     dispatch(clearAuth());

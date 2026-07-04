@@ -61,19 +61,34 @@ export default function RegisterPage() {
   const strengthScore = Object.values(strength).filter(Boolean).length;
 
   const onSubmit = async (data) => {
-    setSubmitting(true);
-    try {
-      // eslint-disable-next-line no-unused-vars
-      const { confirmPassword, agreeTerms, ...payload } = data;
-      await registerApi(payload);
-      toast.success('Account created. Please verify your email.');
-      navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
-    } catch (e) {
-      toast.error(getErrorMessage(e));
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  setSubmitting(true);
+
+  try {
+    const payload = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      password: data.password,
+      company: data.company || '',
+      phone: data.phone || '',
+      newsletterSubscribed: data.subscribeNewsletter ?? false,
+      acceptTerms: data.agreeTerms,
+    };
+
+    console.log("REGISTER PAYLOAD:", payload);
+
+    await registerApi(payload);
+
+    toast.success("Account created. Please verify your email.");
+
+    navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
+  } catch (e) {
+    console.error(e);
+    toast.error(getErrorMessage(e));
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   return (
     <>

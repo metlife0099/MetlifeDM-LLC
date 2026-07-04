@@ -75,10 +75,24 @@ apiClient.interceptors.response.use(
   }
 );
 
-/* ————— Response unwrapping helpers ————— */
-export const unwrap = (r) => r.data?.data || r.data;
+/* ————— Response unwrapping helpers —————
+ * Backend controllers sometimes wrap single entities as { service: {...} } or
+ * { post: {...} } inside `data`. We auto-flatten single-key object wrappers so
+ * consumers can read entity fields directly (row.title, not row.service.title).
+ * Arrays and multi-key objects are returned as-is.
+ */
+const flattenSingleKey = (v) => {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return v;
+  const keys = Object.keys(v);
+  if (keys.length !== 1) return v;
+  const inner = v[keys[0]];
+  if (!inner || typeof inner !== 'object' || Array.isArray(inner)) return v;
+  return inner;
+};
+
+export const unwrap = (r) => flattenSingleKey(r.data?.data ?? r.data);
 export const unwrapMeta = (r) => ({
-  data: r.data?.data || [],
+  data: Array.isArray(r.data?.data) ? r.data.data : (r.data?.data || []),
   meta: r.data?.meta || {},
   ...(r.data?.stats && { stats: r.data.stats }),
 });
