@@ -132,27 +132,22 @@ export default function App() {
 
           {/* Content · Services */}
           <Route path="/content/services" element={withSuspense(ServicesListPage, 'Loading services')} />
-          <Route path="/content/services/new" element={withSuspense(ServiceEditPage, 'Loading')} />
           <Route path="/content/services/:id" element={withSuspense(ServiceEditPage, 'Loading service')} />
 
           {/* Content · Portfolio */}
           <Route path="/content/portfolio" element={withSuspense(PortfolioListPage, 'Loading portfolio')} />
-          <Route path="/content/portfolio/new" element={withSuspense(PortfolioEditPage, 'Loading')} />
           <Route path="/content/portfolio/:id" element={withSuspense(PortfolioEditPage, 'Loading project')} />
 
           {/* Content · Case studies */}
           <Route path="/content/case-studies" element={withSuspense(CaseStudiesModule, 'Loading case studies')} />
-          <Route path="/content/case-studies/new" element={withSuspense(CaseStudyEditModule, 'Loading')} />
           <Route path="/content/case-studies/:id" element={withSuspense(CaseStudyEditModule, 'Loading case study')} />
 
           {/* Content · Industries */}
           <Route path="/content/industries" element={withSuspense(IndustriesListModule, 'Loading industries')} />
-          <Route path="/content/industries/new" element={withSuspense(IndustryEditModule, 'Loading')} />
           <Route path="/content/industries/:id" element={withSuspense(IndustryEditModule, 'Loading industry')} />
 
           {/* Content · Blog */}
           <Route path="/content/blog" element={withSuspense(PostsListModule, 'Loading posts')} />
-          <Route path="/content/blog/new" element={withSuspense(PostEditModule, 'Loading')} />
           <Route path="/content/blog/categories" element={withSuspense(CategoriesPage, 'Loading categories')} />
           <Route path="/content/blog/comments" element={withSuspense(CommentsPage, 'Loading comments')} />
           <Route path="/content/blog/:id" element={withSuspense(PostEditModule, 'Loading post')} />
@@ -161,12 +156,10 @@ export default function App() {
           <Route path="/content/testimonials" element={withSuspense(TestimonialsPage, 'Loading testimonials')} />
           <Route path="/content/faqs" element={withSuspense(FaqsPage, 'Loading FAQs')} />
           <Route path="/content/pages" element={withSuspense(PagesListModule, 'Loading pages')} />
-          <Route path="/content/pages/new" element={withSuspense(PageEditModule, 'Loading')} />
           <Route path="/content/pages/:id" element={withSuspense(PageEditModule, 'Loading page')} />
 
           {/* Careers */}
           <Route path="/careers/jobs" element={withSuspense(JobsListModule, 'Loading jobs')} />
-          <Route path="/careers/jobs/new" element={withSuspense(JobEditModule, 'Loading')} />
           <Route path="/careers/jobs/:id" element={withSuspense(JobEditModule, 'Loading job')} />
           <Route path="/careers/applications" element={withSuspense(ApplicationsPage, 'Loading applications')} />
 

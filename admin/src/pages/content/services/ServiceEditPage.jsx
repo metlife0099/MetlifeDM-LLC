@@ -52,11 +52,13 @@ export default function ServiceEditPage() {
   const qc = useQueryClient();
   const [content, setContent] = useState('');
 
-  const { data: service, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['admin', 'service', id],
     queryFn: () => servicesApi.get(id),
     enabled: !isNew,
   });
+
+  const service = data?.service ?? data;
 
   const {
     register,
