@@ -3,26 +3,26 @@ import { contact, consultation, newsletter, career } from '../controllers/leadCa
 import * as v from '../validators/leadCapture.validator.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, requireAdmin } from '../middleware/auth.middleware.js';
-import { authLimiter } from '../middleware/rateLimit.middleware.js';
+import { leadLimiter } from '../middleware/rateLimit.middleware.js';
 import { resumeUpload } from '../middleware/upload.middleware.js';
 
 /* Contact */
 export const contactRoutes = Router();
-contactRoutes.post('/', authLimiter, validate(v.contactSchema), contact.submit);
+contactRoutes.post('/', leadLimiter, validate(v.contactSchema), contact.submit);
 contactRoutes.get('/', requireAuth, requireAdmin, contact.list);
 contactRoutes.patch('/:id', requireAuth, requireAdmin, contact.update);
 contactRoutes.delete('/:id', requireAuth, requireAdmin, contact.remove);
 
 /* Consultation */
 export const consultationRoutes = Router();
-consultationRoutes.post('/', authLimiter, validate(v.consultationSchema), consultation.book);
+consultationRoutes.post('/', leadLimiter, validate(v.consultationSchema), consultation.book);
 consultationRoutes.get('/', requireAuth, requireAdmin, consultation.list);
 consultationRoutes.patch('/:id/confirm', requireAuth, requireAdmin, consultation.confirm);
 consultationRoutes.patch('/:id', requireAuth, requireAdmin, consultation.update);
 
 /* Newsletter */
 export const newsletterRoutes = Router();
-newsletterRoutes.post('/subscribe', authLimiter, validate(v.newsletterSchema), newsletter.subscribe);
+newsletterRoutes.post('/subscribe', leadLimiter, validate(v.newsletterSchema), newsletter.subscribe);
 newsletterRoutes.get('/unsubscribe', newsletter.unsubscribe);
 newsletterRoutes.get('/', requireAuth, requireAdmin, newsletter.list);
 newsletterRoutes.delete('/:id', requireAuth, requireAdmin, newsletter.remove);
@@ -31,7 +31,7 @@ newsletterRoutes.delete('/:id', requireAuth, requireAdmin, newsletter.remove);
 export const careerRoutes = Router();
 careerRoutes.get('/', career.list);
 careerRoutes.get('/slug/:slug', career.bySlug);
-careerRoutes.post('/:id/apply', authLimiter, resumeUpload.single('resume'), validate(v.applicationSchema), career.apply);
+careerRoutes.post('/:id/apply', leadLimiter, resumeUpload.single('resume'), validate(v.applicationSchema), career.apply);
 careerRoutes.post('/', requireAuth, requireAdmin, validate(v.careerSchema), career.create);
 careerRoutes.patch('/:id', requireAuth, requireAdmin, career.update);
 careerRoutes.delete('/:id', requireAuth, requireAdmin, career.remove);

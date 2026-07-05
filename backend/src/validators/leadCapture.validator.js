@@ -1,6 +1,12 @@
 import { z } from 'zod';
 import { REGEX } from '../utils/constants.js';
 
+/* An optional enum fed by a Select with a blank "Select…" placeholder sends
+ * "" rather than omitting the key — z.enum(...).optional() only tolerates
+ * undefined, so treat an empty string as "not provided" before validating. */
+const optionalEnum = (values) =>
+  z.preprocess((v) => (v === '' ? undefined : v), z.enum(values).optional());
+
 /* Contact */
 export const contactSchema = z.object({
   firstName: z.string().trim().min(2),
@@ -11,7 +17,7 @@ export const contactSchema = z.object({
   website: z.string().optional(),
   subject: z.string().min(3).max(200),
   message: z.string().min(10).max(3000),
-  budget: z.enum(['<5k', '5k-10k', '10k-25k', '25k-50k', '50k-100k', '100k+', 'undecided']).optional(),
+  budget: optionalEnum(['<5k', '5k-10k', '10k-25k', '25k-50k', '50k-100k', '100k+', 'undecided']),
   servicesInterested: z.array(z.string()).optional(),
   timeline: z.string().optional(),
   howHeardAboutUs: z.string().optional(),
@@ -42,8 +48,8 @@ export const consultationSchema = z.object({
   meetingType: z.enum(['google_meet', 'zoom', 'phone', 'in_person']).default('google_meet'),
   servicesInterested: z.array(z.string()).optional(),
   projectGoals: z.string().optional(),
-  budget: z.enum(['<5k', '5k-10k', '10k-25k', '25k-50k', '50k-100k', '100k+', 'undecided']).optional(),
-  urgency: z.enum(['immediate', '1-3_months', '3-6_months', 'exploring']).optional(),
+  budget: optionalEnum(['<5k', '5k-10k', '10k-25k', '25k-50k', '50k-100k', '100k+', 'undecided']),
+  urgency: optionalEnum(['immediate', '1-3_months', '3-6_months', 'exploring']),
   additionalNotes: z.string().optional(),
 });
 

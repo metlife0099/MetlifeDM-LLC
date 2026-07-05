@@ -58,7 +58,12 @@ export default function ContactPage() {
   const onSubmit = (data) => {
     // eslint-disable-next-line no-unused-vars
     const { agreeTerms, ...payload } = data;
-    if (!payload.website) delete payload.website;
+    // Unfilled optional fields (empty Select/Input) come through as "" —
+    // strip them so the backend's optional/enum validators see them as
+    // absent rather than an invalid empty-string value.
+    Object.keys(payload).forEach((key) => {
+      if (payload[key] === '') delete payload[key];
+    });
     mutation.mutate(payload);
   };
 

@@ -42,6 +42,21 @@ export const authLimiter = rateLimit({
 });
 
 /**
+ * Lead-capture forms (contact, consultation, newsletter). These are public,
+ * legitimately-repeatable actions with no brute-force risk — they must not
+ * share a budget with login/register attempts (previously all reused
+ * authLimiter, so testing or using one form could exhaust the others).
+ */
+export const leadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler,
+  store: buildStore(),
+});
+
+/**
  * Very strict limiter for password reset / OTP verification.
  */
 export const otpLimiter = rateLimit({

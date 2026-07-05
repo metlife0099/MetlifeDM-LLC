@@ -5,6 +5,21 @@ import toast from 'react-hot-toast';
 import { getAccessToken } from '@/api/client.js';
 
 /**
+ * Vite's dev-server `server.proxy` (`ws: true`) does not cleanly proxy a raw
+ * WebSocket upgrade — every time the connection cycles (HMR, tab reload, idle
+ * timeout) it logs a benign-but-noisy "ws proxy socket error: ECONNABORTED"
+ * and can leave the client stuck reconnecting through a half-dead tunnel. The
+ * fix is to skip the Vite proxy for this connection in dev and talk to the
+ * backend origin directly; production serves both from behind a real reverse
+ * proxy, so same-origin (undefined) is correct there.
+ */
+const getSocketUrl = () => {
+  if (import.meta.env.VITE_SOCKET_URL) return import.meta.env.VITE_SOCKET_URL;
+  if (import.meta.env.DEV) return import.meta.env.VITE_API_URL_PROXY || 'http://localhost:5000';
+  return undefined;
+};
+
+/**
  * Opens a Socket.io connection authenticated with the current access token
  * and keeps notification-related react-query caches live. The backend joins
  * this socket to the `admins` room (see backend/src/sockets/chat.socket.js)
@@ -19,7 +34,7 @@ export function useNotificationSocket() {
     const token = getAccessToken();
     if (!token) return;
 
-    const socket = io(undefined, {
+    const socket = io(getSocketUrl(), {
       path: '/socket.io',
       auth: { token },
       transports: ['websocket', 'polling'],
