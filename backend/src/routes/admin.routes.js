@@ -141,7 +141,7 @@ router.delete('/pages/:id', pageCtrl.remove);
 /* ═══════════════════════════════════════════════════════════
  * CAREERS · jobs + applications
  * ═══════════════════════════════════════════════════════════ */
-router.get('/careers/jobs', careerCtrl.list);
+router.get('/careers/jobs', careerCtrl.listAdmin);
 router.get('/careers/jobs/:id', careerCtrl.bySlug);  // fallback lookup by id-or-slug
 router.post('/careers/jobs', careerCtrl.create);
 router.put('/careers/jobs/:id', careerCtrl.update);
@@ -149,7 +149,7 @@ router.patch('/careers/jobs/:id', careerCtrl.update);
 router.delete('/careers/jobs/:id', careerCtrl.remove);
 
 router.get('/careers/applications', careerCtrl.listApplications);
-router.get('/careers/applications/:id', careerCtrl.listApplications);  // reuses list, filtered
+router.get('/careers/applications/:id', careerCtrl.getApplication);
 router.put('/careers/applications/:id', careerCtrl.updateApplication);
 router.patch('/careers/applications/:id', careerCtrl.updateApplication);
 

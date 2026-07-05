@@ -137,7 +137,7 @@ export function CaseStudyEditPage() {
   });
   const services = servicesData?.data || [];
 
-  const { register, handleSubmit, control, reset, setValue, watch, formState: { errors, isDirty } } = useForm({
+  const { register, handleSubmit, control, reset, setValue, watch, formState: { errors } } = useForm({
     resolver: zodResolver(editSchema),
     defaultValues: { title: '', slug: '', isPublished: false, services: [], kpis: [], testimonial: {}, seo: {} },
   });
@@ -191,7 +191,7 @@ export function CaseStudyEditPage() {
             {!isNew && cs?.slug && (
               <Button type="button" variant="ghost" href={`${import.meta.env.VITE_PUBLIC_SITE_URL || ''}/case-studies/${cs.slug}`} target="_blank" iconRight={ExternalLink}>View live</Button>
             )}
-            <Button type="submit" icon={Save} loading={save.isPending} disabled={!isDirty && !isNew}>Save</Button>
+            <Button type="submit" icon={Save} loading={save.isPending}>Save</Button>
           </>
         }
       />

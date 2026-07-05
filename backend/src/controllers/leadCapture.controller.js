@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
@@ -148,8 +149,19 @@ export const career = {
     });
     return ApiResponse.ok(res, items, 'Openings', meta);
   }),
+  listAdmin: asyncHandler(async (req, res) => {
+    const opts = getPaginationOptions(req.query);
+    const filter = {};
+    if (req.query.department) filter.department = req.query.department;
+    if (req.query.status) filter.status = req.query.status;
+    if (opts.search) filter.title = { $regex: opts.search, $options: 'i' };
+    const { items, meta } = await paginate(Career, filter, opts);
+    return ApiResponse.ok(res, items, 'Jobs (admin)', meta);
+  }),
   bySlug: asyncHandler(async (req, res) => {
-    const job = await Career.findOne({ slug: req.params.slug });
+    const key = req.params.slug ?? req.params.id;
+    const query = mongoose.isValidObjectId(key) ? { _id: key } : { slug: key };
+    const job = await Career.findOne(query);
     if (!job) throw ApiError.notFound('Job not found');
     Career.updateOne({ _id: job._id }, { $inc: { views: 1 } }).catch(() => {});
     return ApiResponse.ok(res, { job }, 'Job');
@@ -198,8 +210,14 @@ export const career = {
     });
     return ApiResponse.ok(res, items, 'Applications', meta);
   }),
+  getApplication: asyncHandler(async (req, res) => {
+    const application = await JobApplication.findById(req.params.id).populate('career', 'title slug');
+    if (!application) throw ApiError.notFound('Application not found');
+    return ApiResponse.ok(res, { application }, 'Application');
+  }),
   updateApplication: asyncHandler(async (req, res) => {
-    const app = await JobApplication.findByIdAndUpdate(req.params.appId, req.body, { new: true });
+    const key = req.params.appId ?? req.params.id;
+    const app = await JobApplication.findByIdAndUpdate(key, req.body, { new: true });
     if (!app) throw ApiError.notFound('Application not found');
     return ApiResponse.ok(res, { application: app }, 'Updated');
   }),

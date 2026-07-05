@@ -58,7 +58,7 @@ export default function PortfolioEditPage() {
   });
   const services = servicesData?.data || [];
 
-  const { register, handleSubmit, control, reset, setValue, watch, formState: { errors, isDirty } } = useForm({
+  const { register, handleSubmit, control, reset, setValue, watch, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: { title: '', slug: '', isPublished: false, isFeatured: false, metrics: [], seo: {} },
   });
@@ -120,7 +120,7 @@ export default function PortfolioEditPage() {
                 View live
               </Button>
             )}
-            <Button type="submit" icon={Save} loading={save.isPending} disabled={!isDirty && !isNew}>Save</Button>
+            <Button type="submit" icon={Save} loading={save.isPending}>Save</Button>
           </>
         }
       />

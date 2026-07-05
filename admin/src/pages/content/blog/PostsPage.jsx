@@ -159,7 +159,7 @@ export function PostEditPage() {
     queryFn: () => blogApi.listCategories(),
   });
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors, isDirty } } = useForm({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
     resolver: zodResolver(postSchema),
     defaultValues: { title: '', slug: '', status: 'draft', seo: {} },
   });
@@ -228,7 +228,7 @@ export function PostEditPage() {
             {!isNew && post?.status !== 'published' && (
               <Button type="button" variant="ultra" icon={Send} onClick={() => publish.mutate()} loading={publish.isPending}>Publish now</Button>
             )}
-            <Button type="submit" icon={Save} loading={save.isPending} disabled={!isDirty && !isNew}>Save</Button>
+            <Button type="submit" icon={Save} loading={save.isPending}>Save</Button>
           </>
         }
       />

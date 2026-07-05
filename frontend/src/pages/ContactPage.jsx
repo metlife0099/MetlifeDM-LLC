@@ -13,14 +13,16 @@ import { leadsApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { BUDGET_OPTIONS, TIMELINE_OPTIONS, SERVICE_CATEGORIES, SITE } from '@/utils/constants.js';
 
+const PHONE_US = /^\+?1?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
+
 const contactSchema = z.object({
-  firstName: z.string().min(1, 'Required'),
-  lastName: z.string().min(1, 'Required'),
+  firstName: z.string().min(2, 'At least 2 characters'),
+  lastName: z.string().min(2, 'At least 2 characters'),
   email: z.string().email('Enter a valid email'),
-  phone: z.string().optional(),
+  phone: z.string().regex(PHONE_US, 'Enter a valid US phone number').optional().or(z.literal('')),
   company: z.string().optional(),
   website: z.string().url('Enter a valid URL').optional().or(z.literal('')),
-  subject: z.string().min(2, 'Add a subject'),
+  subject: z.string().min(3, 'At least 3 characters'),
   message: z.string().min(10, 'Tell us a bit more'),
   budget: z.string().optional(),
   servicesInterested: z.array(z.string()).optional(),

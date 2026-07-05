@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -48,6 +49,19 @@ export default function RichEditor({ value = '', onChange, placeholder = 'Start 
       },
     },
   });
+
+  // useEditor's `content` option only seeds the document on the initial mount —
+  // it does not react to prop changes. Without this, any edit form that loads
+  // its value asynchronously (fetch resolves after mount) renders an empty
+  // editor even though `value` is populated, and saving would wipe the field.
+  useEffect(() => {
+    if (!editor) return;
+    const current = editor.getHTML();
+    const next = value || '';
+    if (next !== current) {
+      editor.commands.setContent(next, false);
+    }
+  }, [value, editor]);
 
   if (!editor) return null;
 

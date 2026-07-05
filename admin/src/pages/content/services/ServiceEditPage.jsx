@@ -82,7 +82,7 @@ export default function ServiceEditPage() {
     reset,
     setValue,
     watch,
-    formState: { errors, isDirty },
+    formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -189,7 +189,7 @@ export default function ServiceEditPage() {
                 View live
               </Button>
             )}
-            <Button type="submit" icon={Save} loading={save.isPending} disabled={!isDirty && !isNew}>
+            <Button type="submit" icon={Save} loading={save.isPending}>
               Save
             </Button>
           </>

@@ -89,7 +89,7 @@ export function PageEditPage() {
     enabled: !isNew,
   });
 
-  const { register, handleSubmit, reset, watch, setValue, formState: { isDirty, errors } } = useForm({
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm({
     defaultValues: { title: '', slug: '', isPublished: true },
   });
 
@@ -136,7 +136,7 @@ export function PageEditPage() {
             {!isNew && page?.slug && (
               <Button type="button" variant="ghost" href={`${import.meta.env.VITE_PUBLIC_SITE_URL || ''}/${page.slug}`} target="_blank" iconRight={ExternalLink}>View live</Button>
             )}
-            <Button type="submit" icon={Save} loading={save.isPending} disabled={!isDirty && !isNew}>Save</Button>
+            <Button type="submit" icon={Save} loading={save.isPending}>Save</Button>
           </>
         }
       />
