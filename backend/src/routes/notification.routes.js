@@ -13,6 +13,7 @@ router.patch('/read-all', c.markAllRead);
 router.post('/read-all', c.markAllRead); // admin panel uses POST
 router.patch('/:id/read', c.markRead);
 router.post('/:id/read', c.markRead);   // admin panel uses POST
+router.delete('/clear-all', c.clearAll);
 router.delete('/:id', c.remove);
 
 export default router;

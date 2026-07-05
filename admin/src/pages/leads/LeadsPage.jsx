@@ -320,7 +320,12 @@ export function SubscribersPage() {
         eyebrow="Leads / Newsletter"
         title={<>Newsletter <span className="text-italic-fraunces text-ultra">subscribers</span></>}
         subtitle="Everyone opted in to updates."
-        actions={<Button onClick={exportCsv} icon={Download}>Export CSV</Button>}
+        actions={
+          <>
+            <NewBadge resourceType="subscriber" />
+            <Button onClick={exportCsv} icon={Download}>Export CSV</Button>
+          </>
+        }
       />
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search subscribers…" className="w-64" />

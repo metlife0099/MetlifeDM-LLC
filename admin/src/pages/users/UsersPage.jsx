@@ -5,7 +5,7 @@ import { Users, ArrowLeft, ShoppingBag, Mail, Shield, UserX, UserCheck } from 'l
 import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Breadcrumbs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
-import { StatusPill, Card, PageLoader, Badge } from '@/components/ui/index.jsx';
+import { StatusPill, Card, PageLoader, Badge, NewBadge } from '@/components/ui/index.jsx';
 import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import { Select, SearchInput } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
@@ -61,6 +61,7 @@ export function UsersListPage() {
         eyebrow="Operations / Users"
         title={<>All <span className="text-italic-fraunces text-ultra">users</span></>}
         subtitle="Customers and staff accounts."
+        actions={<NewBadge resourceType="user" />}
       />
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search by name or email…" className="w-72" />

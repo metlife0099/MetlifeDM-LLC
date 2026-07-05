@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { PanelLeft, Bell, LogOut, User, ChevronDown, Search, Menu, CheckCheck } from 'lucide-react';
+import { PanelLeft, Bell, LogOut, User, ChevronDown, Search, Menu, CheckCheck, X, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toggleSidebar, toggleMobileMenu } from '@/store/index.js';
 import { notificationsApi } from '@/api/index.js';
@@ -45,6 +45,16 @@ export default function Topbar() {
 
   const markAllRead = useMutation({
     mutationFn: () => notificationsApi.markAllRead(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+  });
+
+  const removeOne = useMutation({
+    mutationFn: (id) => notificationsApi.remove(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+  });
+
+  const clearAll = useMutation({
+    mutationFn: () => notificationsApi.clearAll(),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
   });
 
@@ -104,7 +114,9 @@ export default function Topbar() {
             >
               <Bell size={16} strokeWidth={1.5} />
               {unreadCount > 0 && (
-                <span className="absolute top-0.5 right-1 w-1.5 h-1.5 bg-ultra rounded-full" />
+                <span className="absolute -top-1 -right-1 min-w-[1.1rem] h-[1.1rem] px-1 grid place-items-center bg-ultra text-ivory text-mono text-[0.6rem] leading-none rounded-full">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
               )}
             </button>
             <AnimatePresence>
@@ -132,6 +144,16 @@ export default function Topbar() {
                           Mark all read
                         </button>
                       )}
+                      {items.length > 0 && (
+                        <button
+                          onClick={() => clearAll.mutate()}
+                          disabled={clearAll.isPending}
+                          className="flex items-center gap-1 text-mono text-[0.65rem] uppercase tracking-widest text-slate hover:text-danger transition-colors"
+                        >
+                          <Trash2 size={12} strokeWidth={1.5} />
+                          Clear all
+                        </button>
+                      )}
                     </div>
                   </div>
                   {items.length === 0 ? (
@@ -141,10 +163,10 @@ export default function Topbar() {
                   ) : (
                     <ul className="divide-editorial">
                       {items.map((n) => (
-                        <li key={n._id}>
+                        <li key={n._id} className="group relative">
                           <button
                             onClick={() => openNotification(n)}
-                            className="w-full text-left p-4 hover:bg-ivory-soft transition-colors"
+                            className="w-full text-left p-4 pr-10 hover:bg-ivory-soft transition-colors"
                           >
                             <div className="flex items-start gap-3">
                               <div className={cn(
@@ -161,6 +183,13 @@ export default function Topbar() {
                                 </div>
                               </div>
                             </div>
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); removeOne.mutate(n._id); }}
+                            aria-label="Delete notification"
+                            className="absolute right-3 top-4 p-1 text-slate opacity-0 group-hover:opacity-100 hover:text-danger transition-all"
+                          >
+                            <X size={13} strokeWidth={1.5} />
                           </button>
                         </li>
                       ))}

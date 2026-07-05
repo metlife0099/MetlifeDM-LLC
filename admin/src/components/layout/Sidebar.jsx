@@ -15,7 +15,10 @@ export default function Sidebar({ mobile = false, onNavigate }) {
     queryFn: () => notificationsApi.unreadCountByType(),
     refetchInterval: 60_000,
   });
-  const byType = data?.byType || {};
+  // unwrap() flattens { byType: {...} } down to the inner object directly
+  // whenever that inner value is itself an object — so `data` here already
+  // *is* the counts map, not a wrapper around it.
+  const byType = data || {};
 
   const markRead = useMutation({
     mutationFn: (resourceType) => notificationsApi.markReadByType(resourceType),
@@ -26,8 +29,8 @@ export default function Sidebar({ mobile = false, onNavigate }) {
     const resourceType = NAV_NOTIFICATION_TYPES[item.href];
     if (resourceType && byType[resourceType] > 0) {
       qc.setQueryData(['notifications', 'byType'], (prev) => ({
-        ...prev,
-        byType: { ...(prev?.byType || {}), [resourceType]: 0 },
+        ...(prev || {}),
+        [resourceType]: 0,
       }));
       markRead.mutate(resourceType, {
         onSettled: () => {
@@ -89,7 +92,9 @@ export default function Sidebar({ mobile = false, onNavigate }) {
                     <span className="relative shrink-0">
                       <Icon size={15} strokeWidth={1.5} />
                       {count > 0 && collapsed && !mobile && (
-                        <span className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-ultra rounded-full" />
+                        <span className="absolute -top-1.5 -right-1.5 min-w-[0.9rem] h-[0.9rem] px-0.5 grid place-items-center bg-ultra text-ivory text-mono text-[0.55rem] leading-none rounded-full">
+                          {count > 9 ? '9+' : count}
+                        </span>
                       )}
                     </span>
                     {!collapsed && <span className="truncate flex-1">{item.label}</span>}

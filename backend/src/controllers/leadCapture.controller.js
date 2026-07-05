@@ -116,6 +116,7 @@ export const consultation = {
 export const newsletter = {
   subscribe: asyncHandler(async (req, res) => {
     const existing = await Newsletter.findOne({ email: req.body.email });
+    let isNew = false;
     if (existing) {
       if (existing.isActive) return ApiResponse.ok(res, null, "You're already subscribed!");
       existing.isActive = true;
@@ -127,8 +128,18 @@ export const newsletter = {
         ipAddress: req.ip,
         isVerified: true,
       });
+      isNew = true;
     }
     emailService.newsletterWelcome(req.body.email).catch(() => {});
+    if (isNew) {
+      notifyAdmins({
+        type: 'subscriber',
+        title: 'New newsletter subscriber',
+        message: req.body.email,
+        resourceType: 'subscriber',
+        actionUrl: '/leads/subscribers',
+      }).catch(() => {});
+    }
     return ApiResponse.created(res, null, "You're in — welcome!");
   }),
   unsubscribe: asyncHandler(async (req, res) => {

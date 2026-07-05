@@ -195,6 +195,8 @@ export const ENDPOINTS = {
     markRead: (id) => `/notifications/${id}/read`,
     markReadByType: '/notifications/read-by-type',
     markAllRead: '/notifications/read-all',
+    remove: (id) => `/notifications/${id}`,
+    clearAll: '/notifications/clear-all',
   },
 };
 

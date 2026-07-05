@@ -55,7 +55,9 @@ export const NewBadge = ({ resourceType, className }) => {
     queryFn: () => notificationsApi.unreadCountByType(),
     refetchInterval: 60_000,
   });
-  const count = data?.byType?.[resourceType] || 0;
+  // unwrap() flattens { byType: {...} } down to the inner object directly,
+  // so `data` here already *is* the counts map (see Sidebar.jsx for detail).
+  const count = data?.[resourceType] || 0;
   if (!count) return null;
   return (
     <span

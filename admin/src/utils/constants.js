@@ -99,8 +99,10 @@ export const NAV_NOTIFICATION_TYPES = {
   '/commerce/orders': 'order',
   '/leads/contacts': 'contact',
   '/leads/consultations': 'consultation',
+  '/leads/subscribers': 'subscriber',
   '/careers/applications': 'application',
   '/support/tickets': 'ticket',
+  '/users': 'user',
 };
 
 /* ————— Status option sets ————— */

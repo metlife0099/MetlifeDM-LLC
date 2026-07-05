@@ -7,6 +7,7 @@ import { refreshCookieOptions, clearCookieOptions, REFRESH_COOKIE_NAME } from '.
 import * as auth from '../services/auth.service.js';
 import emailService from '../services/email.service.js';
 import logger from '../config/logger.js';
+import { notifyAdmins } from './notification.controller.js';
 
 const setRefreshCookie = (res, token) => res.cookie(REFRESH_COOKIE_NAME, token, refreshCookieOptions);
 const clearRefreshCookie = (res) => res.clearCookie(REFRESH_COOKIE_NAME, clearCookieOptions);
@@ -41,6 +42,14 @@ export const register = asyncHandler(async (req, res) => {
 
   await auth.sendVerificationEmail(user);
   emailService.welcome(user).catch((e) => logger.warn(`Welcome email failed: ${e.message}`));
+  notifyAdmins({
+    type: 'user',
+    title: 'New customer registered',
+    message: `${user.firstName} ${user.lastName} — ${user.email}`,
+    resourceType: 'user',
+    resourceId: user._id,
+    actionUrl: `/users/${user._id}`,
+  }).catch(() => {});
 
   return ApiResponse.created(
     res,

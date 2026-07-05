@@ -98,3 +98,8 @@ export const remove = asyncHandler(async (req, res) => {
   await Notification.deleteOne({ _id: req.params.id, recipient: req.user._id });
   return ApiResponse.ok(res, null, 'Notification deleted');
 });
+
+export const clearAll = asyncHandler(async (req, res) => {
+  await Notification.deleteMany({ recipient: req.user._id });
+  return ApiResponse.ok(res, null, 'All notifications cleared');
+});

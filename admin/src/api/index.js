@@ -168,4 +168,6 @@ export const notificationsApi = {
   markRead: (id) => apiClient.post(E.notifications.markRead(id)).then(unwrap),
   markReadByType: (resourceType) => apiClient.post(E.notifications.markReadByType, { resourceType }).then(unwrap),
   markAllRead: () => apiClient.post(E.notifications.markAllRead).then(unwrap),
+  remove: (id) => apiClient.delete(E.notifications.remove(id)).then(unwrap),
+  clearAll: () => apiClient.delete(E.notifications.clearAll).then(unwrap),
 };
