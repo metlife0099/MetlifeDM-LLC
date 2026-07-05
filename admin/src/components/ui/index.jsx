@@ -1,5 +1,8 @@
 import { forwardRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Sparkles } from 'lucide-react';
 import { cn, statusTone, humanize } from '@/utils/format.js';
+import { notificationsApi } from '@/api/index.js';
 
 /* ————— Card ————— */
 export const Card = forwardRef(({ className, children, padding = true, ...props }, ref) => (
@@ -41,6 +44,31 @@ export const Badge = ({ tone = 'default', className, children, ...props }) => (
     {children}
   </span>
 );
+
+/* ————— NewBadge — shows when unread notifications exist for a resourceType —————
+ * Shares the ['notifications','byType'] cache with the Sidebar (same queryKey),
+ * so this never fires an extra request beyond the sidebar's own poll.
+ */
+export const NewBadge = ({ resourceType, className }) => {
+  const { data } = useQuery({
+    queryKey: ['notifications', 'byType'],
+    queryFn: () => notificationsApi.unreadCountByType(),
+    refetchInterval: 60_000,
+  });
+  const count = data?.byType?.[resourceType] || 0;
+  if (!count) return null;
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 px-2 py-0.5 text-mono text-[0.65rem] uppercase tracking-widest border bg-ultra-tint text-ultra border-ultra/25 animate-pulse',
+        className
+      )}
+    >
+      <Sparkles size={11} strokeWidth={1.5} />
+      {count} new
+    </span>
+  );
+};
 
 /* Auto-tinted status pill */
 export const StatusPill = ({ status, className }) => (

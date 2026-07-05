@@ -89,7 +89,6 @@ export const createOrder = asyncHandler(async (req, res) => {
   );
 
   notifyAdmins({
-    recipients: [], // populated when admins are seeded
     type: 'order',
     title: 'New order pending payment',
     message: `${order.orderNumber} — $${order.total.toFixed(2)}`,

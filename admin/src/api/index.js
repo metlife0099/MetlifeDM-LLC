@@ -164,6 +164,8 @@ export const settingsApi = {
 export const notificationsApi = {
   list: (params) => apiClient.get(E.notifications.list, { params }).then(unwrapMeta),
   unreadCount: () => apiClient.get(E.notifications.unreadCount).then(unwrap),
+  unreadCountByType: () => apiClient.get(E.notifications.unreadCountByType).then(unwrap),
   markRead: (id) => apiClient.post(E.notifications.markRead(id)).then(unwrap),
+  markReadByType: (resourceType) => apiClient.post(E.notifications.markReadByType, { resourceType }).then(unwrap),
   markAllRead: () => apiClient.post(E.notifications.markAllRead).then(unwrap),
 };

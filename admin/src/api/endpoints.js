@@ -191,7 +191,9 @@ export const ENDPOINTS = {
   notifications: {
     list: '/notifications',
     unreadCount: '/notifications/unread-count',
+    unreadCountByType: '/notifications/unread-count-by-type',
     markRead: (id) => `/notifications/${id}/read`,
+    markReadByType: '/notifications/read-by-type',
     markAllRead: '/notifications/read-all',
   },
 };

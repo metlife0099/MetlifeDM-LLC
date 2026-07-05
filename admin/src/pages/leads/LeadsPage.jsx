@@ -4,7 +4,7 @@ import { Mail, Calendar, MailPlus, Trash2, Download, ExternalLink } from 'lucide
 import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Tabs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
-import { StatusPill, Card } from '@/components/ui/index.jsx';
+import { StatusPill, Card, NewBadge } from '@/components/ui/index.jsx';
 import { Drawer, ConfirmDialog } from '@/components/ui/Modal.jsx';
 import { Select, SearchInput, Textarea } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
@@ -80,6 +80,7 @@ export function ContactsPage() {
         eyebrow="Leads / Contact forms"
         title={<>Contact <span className="text-italic-fraunces text-ultra">submissions</span></>}
         subtitle="Everyone who filled out the contact form."
+        actions={<NewBadge resourceType="contact" />}
         tabs={
           <Tabs
             items={[
@@ -192,6 +193,7 @@ export function ConsultationsPage() {
         eyebrow="Leads / Consultations"
         title={<>Consultation <span className="text-italic-fraunces text-ultra">bookings</span></>}
         subtitle="Free strategy calls requested through /consultation."
+        actions={<NewBadge resourceType="consultation" />}
         tabs={
           <Tabs
             items={[

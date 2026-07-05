@@ -94,6 +94,15 @@ export const NAV_SECTIONS = [
   },
 ];
 
+/* ————— Sidebar nav item → notification resourceType ————— */
+export const NAV_NOTIFICATION_TYPES = {
+  '/commerce/orders': 'order',
+  '/leads/contacts': 'contact',
+  '/leads/consultations': 'consultation',
+  '/careers/applications': 'application',
+  '/support/tickets': 'ticket',
+};
+
 /* ————— Status option sets ————— */
 export const ORDER_STATUSES = [
   { value: 'pending', label: 'Pending' },

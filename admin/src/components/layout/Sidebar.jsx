@@ -1,11 +1,41 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as Icons from 'lucide-react';
-import { NAV_SECTIONS, SITE } from '@/utils/constants.js';
+import { NAV_SECTIONS, NAV_NOTIFICATION_TYPES, SITE } from '@/utils/constants.js';
+import { notificationsApi } from '@/api/index.js';
 import { cn } from '@/utils/format.js';
 
 export default function Sidebar({ mobile = false, onNavigate }) {
   const collapsed = useSelector((s) => (mobile ? false : s.ui.sidebarCollapsed));
+  const qc = useQueryClient();
+
+  const { data } = useQuery({
+    queryKey: ['notifications', 'byType'],
+    queryFn: () => notificationsApi.unreadCountByType(),
+    refetchInterval: 60_000,
+  });
+  const byType = data?.byType || {};
+
+  const markRead = useMutation({
+    mutationFn: (resourceType) => notificationsApi.markReadByType(resourceType),
+  });
+
+  const handleNavClick = (item) => {
+    onNavigate?.();
+    const resourceType = NAV_NOTIFICATION_TYPES[item.href];
+    if (resourceType && byType[resourceType] > 0) {
+      qc.setQueryData(['notifications', 'byType'], (prev) => ({
+        ...prev,
+        byType: { ...(prev?.byType || {}), [resourceType]: 0 },
+      }));
+      markRead.mutate(resourceType, {
+        onSettled: () => {
+          qc.invalidateQueries({ queryKey: ['notifications'] });
+        },
+      });
+    }
+  };
 
   return (
     <aside
@@ -39,23 +69,35 @@ export default function Sidebar({ mobile = false, onNavigate }) {
             <div className="space-y-0.5">
               {sec.items.map((item) => {
                 const Icon = Icons[item.icon] || Icons.Circle;
+                const resourceType = NAV_NOTIFICATION_TYPES[item.href];
+                const count = resourceType ? byType[resourceType] || 0 : 0;
                 return (
                   <NavLink
                     key={item.href}
                     to={item.href}
-                    onClick={onNavigate}
+                    onClick={() => handleNavClick(item)}
                     end={item.href === '/dashboard'}
                     className={({ isActive }) =>
                       cn(
-                        'sidebar-link',
+                        'sidebar-link relative',
                         isActive && 'sidebar-link-active',
                         collapsed && !mobile && 'justify-center gap-0'
                       )
                     }
                     title={collapsed ? item.label : undefined}
                   >
-                    <Icon size={15} strokeWidth={1.5} className="shrink-0" />
-                    {!collapsed && <span className="truncate">{item.label}</span>}
+                    <span className="relative shrink-0">
+                      <Icon size={15} strokeWidth={1.5} />
+                      {count > 0 && collapsed && !mobile && (
+                        <span className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-ultra rounded-full" />
+                      )}
+                    </span>
+                    {!collapsed && <span className="truncate flex-1">{item.label}</span>}
+                    {!collapsed && count > 0 && (
+                      <span className="text-mono text-[0.6rem] leading-none bg-ultra text-ivory rounded-full min-w-[1.1rem] h-[1.1rem] grid place-items-center px-1 shrink-0">
+                        {count > 99 ? '99+' : count}
+                      </span>
+                    )}
                   </NavLink>
                 );
               })}

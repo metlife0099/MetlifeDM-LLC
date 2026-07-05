@@ -5,7 +5,7 @@ import { Ticket, User } from '../models/index.js';
 import { getPaginationOptions, paginate } from '../utils/pagination.js';
 import { TICKET_STATUS } from '../utils/constants.js';
 import emailService from '../services/email.service.js';
-import { notify } from './notification.controller.js';
+import { notify, notifyAdmins } from './notification.controller.js';
 
 export const create = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
@@ -16,6 +16,14 @@ export const create = asyncHandler(async (req, res) => {
     customerName: `${user.firstName} ${user.lastName}`,
   });
   emailService.ticketCreated(user, ticket).catch(() => {});
+  notifyAdmins({
+    type: 'ticket',
+    title: `New ticket ${ticket.ticketNumber}`,
+    message: ticket.subject,
+    resourceType: 'ticket',
+    resourceId: ticket._id,
+    actionUrl: `/support/tickets/${ticket._id}`,
+  }).catch(() => {});
   return ApiResponse.created(res, { ticket }, `Ticket ${ticket.ticketNumber} opened`);
 });
 

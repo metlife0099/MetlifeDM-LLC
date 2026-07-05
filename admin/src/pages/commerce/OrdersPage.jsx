@@ -5,7 +5,7 @@ import { ShoppingBag, ArrowLeft, RefreshCcw, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Breadcrumbs, Tabs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
-import { StatusPill, Card, PageLoader, Badge } from '@/components/ui/index.jsx';
+import { StatusPill, Card, PageLoader, Badge, NewBadge } from '@/components/ui/index.jsx';
 import { Modal } from '@/components/ui/Modal.jsx';
 import { Select, SearchInput, Textarea, Input } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
@@ -60,6 +60,7 @@ export function OrdersListPage() {
         eyebrow="Commerce / Orders"
         title={<>All <span className="text-italic-fraunces text-ultra">orders</span></>}
         subtitle="Everything that came through checkout."
+        actions={<NewBadge resourceType="order" />}
       />
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search by order # or email…" className="w-72" />

@@ -5,11 +5,13 @@ import Sidebar from './Sidebar.jsx';
 import Topbar from './Topbar.jsx';
 import { toggleMobileMenu } from '@/store/index.js';
 import { useScrollLock } from '@/hooks/index.js';
+import { useNotificationSocket } from '@/hooks/useNotificationSocket.js';
 
 export default function AdminLayout() {
   const dispatch = useDispatch();
   const mobileOpen = useSelector((s) => s.ui.mobileMenuOpen);
   useScrollLock(mobileOpen);
+  useNotificationSocket();
 
   return (
     <div className="min-h-screen bg-canvas flex">

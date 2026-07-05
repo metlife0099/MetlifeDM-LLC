@@ -5,7 +5,7 @@ import { LifeBuoy, ArrowLeft, Send, Paperclip, UserCircle, Bookmark } from 'luci
 import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Breadcrumbs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
-import { StatusPill, Card, PageLoader, Badge } from '@/components/ui/index.jsx';
+import { StatusPill, Card, PageLoader, Badge, NewBadge } from '@/components/ui/index.jsx';
 import { Select, SearchInput, Textarea, Switch } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import { ticketsApi, usersApi } from '@/api/index.js';
@@ -70,6 +70,7 @@ export function TicketsListPage() {
         eyebrow="Operations / Support"
         title={<>Support <span className="text-italic-fraunces text-ultra">tickets</span></>}
         subtitle="All inbound support conversations."
+        actions={<NewBadge resourceType="ticket" />}
       />
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search tickets…" className="w-64" />

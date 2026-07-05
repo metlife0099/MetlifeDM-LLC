@@ -7,6 +7,7 @@ import { getPaginationOptions, paginate } from '../utils/pagination.js';
 import { CONSULTATION_STATUS } from '../utils/constants.js';
 import emailService from '../services/email.service.js';
 import logger from '../config/logger.js';
+import { notifyAdmins } from './notification.controller.js';
 
 /* ========== CONTACT ========== */
 export const contact = {
@@ -19,6 +20,14 @@ export const contact = {
     });
     emailService.contactReceived(c).catch((e) => logger.warn(`Contact ack email failed: ${e.message}`));
     emailService.notifyAdmins(c, 'contact').catch(() => {});
+    notifyAdmins({
+      type: 'contact',
+      title: 'New contact form submission',
+      message: `${c.firstName} ${c.lastName} — ${c.subject}`,
+      resourceType: 'contact',
+      resourceId: c._id,
+      actionUrl: `/leads/contacts`,
+    }).catch(() => {});
     return ApiResponse.created(res, null, "Thanks! We'll get back within 4 business hours.");
   }),
   list: asyncHandler(async (req, res) => {
@@ -57,6 +66,14 @@ export const consultation = {
       userAgent: req.headers['user-agent'],
     });
     emailService.notifyAdmins(c, 'consultation').catch(() => {});
+    notifyAdmins({
+      type: 'consultation',
+      title: 'New consultation requested',
+      message: `${c.firstName} ${c.lastName} — ${c.preferredDate?.toDateString?.() || ''}`,
+      resourceType: 'consultation',
+      resourceId: c._id,
+      actionUrl: `/leads/consultations`,
+    }).catch(() => {});
     return ApiResponse.created(res, { consultation: c }, 'Consultation requested');
   }),
   list: asyncHandler(async (req, res) => {
@@ -198,6 +215,14 @@ export const career = {
     });
     await Career.updateOne({ _id: job._id }, { $inc: { applicationsCount: 1 } });
     emailService.notifyAdmins(application, 'application').catch(() => {});
+    notifyAdmins({
+      type: 'application',
+      title: 'New job application',
+      message: `${application.firstName} ${application.lastName} — ${job.title}`,
+      resourceType: 'application',
+      resourceId: application._id,
+      actionUrl: `/careers/applications`,
+    }).catch(() => {});
     return ApiResponse.created(res, null, 'Application received!');
   }),
   listApplications: asyncHandler(async (req, res) => {

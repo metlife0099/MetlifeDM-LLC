@@ -119,6 +119,9 @@ const userSchema = new Schema(
       },
     },
 
+    // Moderation
+    suspensionReason: String,
+
     // Soft delete
     deletedAt: { type: Date, select: false },
   },

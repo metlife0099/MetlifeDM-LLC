@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { useQuery } from '@tanstack/react-query';
-import { PanelLeft, Bell, LogOut, User, ChevronDown, Search, Menu } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { PanelLeft, Bell, LogOut, User, ChevronDown, Search, Menu, CheckCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toggleSidebar, toggleMobileMenu } from '@/store/index.js';
 import { notificationsApi } from '@/api/index.js';
@@ -13,6 +13,8 @@ import { ROLE_LABELS } from '@/utils/constants.js';
 
 export default function Topbar() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
   const collapsed = useSelector((s) => s.ui.sidebarCollapsed);
   const { user, logout } = useAuth();
 
@@ -35,6 +37,22 @@ export default function Topbar() {
     queryFn: () => notificationsApi.list({ limit: 8 }),
     enabled: notifOpen,
   });
+
+  const markRead = useMutation({
+    mutationFn: (id) => notificationsApi.markRead(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+  });
+
+  const markAllRead = useMutation({
+    mutationFn: () => notificationsApi.markAllRead(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
+  });
+
+  const openNotification = (n) => {
+    if (!n.isRead) markRead.mutate(n._id);
+    setNotifOpen(false);
+    if (n.actionUrl) navigate(n.actionUrl);
+  };
 
   const unreadCount = unread?.count || 0;
   const items = notifs?.data || [];
@@ -98,11 +116,23 @@ export default function Topbar() {
                   transition={{ duration: 0.15 }}
                   className="absolute right-0 top-full mt-2 w-96 bg-surface border border-hairline shadow-xl max-h-[80vh] overflow-y-auto"
                 >
-                  <div className="p-4 border-b border-hairline flex items-center justify-between">
+                  <div className="p-4 border-b border-hairline flex items-center justify-between gap-3">
                     <div className="text-eyebrow">Notifications</div>
-                    {unreadCount > 0 && (
-                      <span className="text-mono text-xs text-slate">{unreadCount} unread</span>
-                    )}
+                    <div className="flex items-center gap-3">
+                      {unreadCount > 0 && (
+                        <span className="text-mono text-xs text-slate">{unreadCount} unread</span>
+                      )}
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={() => markAllRead.mutate()}
+                          disabled={markAllRead.isPending}
+                          className="flex items-center gap-1 text-mono text-[0.65rem] uppercase tracking-widest text-slate hover:text-ultra transition-colors"
+                        >
+                          <CheckCheck size={12} strokeWidth={1.5} />
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
                   </div>
                   {items.length === 0 ? (
                     <div className="p-8 text-center text-slate text-sm">
@@ -111,22 +141,27 @@ export default function Topbar() {
                   ) : (
                     <ul className="divide-editorial">
                       {items.map((n) => (
-                        <li key={n._id} className="p-4 hover:bg-ivory-soft transition-colors">
-                          <div className="flex items-start gap-3">
-                            <div className={cn(
-                              'w-1.5 h-1.5 rounded-full mt-2 shrink-0',
-                              n.isRead ? 'bg-hairline-strong' : 'bg-ultra'
-                            )} />
-                            <div className="flex-1 min-w-0">
-                              <div className="text-sm">{n.title}</div>
-                              {n.message && (
-                                <div className="text-slate text-xs mt-1 leading-relaxed">{n.message}</div>
-                              )}
-                              <div className="text-mono text-[0.65rem] text-slate uppercase tracking-widest mt-2">
-                                {timeAgo(n.createdAt)}
+                        <li key={n._id}>
+                          <button
+                            onClick={() => openNotification(n)}
+                            className="w-full text-left p-4 hover:bg-ivory-soft transition-colors"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={cn(
+                                'w-1.5 h-1.5 rounded-full mt-2 shrink-0',
+                                n.isRead ? 'bg-hairline-strong' : 'bg-ultra'
+                              )} />
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm">{n.title}</div>
+                                {n.message && (
+                                  <div className="text-slate text-xs mt-1 leading-relaxed">{n.message}</div>
+                                )}
+                                <div className="text-mono text-[0.65rem] text-slate uppercase tracking-widest mt-2">
+                                  {timeAgo(n.createdAt)}
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          </button>
                         </li>
                       ))}
                     </ul>

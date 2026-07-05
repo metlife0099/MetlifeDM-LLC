@@ -84,6 +84,8 @@ export const NOTIFICATION_TYPES = Object.freeze({
   SYSTEM: 'system',
   MARKETING: 'marketing',
   CONSULTATION: 'consultation',
+  CONTACT: 'contact',
+  APPLICATION: 'application',
 });
 
 export const BLOG_STATUS = Object.freeze({

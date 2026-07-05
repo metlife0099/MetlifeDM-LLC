@@ -4,7 +4,7 @@ import { FileCheck, ExternalLink, Mail, Linkedin, Globe, Download } from 'lucide
 import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Tabs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
-import { StatusPill, Badge, Card } from '@/components/ui/index.jsx';
+import { StatusPill, Badge, Card, NewBadge } from '@/components/ui/index.jsx';
 import { Drawer } from '@/components/ui/Modal.jsx';
 import { Select, SearchInput } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
@@ -63,6 +63,7 @@ export default function ApplicationsPage() {
         eyebrow="Careers / Applications"
         title={<>Job <span className="text-italic-fraunces text-ultra">applications</span></>}
         subtitle="Review candidates. Every submission gets a decision within 5 business days."
+        actions={<NewBadge resourceType="application" />}
         tabs={
           <Tabs
             items={[

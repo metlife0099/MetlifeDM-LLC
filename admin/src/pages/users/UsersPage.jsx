@@ -51,7 +51,7 @@ export function UsersListPage() {
     { key: 'role', label: 'Role', render: (r) => <Badge tone={ADMIN_ROLES.includes(r.role) ? 'ultra' : 'outline'}>{ROLE_LABELS[r.role] || r.role}</Badge> },
     { key: 'orderCount', label: 'Orders', align: 'right', render: (r) => <span className="text-mono text-sm">{r.orderCount || 0}</span> },
     { key: 'lifetimeValue', label: 'LTV', align: 'right', render: (r) => <span className="text-mono text-sm num-plate">{formatMoney(r.lifetimeValue || 0)}</span> },
-    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.isActive === false ? 'suspended' : (r.status || 'active')} /> },
+    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.status || 'active'} /> },
     { key: 'createdAt', label: 'Joined', render: (r) => <span className="text-mono text-xs text-slate">{timeAgo(r.createdAt)}</span> },
   ];
 
@@ -137,7 +137,7 @@ export function UserDetailsPage() {
   if (isLoading) return <PageLoader label="Loading user" />;
   if (!user) return null;
 
-  const isSuspended = user.isActive === false || user.status === 'suspended';
+  const isSuspended = user.status === 'suspended';
 
   return (
     <>
@@ -169,10 +169,15 @@ export function UserDetailsPage() {
             <div className="grid gap-4 sm:grid-cols-2 text-sm">
               <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Email</div><a href={`mailto:${user.email}`} className="mt-1 block hover:text-ultra">{user.email}</a></div>
               {user.phone && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Phone</div><div className="mt-1">{user.phone}</div></div>}
-              {user.company && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Company</div><div className="mt-1">{user.company}</div></div>}
-              <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Email verified</div><div className="mt-1">{user.isEmailVerified ? 'Yes' : 'No'}</div></div>
-              <div><div className="text-mono text-xs text-slate uppercase tracking-widest">2FA</div><div className="mt-1">{user.twoFactorEnabled ? 'Enabled' : 'Disabled'}</div></div>
+              {user.company?.name && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Company</div><div className="mt-1">{user.company.name}</div></div>}
+              {user.company?.website && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Website</div><a href={user.company.website} target="_blank" rel="noopener noreferrer" className="mt-1 block hover:text-ultra truncate">{user.company.website}</a></div>}
+              {user.company?.industry && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Industry</div><div className="mt-1">{user.company.industry}</div></div>}
+              <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Email verified</div><div className="mt-1">{user.emailVerified ? 'Yes' : 'No'}</div></div>
+              <div><div className="text-mono text-xs text-slate uppercase tracking-widest">2FA</div><div className="mt-1">{user.twoFactor?.enabled ? 'Enabled' : 'Disabled'}</div></div>
               <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Last login</div><div className="mt-1 text-mono text-xs">{user.lastLoginAt ? timeAgo(user.lastLoginAt) : 'Never'}</div></div>
+              {isSuspended && user.suspensionReason && (
+                <div className="sm:col-span-2"><div className="text-mono text-xs text-slate uppercase tracking-widest">Suspension reason</div><div className="mt-1 text-danger">{user.suspensionReason}</div></div>
+              )}
             </div>
           </Card>
 

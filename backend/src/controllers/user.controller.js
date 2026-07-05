@@ -1,7 +1,7 @@
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
-import { User, Service } from '../models/index.js';
+import { User, Service, Order } from '../models/index.js';
 import { getPaginationOptions, paginate } from '../utils/pagination.js';
 import { deleteFromCloudinary, uploadToCloudinary } from '../config/cloudinary.js';
 
@@ -85,7 +85,7 @@ export const listUsers = asyncHandler(async (req, res) => {
     ];
   }
   const { items, meta } = await paginate(User, filter, opts, {
-    select: '-password -refreshTokens -twoFactor',
+    select: '-password -refreshTokens',
   });
   return ApiResponse.ok(res, items, 'Users', meta);
 });
@@ -93,7 +93,17 @@ export const listUsers = asyncHandler(async (req, res) => {
 export const getUserById = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id).populate('wishlistServices', 'title slug');
   if (!user) throw ApiError.notFound('User not found');
-  return ApiResponse.ok(res, { user }, 'User');
+
+  const [stats] = await Order.aggregate([
+    { $match: { customer: user._id, status: { $in: ['paid', 'in_progress', 'completed'] } } },
+    { $group: { _id: null, orderCount: { $sum: 1 }, lifetimeValue: { $sum: '$total' } } },
+  ]);
+
+  const payload = user.toObject();
+  payload.orderCount = stats?.orderCount || 0;
+  payload.lifetimeValue = stats?.lifetimeValue || 0;
+
+  return ApiResponse.ok(res, { user: payload }, 'User');
 });
 
 export const adminUpdateUser = asyncHandler(async (req, res) => {
