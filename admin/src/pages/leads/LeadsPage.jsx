@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Mail, Calendar, MailPlus, Trash2, Download, ExternalLink } from 'lucide-react';
+import { Mail, Calendar, MailPlus, Trash2, Download, ExternalLink, Plus, UserPlus, Upload, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Tabs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
 import { StatusPill, Card, NewBadge } from '@/components/ui/index.jsx';
-import { Drawer, ConfirmDialog } from '@/components/ui/Modal.jsx';
-import { Select, SearchInput, Textarea } from '@/components/form/index.jsx';
+import { Drawer, ConfirmDialog, Modal } from '@/components/ui/Modal.jsx';
+import { Select, SearchInput, Textarea, Input } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import { leadsApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
@@ -267,6 +267,7 @@ export function SubscribersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [deleteId, setDeleteId] = useState(null);
+  const [addOpen, setAddOpen] = useState(false);
   const debounced = useDebounce(search, 300);
 
   const { data, isLoading } = useQuery({
@@ -274,10 +275,12 @@ export function SubscribersPage() {
     queryFn: () => leadsApi.listSubscribers({ page, search: debounced, limit: 50 }),
   });
 
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['admin', 'subscribers'] });
+
   const remove = useMutation({
     mutationFn: (id) => leadsApi.deleteSubscriber(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin', 'subscribers'] });
+      invalidate();
       toast.success('Subscriber removed');
       setDeleteId(null);
     },
@@ -300,10 +303,14 @@ export function SubscribersPage() {
   };
 
   const columns = [
+    {
+      key: 'name', label: 'Name',
+      render: (r) => <span className="text-sm">{r.name || <span className="text-slate">—</span>}</span>,
+    },
     { key: 'email', label: 'Email', render: (r) => <span className="text-sm">{r.email}</span> },
     { key: 'source', label: 'Source', render: (r) => <span className="text-mono text-xs text-slate">{r.source || 'website'}</span> },
     { key: 'createdAt', label: 'Subscribed', render: (r) => <span className="text-mono text-xs text-slate">{timeAgo(r.createdAt)}</span> },
-    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.status || 'active'} /> },
+    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.isActive ? 'active' : 'unsubscribed'} /> },
     {
       key: 'actions', label: '', align: 'right',
       render: (row) => (
@@ -323,7 +330,8 @@ export function SubscribersPage() {
         actions={
           <>
             <NewBadge resourceType="subscriber" />
-            <Button onClick={exportCsv} icon={Download}>Export CSV</Button>
+            <Button variant="ghost" onClick={exportCsv} icon={Download}>Export CSV</Button>
+            <Button onClick={() => setAddOpen(true)} icon={UserPlus}>Add subscribers</Button>
           </>
         }
       />
@@ -336,6 +344,223 @@ export function SubscribersPage() {
         emptyIcon={MailPlus} emptyTitle="No subscribers yet"
       />
       <ConfirmDialog open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={() => remove.mutate(deleteId)} loading={remove.isPending} title="Remove this subscriber?" confirmLabel="Remove" variant="danger" />
+      <AddSubscribersModal open={addOpen} onClose={() => setAddOpen(false)} onDone={invalidate} />
     </>
+  );
+}
+
+/* ============================================================
+ * ADD SUBSCRIBERS — single / bulk / CSV+Excel import
+ * ============================================================ */
+function AddSubscribersModal({ open, onClose, onDone }) {
+  const [tab, setTab] = useState('single');
+
+  // Single
+  const [single, setSingle] = useState({ name: '', email: '' });
+
+  // Bulk (repeatable rows)
+  const [rows, setRows] = useState([{ name: '', email: '' }]);
+
+  // Import
+  const [file, setFile] = useState(null);
+  const [importResult, setImportResult] = useState(null);
+
+  const reset = () => {
+    setSingle({ name: '', email: '' });
+    setRows([{ name: '', email: '' }]);
+    setFile(null);
+    setImportResult(null);
+    setTab('single');
+  };
+
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
+  const addSingle = useMutation({
+    mutationFn: () => leadsApi.createSubscriber(single),
+    onSuccess: () => {
+      toast.success('Subscriber added');
+      onDone();
+      handleClose();
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+
+  const addBulk = useMutation({
+    mutationFn: () => leadsApi.createSubscribersBulk(rows.filter((r) => r.email.trim())),
+    onSuccess: (r) => {
+      toast.success(`${r.created} added, ${r.skipped} skipped`);
+      onDone();
+      handleClose();
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+
+  const importFile = useMutation({
+    mutationFn: () => {
+      const fd = new FormData();
+      fd.append('file', file);
+      return leadsApi.importSubscribers(fd);
+    },
+    onSuccess: (r) => {
+      setImportResult(r);
+      onDone();
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+
+  return (
+    <Modal
+      open={open}
+      onClose={handleClose}
+      title="Add subscribers"
+      description="Add one at a time, paste several, or import a CSV/Excel file."
+      size="lg"
+    >
+      <Tabs
+        items={[
+          { value: 'single', label: 'Single' },
+          { value: 'bulk', label: 'Multiple' },
+          { value: 'import', label: 'Import file' },
+        ]}
+        active={tab}
+        onChange={(v) => { setTab(v); setImportResult(null); }}
+        className="border-b border-hairline mb-6"
+      />
+
+      {tab === 'single' && (
+        <div className="space-y-4">
+          <Input
+            label="Full name" placeholder="Jane Doe"
+            value={single.name}
+            onChange={(e) => setSingle((s) => ({ ...s, name: e.target.value }))}
+          />
+          <Input
+            label="Email" type="email" required placeholder="jane@company.com"
+            value={single.email}
+            onChange={(e) => setSingle((s) => ({ ...s, email: e.target.value }))}
+          />
+          <div className="flex justify-end pt-2">
+            <Button
+              icon={UserPlus}
+              disabled={!single.email.trim()}
+              loading={addSingle.isPending}
+              onClick={() => addSingle.mutate()}
+            >
+              Add subscriber
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {tab === 'bulk' && (
+        <div className="space-y-4">
+          <div className="space-y-2 max-h-80 overflow-y-auto">
+            {rows.map((row, i) => (
+              <div key={i} className="grid gap-2 grid-cols-[1fr_1fr_auto] items-center">
+                <input
+                  className="px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none"
+                  placeholder="Full name"
+                  value={row.name}
+                  onChange={(e) => setRows((r) => r.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
+                />
+                <input
+                  className="px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none"
+                  placeholder="email@company.com"
+                  value={row.email}
+                  onChange={(e) => setRows((r) => r.map((x, j) => (j === i ? { ...x, email: e.target.value } : x)))}
+                />
+                <button
+                  type="button"
+                  onClick={() => setRows((r) => r.filter((_, j) => j !== i))}
+                  className="text-slate hover:text-danger p-2"
+                  disabled={rows.length === 1}
+                >
+                  <X size={13} />
+                </button>
+              </div>
+            ))}
+          </div>
+          <Button
+            type="button" variant="ghost" size="xs" icon={Plus}
+            onClick={() => setRows((r) => [...r, { name: '', email: '' }])}
+          >
+            Add row
+          </Button>
+          <div className="flex justify-end pt-2 border-t border-hairline">
+            <Button
+              icon={UserPlus}
+              disabled={!rows.some((r) => r.email.trim())}
+              loading={addBulk.isPending}
+              onClick={() => addBulk.mutate()}
+            >
+              Add {rows.filter((r) => r.email.trim()).length || ''} subscribers
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {tab === 'import' && (
+        <div className="space-y-4">
+          {!importResult ? (
+            <>
+              <div className="border border-dashed border-hairline-strong p-8 text-center">
+                <input
+                  type="file"
+                  accept=".csv,.xlsx,.xls"
+                  id="subscriber-import-file"
+                  hidden
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                />
+                <label htmlFor="subscriber-import-file" className="cursor-pointer">
+                  <Upload size={22} strokeWidth={1.25} className="text-slate mx-auto mb-3" />
+                  <div className="text-sm">
+                    {file ? file.name : 'Click to choose a CSV or Excel file'}
+                  </div>
+                  <div className="text-mono text-xs text-slate mt-2">
+                    Needs a "name"/"full name" column and an "email" column
+                  </div>
+                </label>
+              </div>
+              <div className="flex justify-end">
+                <Button
+                  icon={Upload}
+                  disabled={!file}
+                  loading={importFile.isPending}
+                  onClick={() => importFile.mutate()}
+                >
+                  Import
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-4">
+              <div className="p-4 bg-ivory-soft border border-hairline">
+                <div className="text-sm">
+                  <span className="text-success font-medium">{importResult.created} added</span>
+                  {' · '}
+                  <span className="text-slate">{importResult.skipped} skipped</span>
+                </div>
+              </div>
+              {importResult.skippedDetails?.length > 0 && (
+                <div className="max-h-48 overflow-y-auto text-xs space-y-1">
+                  {importResult.skippedDetails.map((s, i) => (
+                    <div key={i} className="flex justify-between text-slate border-b border-hairline py-1">
+                      <span>{s.email}</span>
+                      <span>{s.reason}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex justify-end">
+                <Button onClick={handleClose}>Done</Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </Modal>
   );
 }

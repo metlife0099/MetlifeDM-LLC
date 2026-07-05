@@ -86,6 +86,12 @@ export const leadsApi = {
   updateConsultation: (id, data) => apiClient.put(E.leads.updateConsultation(id), data).then(unwrap),
   deleteConsultation: (id) => apiClient.delete(E.leads.deleteConsultation(id)).then(unwrap),
   listSubscribers: (params) => apiClient.get(E.leads.subscribers, { params }).then(unwrapMeta),
+  createSubscriber: (data) => apiClient.post(E.leads.subscribers, data).then(unwrap),
+  createSubscribersBulk: (subscribers) => apiClient.post(E.leads.subscribersBulk, { subscribers }).then(unwrap),
+  importSubscribers: (formData) =>
+    apiClient
+      .post(E.leads.subscribersImport, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+      .then(unwrap),
   deleteSubscriber: (id) => apiClient.delete(E.leads.subscriber(id)).then(unwrap),
   exportSubscribers: () => apiClient.get(E.leads.exportSubscribers, { responseType: 'blob' }),
 };

@@ -56,7 +56,7 @@ export const consultationSchema = z.object({
 /* Newsletter */
 export const newsletterSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
-  name: z.string().optional(),
+  name: z.string().trim().min(2, 'Full name is required'),
   interests: z.array(z.string()).optional(),
   source: z.string().optional(),
 });

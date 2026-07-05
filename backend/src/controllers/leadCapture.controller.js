@@ -4,7 +4,8 @@ import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
 import { Contact, Consultation, Newsletter, Career, JobApplication } from '../models/index.js';
 import { getPaginationOptions, paginate } from '../utils/pagination.js';
-import { CONSULTATION_STATUS } from '../utils/constants.js';
+import { CONSULTATION_STATUS, REGEX } from '../utils/constants.js';
+import * as XLSX from 'xlsx';
 import emailService from '../services/email.service.js';
 import logger from '../config/logger.js';
 import { notifyAdmins } from './notification.controller.js';
@@ -163,6 +164,97 @@ export const newsletter = {
     await Newsletter.findByIdAndDelete(req.params.id);
     return ApiResponse.ok(res, null, 'Removed');
   }),
+
+  /* Admin: add a single subscriber directly */
+  createOne: asyncHandler(async (req, res) => {
+    const email = (req.body.email || '').trim().toLowerCase();
+    const name = (req.body.name || '').trim();
+    if (!email || !REGEX.EMAIL.test(email)) throw ApiError.badRequest('A valid email is required');
+
+    const existing = await Newsletter.findOne({ email });
+    if (existing) {
+      if (existing.isActive) throw ApiError.conflict('This email is already subscribed');
+      existing.isActive = true;
+      existing.unsubscribedAt = undefined;
+      if (name) existing.name = name;
+      await existing.save();
+      return ApiResponse.ok(res, { subscriber: existing }, 'Subscriber reactivated');
+    }
+
+    const subscriber = await Newsletter.create({
+      email,
+      name: name || undefined,
+      source: 'admin',
+      isVerified: true,
+    });
+    emailService.newsletterWelcome(email).catch(() => {});
+    return ApiResponse.created(res, { subscriber }, 'Subscriber added');
+  }),
+
+  /* Admin: add multiple subscribers at once (pasted rows) */
+  createBulk: asyncHandler(async (req, res) => {
+    const rows = Array.isArray(req.body.subscribers) ? req.body.subscribers : [];
+    if (!rows.length) throw ApiError.badRequest('No subscribers provided');
+    const summary = await bulkUpsertSubscribers(rows, 'admin-bulk');
+    return ApiResponse.created(res, summary, `${summary.created} added, ${summary.skipped} skipped`);
+  }),
+
+  /* Admin: import subscribers from an uploaded CSV/Excel file */
+  importFile: asyncHandler(async (req, res) => {
+    if (!req.file) throw ApiError.badRequest('File required');
+
+    let rows;
+    try {
+      const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+    } catch {
+      throw ApiError.badRequest('Could not read that file — please upload a valid CSV or Excel file');
+    }
+
+    const NAME_KEYS = ['name', 'full name', 'fullname', 'full_name'];
+    const EMAIL_KEYS = ['email', 'email address', 'gmail', 'e-mail'];
+    const pick = (row, keys) => {
+      const foundKey = Object.keys(row).find((k) => keys.includes(k.trim().toLowerCase()));
+      return foundKey ? String(row[foundKey]).trim() : '';
+    };
+
+    const normalized = rows.map((row) => ({
+      name: pick(row, NAME_KEYS),
+      email: pick(row, EMAIL_KEYS),
+    }));
+
+    const summary = await bulkUpsertSubscribers(normalized, 'admin-import');
+    return ApiResponse.created(res, summary, `${summary.created} added, ${summary.skipped} skipped`);
+  }),
+};
+
+/**
+ * Shared bulk-add logic for admin "add multiple" and CSV/Excel import.
+ * Silent by design (no welcome emails) — importing an existing list
+ * shouldn't blast everyone on it.
+ */
+const bulkUpsertSubscribers = async (rows, source) => {
+  const created = [];
+  const skipped = [];
+
+  for (const row of rows) {
+    const email = (row.email || '').trim().toLowerCase();
+    const name = (row.name || '').trim();
+    if (!email || !REGEX.EMAIL.test(email)) {
+      skipped.push({ email: row.email || '(blank)', reason: 'Invalid or missing email' });
+      continue;
+    }
+    const existing = await Newsletter.findOne({ email });
+    if (existing) {
+      skipped.push({ email, reason: existing.isActive ? 'Already subscribed' : 'Previously unsubscribed' });
+      continue;
+    }
+    const doc = await Newsletter.create({ email, name: name || undefined, source, isVerified: true });
+    created.push(doc);
+  }
+
+  return { created: created.length, skipped: skipped.length, skippedDetails: skipped.slice(0, 20) };
 };
 
 /* ========== CAREERS ========== */

@@ -34,7 +34,7 @@ import * as adminPanel from '../controllers/adminPanel.controller.js';
 
 // ————— middleware —————
 import { requireAuth, requireAdmin } from '../middleware/auth.middleware.js';
-import { imageUpload } from '../middleware/upload.middleware.js';
+import { imageUpload, spreadsheetUpload } from '../middleware/upload.middleware.js';
 
 const router = Router();
 
@@ -166,6 +166,9 @@ router.put('/leads/consultations/:id', consultationCtrl.update);
 router.patch('/leads/consultations/:id', consultationCtrl.update);
 
 router.get('/leads/subscribers', newsletterCtrl.list);
+router.post('/leads/subscribers', newsletterCtrl.createOne);
+router.post('/leads/subscribers/bulk', newsletterCtrl.createBulk);
+router.post('/leads/subscribers/import', spreadsheetUpload.single('file'), newsletterCtrl.importFile);
 router.delete('/leads/subscribers/:id', newsletterCtrl.remove);
 router.get('/leads/subscribers/export', adminPanel.subscribersExport);
 

@@ -114,6 +114,8 @@ export const ENDPOINTS = {
     deleteConsultation: (id) => `/admin/leads/consultations/${id}`,
     subscribers: '/admin/leads/subscribers',
     subscriber: (id) => `/admin/leads/subscribers/${id}`,
+    subscribersBulk: '/admin/leads/subscribers/bulk',
+    subscribersImport: '/admin/leads/subscribers/import',
     exportSubscribers: '/admin/leads/subscribers/export',
   },
 

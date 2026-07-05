@@ -60,3 +60,26 @@ export const memoryUpload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: buildFilter(IMAGE_MIME),
 });
+
+// CSV/Excel import (subscribers, etc.) — parsed in-memory, never persisted
+// as a file. Browsers are inconsistent about the mimetype they report for
+// .csv (text/csv, application/vnd.ms-excel, or even application/octet-stream
+// depending on OS/Excel version), so fall back to checking the extension.
+const SPREADSHEET_MIME = [
+  'text/csv',
+  'application/csv',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+];
+export const spreadsheetUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const ext = file.originalname.split('.').pop().toLowerCase();
+    if (SPREADSHEET_MIME.includes(file.mimetype) || ['csv', 'xlsx', 'xls'].includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(ApiError.badRequest(`Unsupported file type: ${file.mimetype}`), false);
+    }
+  },
+});

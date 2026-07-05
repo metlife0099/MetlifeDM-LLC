@@ -60,13 +60,24 @@ export default function Footer() {
               <span className="text-italic-fraunces text-ultra-soft">every Tuesday.</span>
             </h2>
           </div>
-          <form onSubmit={handleSubmit(mutation.mutate)} className="flex gap-3">
-            <input
-              type="email"
-              placeholder="you@company.com"
-              {...register('email', { required: true, pattern: /^\S+@\S+\.\S+$/ })}
-              className="flex-1 bg-transparent border-b border-ivory/25 pb-3 text-lg placeholder:text-ivory/30 focus:border-ultra-soft focus:outline-none"
-            />
+          <form onSubmit={handleSubmit(mutation.mutate)} className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <input
+                type="text"
+                placeholder="Full name"
+                {...register('name', { required: true, minLength: 2 })}
+                className="flex-1 bg-transparent border-b border-ivory/25 pb-3 text-lg placeholder:text-ivory/30 focus:border-ultra-soft focus:outline-none"
+              />
+              <input
+                type="email"
+                placeholder="you@company.com"
+                {...register('email', { required: true, pattern: /^\S+@\S+\.\S+$/ })}
+                className="flex-1 bg-transparent border-b border-ivory/25 pb-3 text-lg placeholder:text-ivory/30 focus:border-ultra-soft focus:outline-none"
+              />
+            </div>
+            {(errors.name || errors.email) && (
+              <p className="text-mono text-xs text-ultra-soft">Enter your full name and a valid email.</p>
+            )}
             <Button
               type="submit"
               variant="inverse"
