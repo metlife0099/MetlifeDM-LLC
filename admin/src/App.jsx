@@ -84,6 +84,12 @@ const TicketsListModule = lazy(() =>
 const TicketDetailsModule = lazy(() =>
   import('@/pages/support/TicketsPage.jsx').then((m) => ({ default: m.TicketDetailsPage }))
 );
+const ChatsListModule = lazy(() =>
+  import('@/pages/support/ChatsPage.jsx').then((m) => ({ default: m.ChatsListPage }))
+);
+const ChatDetailModule = lazy(() =>
+  import('@/pages/support/ChatsPage.jsx').then((m) => ({ default: m.ChatDetailPage }))
+);
 
 const UsersListModule = lazy(() =>
   import('@/pages/users/UsersPage.jsx').then((m) => ({ default: m.UsersListPage }))
@@ -175,6 +181,8 @@ export default function App() {
           <Route path="/commerce/coupons" element={withSuspense(CouponsModule, 'Loading coupons')} />
 
           {/* Support */}
+          <Route path="/support/chat" element={withSuspense(ChatsListModule, 'Loading chat')} />
+          <Route path="/support/chat/:id" element={withSuspense(ChatDetailModule, 'Loading conversation')} />
           <Route path="/support/tickets" element={withSuspense(TicketsListModule, 'Loading tickets')} />
           <Route path="/support/tickets/:id" element={withSuspense(TicketDetailsModule, 'Loading ticket')} />
 

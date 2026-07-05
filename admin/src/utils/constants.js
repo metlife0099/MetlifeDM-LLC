@@ -76,6 +76,7 @@ export const NAV_SECTIONS = [
   {
     section: 'Operations',
     items: [
+      { label: 'Live chat', href: '/support/chat', icon: 'MessageCircle' },
       { label: 'Support tickets', href: '/support/tickets', icon: 'LifeBuoy' },
       { label: 'Users', href: '/users', icon: 'Users' },
       { label: 'Media library', href: '/media', icon: 'Image' },
@@ -102,6 +103,7 @@ export const NAV_NOTIFICATION_TYPES = {
   '/leads/subscribers': 'subscriber',
   '/careers/applications': 'application',
   '/support/tickets': 'ticket',
+  '/support/chat': 'chat',
   '/users': 'user',
 };
 

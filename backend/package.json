@@ -17,6 +17,7 @@
     "test": "node --test"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@sendinblue/client": "^3.3.1",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.10.0",
@@ -39,7 +40,6 @@
     "nanoid": "^5.0.9",
     "node-cron": "^4.5.0",
     "nodemailer": "^6.9.16",
-    "openai": "^4.77.3",
     "otp-generator": "^4.0.1",
     "rate-limit-redis": "^4.2.0",
     "sib-api-v3-sdk": "^8.5.0",

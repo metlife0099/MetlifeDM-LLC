@@ -7,7 +7,7 @@ import { generateBotReply, categorizeChat, suggestAdminReplies } from '../servic
 import { CHAT_STATUS } from '../utils/constants.js';
 import { emitToChat, emitToAdmins, emitToUser } from '../sockets/index.js';
 import emailService from '../services/email.service.js';
-import { notify } from './notification.controller.js';
+import { notify, notifyAdmins } from './notification.controller.js';
 
 /* POST /chat/start — create a new conversation (guest or authed) */
 export const startChat = asyncHandler(async (req, res) => {
@@ -105,6 +105,14 @@ export const sendMessage = asyncHandler(async (req, res) => {
       }
 
       emitToAdmins('chat:handoff', { chat, message: botReply });
+      notifyAdmins({
+        type: 'chat',
+        title: 'Chat needs an agent',
+        message: `${chat.guestName || 'A visitor'} — ${meta.subject || 'AI handed off this conversation'}`,
+        resourceType: 'chat',
+        resourceId: chat._id,
+        actionUrl: `/support/chat/${chat._id}`,
+      }).catch(() => {});
     }
     await chat.save();
 
@@ -130,6 +138,15 @@ export const listMyChats = asyncHandler(async (req, res) => {
     opts
   );
   return ApiResponse.ok(res, items, 'My chats', meta);
+});
+
+/* Admin: get a single chat's details */
+export const getChatAdmin = asyncHandler(async (req, res) => {
+  const chat = await Chat.findById(req.params.id)
+    .populate('user', 'firstName lastName email')
+    .populate('assignedAgent', 'firstName lastName email');
+  if (!chat) throw ApiError.notFound('Chat not found');
+  return ApiResponse.ok(res, { chat }, 'Chat');
 });
 
 /* Admin: list all chats */

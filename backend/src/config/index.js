@@ -69,10 +69,10 @@ const envSchema = z.object({
   MAIL_FROM_ADDRESS: z.string().email(),
   MAIL_REPLY_TO: z.string().email(),
 
-  OPENAI_API_KEY: z.string().optional(),
-  OPENAI_MODEL: z.string().default('gpt-4o-mini'),
-  OPENAI_MAX_TOKENS: z.coerce.number().default(800),
-  OPENAI_TEMPERATURE: z.coerce.number().default(0.7),
+  GEMINI_API_KEY: z.string().optional(),
+  GEMINI_MODEL: z.string().default('gemini-2.0-flash'),
+  GEMINI_MAX_TOKENS: z.coerce.number().default(800),
+  GEMINI_TEMPERATURE: z.coerce.number().default(0.7),
   CHATBOT_CONFIDENCE_THRESHOLD: z.coerce.number().default(0.6),
 
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(900000),
@@ -178,11 +178,11 @@ export const config = {
     replyTo: env.MAIL_REPLY_TO,
   },
 
-  openai: {
-    apiKey: env.OPENAI_API_KEY,
-    model: env.OPENAI_MODEL,
-    maxTokens: env.OPENAI_MAX_TOKENS,
-    temperature: env.OPENAI_TEMPERATURE,
+  gemini: {
+    apiKey: env.GEMINI_API_KEY,
+    model: env.GEMINI_MODEL,
+    maxTokens: env.GEMINI_MAX_TOKENS,
+    temperature: env.GEMINI_TEMPERATURE,
     confidenceThreshold: env.CHATBOT_CONFIDENCE_THRESHOLD,
   },
 

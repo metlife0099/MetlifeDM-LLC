@@ -117,6 +117,17 @@ export const ticketsApi = {
   addNote: (id, note) => apiClient.post(E.tickets.note(id), { note }).then(unwrap),
 };
 
+/* ————— LIVE CHAT ————— */
+export const chatApi = {
+  list: (params) => apiClient.get(E.chat.listAdmin, { params }).then(unwrapMeta),
+  get: (id) => apiClient.get(E.chat.detail(id)).then(unwrap),
+  messages: (id) => apiClient.get(E.chat.messages(id)).then(unwrapMeta),
+  send: (id, content) => apiClient.post(E.chat.send(id), { content }).then(unwrap),
+  assign: (id) => apiClient.post(E.chat.assign(id)).then(unwrap),
+  resolve: (id) => apiClient.post(E.chat.resolve(id)).then(unwrap),
+  suggestions: (id) => apiClient.get(E.chat.suggestions(id)).then(unwrap),
+};
+
 /* ————— USERS ————— */
 export const usersApi = {
   list: (params) => apiClient.get(E.users.list, { params }).then(unwrapMeta),

@@ -147,6 +147,17 @@ export const ENDPOINTS = {
     note: (id) => `/admin/tickets/${id}/note`,
   },
 
+  /* ————— Live chat ————— */
+  chat: {
+    listAdmin: '/chat/admin',
+    detail: (id) => `/chat/${id}`,
+    messages: (id) => `/chat/${id}/messages`,
+    send: (id) => `/chat/${id}/messages`,
+    assign: (id) => `/chat/${id}/assign`,
+    resolve: (id) => `/chat/${id}/resolve`,
+    suggestions: (id) => `/chat/${id}/suggestions`,
+  },
+
   /* ————— Users ————— */
   users: {
     list: '/admin/users',
