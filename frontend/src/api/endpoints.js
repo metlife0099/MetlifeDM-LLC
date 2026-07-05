@@ -82,6 +82,7 @@ export const ENDPOINTS = {
     create: '/orders',
     mine: '/orders/mine',
     byId: (id) => `/orders/${id}`,
+    confirmPayment: (id) => `/orders/${id}/confirm-payment`,
     cancel: (id) => `/orders/${id}/cancel`,
   },
   payments: {

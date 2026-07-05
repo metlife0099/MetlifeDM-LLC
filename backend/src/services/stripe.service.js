@@ -99,11 +99,21 @@ export const refundPayment = async ({ paymentId, amount, reason, actor }) => {
  * Webhook event router
  * ============================================================ */
 
-const handlePaymentSucceeded = async (intent) => {
+/**
+ * Applies the "payment succeeded" side effects for a PaymentIntent — creates
+ * the Payment record, marks the order paid, increments coupon usage, sends
+ * receipts, notifies the customer. Idempotent: safe to call from both the
+ * webhook AND the synchronous confirm-on-return path (see confirmAndSyncPayment
+ * below) without double-processing, since either one may arrive first.
+ */
+export const handlePaymentSucceeded = async (intent) => {
+  const already = await Payment.findOne({ stripePaymentIntentId: intent.id });
+  if (already) return already;
+
   const orderId = intent.metadata?.orderId;
-  if (!orderId) return;
+  if (!orderId) return null;
   const order = await Order.findById(orderId).populate('customer');
-  if (!order) return;
+  if (!order) return null;
 
   const charge = intent.latest_charge
     ? await stripe.charges.retrieve(intent.latest_charge)
@@ -157,17 +167,48 @@ const handlePaymentSucceeded = async (intent) => {
   }).catch(() => {});
 
   logger.info(`💳  Payment succeeded → order ${order.orderNumber}`);
+  return payment;
+};
+
+/**
+ * Synchronous fallback for when the app can't rely on the webhook alone
+ * (e.g. no webhook configured yet, or Stripe hasn't delivered it this
+ * instant). Called right after the client confirms payment in the browser
+ * and again defensively on the order-success page. Re-fetches the
+ * PaymentIntent from Stripe directly — the authoritative source — rather
+ * than trusting anything the client claims, and reuses the same idempotent
+ * handler the webhook uses so there's no risk of double-processing.
+ */
+export const confirmAndSyncPayment = async (order) => {
+  if (!order.stripePaymentIntentId) return order;
+
+  const intent = await stripe.paymentIntents.retrieve(order.stripePaymentIntentId);
+  if (intent.metadata?.orderId !== order._id.toString()) {
+    throw ApiError.badRequest('Payment intent does not match this order');
+  }
+
+  if (intent.status === 'succeeded') {
+    await handlePaymentSucceeded(intent);
+    return Order.findById(order._id).populate('payment').populate('customer', 'firstName lastName email phone');
+  }
+  if (intent.status === 'requires_payment_method' || intent.status === 'canceled') {
+    await handlePaymentFailed(intent);
+  }
+  return order;
 };
 
 const handlePaymentFailed = async (intent) => {
+  const already = await Payment.findOne({ stripePaymentIntentId: intent.id });
+  if (already) return already;
+
   const orderId = intent.metadata?.orderId;
-  if (!orderId) return;
+  if (!orderId) return null;
   const order = await Order.findById(orderId);
-  if (!order) return;
+  if (!order) return null;
   order.pushStatus(ORDER_STATUS.FAILED, intent.last_payment_error?.message || 'Payment failed');
   await order.save();
 
-  await Payment.create({
+  return Payment.create({
     order: order._id,
     customer: order.customer,
     amount: intent.amount / 100,

@@ -3,7 +3,7 @@ import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
 import { Order, Service, Coupon, User } from '../models/index.js';
 import { getPaginationOptions, paginate } from '../utils/pagination.js';
-import { createPaymentIntent } from '../services/stripe.service.js';
+import { createPaymentIntent, confirmAndSyncPayment } from '../services/stripe.service.js';
 import { ORDER_STATUS } from '../utils/constants.js';
 import { notifyAdmins } from '../controllers/notification.controller.js';
 
@@ -109,6 +109,19 @@ export const listMyOrders = asyncHandler(async (req, res) => {
     populate: [{ path: 'payment', select: 'invoiceNumber invoiceUrl status paidAt' }],
   });
   return ApiResponse.ok(res, items, 'My orders', meta);
+});
+
+/* POST /orders/:id/confirm-payment — synchronous fallback to the webhook.
+ * Called right after the client confirms payment in the browser, so the
+ * order shows "paid" immediately instead of waiting on (or depending
+ * entirely on) the webhook having a valid, correctly-configured secret. */
+export const confirmPayment = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) throw ApiError.notFound('Order not found');
+  if (order.customer.toString() !== req.user._id.toString()) throw ApiError.forbidden();
+
+  const updated = await confirmAndSyncPayment(order);
+  return ApiResponse.ok(res, { order: updated }, 'Payment status synced');
 });
 
 /* GET /orders/:id (self or admin) */

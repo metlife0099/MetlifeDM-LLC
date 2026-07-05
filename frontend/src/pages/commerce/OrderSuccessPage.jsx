@@ -1,5 +1,6 @@
+import { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CheckCircle2, ArrowUpRight, Receipt } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { commerceApi } from '@/api/index.js';
@@ -12,6 +13,18 @@ import { formatMoney, formatDate } from '@/utils/format.js';
 export default function OrderSuccessPage() {
   const [search] = useSearchParams();
   const orderId = search.get('order');
+  const queryClient = useQueryClient();
+
+  // Some payment methods (e.g. 3D Secure) redirect the browser back here
+  // directly instead of returning through CheckoutPage's own confirm call,
+  // so sync payment status ourselves too rather than relying solely on the
+  // webhook. Idempotent on the backend, so safe to call unconditionally.
+  useEffect(() => {
+    if (!orderId) return;
+    commerceApi.confirmPayment(orderId)
+      .catch(() => {})
+      .finally(() => queryClient.invalidateQueries({ queryKey: ['order', orderId] }));
+  }, [orderId, queryClient]);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['order', orderId],

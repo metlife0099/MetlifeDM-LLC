@@ -48,6 +48,11 @@ const PaymentForm = ({ orderId }) => {
       toast.error(error.message);
       setSubmitting(false);
     } else if (paymentIntent?.status === 'succeeded') {
+      // Sync the order to "paid" ourselves rather than waiting on the
+      // webhook — it may be slow, misconfigured, or (in local dev) not
+      // reachable at all. Non-fatal: the webhook is still the durable
+      // fallback if this call fails for some reason.
+      await commerceApi.confirmPayment(orderId).catch(() => {});
       dispatch(clearCart());
       navigate(`/order-success?order=${orderId}`);
     }

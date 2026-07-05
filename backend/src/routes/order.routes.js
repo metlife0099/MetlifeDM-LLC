@@ -12,6 +12,7 @@ router.use(requireAuth);
 router.post('/', validate(v.createOrderSchema), c.createOrder);
 router.get('/mine', c.listMyOrders);
 router.get('/:id', c.getOrder);
+router.post('/:id/confirm-payment', c.confirmPayment);
 router.post('/:id/cancel', c.cancelOrder);
 
 // Admin

@@ -81,6 +81,7 @@ export const commerceApi = {
   createOrder: (data) => apiClient.post(E.orders.create, data).then(unwrap),
   listMyOrders: (params) => apiClient.get(E.orders.mine, { params }).then(unwrapMeta),
   getOrder: (id) => apiClient.get(E.orders.byId(id)).then(unwrap),
+  confirmPayment: (id) => apiClient.post(E.orders.confirmPayment(id)).then(unwrap),
   cancelOrder: (id) => apiClient.post(E.orders.cancel(id)).then(unwrap),
   listMyPayments: (params) => apiClient.get(E.payments.mine, { params }).then(unwrapMeta),
   getPayment: (id) => apiClient.get(E.payments.byId(id)).then(unwrap),
