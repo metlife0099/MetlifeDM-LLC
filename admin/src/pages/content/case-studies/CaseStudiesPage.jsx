@@ -10,7 +10,6 @@ import { PageHeader, FilterBar, Breadcrumbs } from '@/components/ui/PageHeader.j
 import DataTable from '@/components/ui/DataTable.jsx';
 import { StatusPill, Card, PageLoader } from '@/components/ui/index.jsx';
 import { Input, Textarea, Select, Switch, SearchInput, ImageUpload, MultiSelect } from '@/components/form/index.jsx';
-import RichEditor from '@/components/ui/RichEditor.jsx';
 import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import Button from '@/components/ui/Button.jsx';
 import { caseStudiesApi, servicesApi } from '@/api/index.js';
@@ -102,17 +101,17 @@ export function CaseStudiesListPage() {
 const editSchema = z.object({
   title: z.string().min(1, 'Required'),
   slug: z.string().min(1, 'Required'),
-  client: z.string().optional(),
+  client: z.string().min(1, 'Required'),
   industry: z.string().optional(),
   tagline: z.string().optional(),
   duration: z.string().optional(),
   year: z.coerce.number().optional(),
   isPublished: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
-  challenge: z.string().optional(),
+  challenge: z.string().min(1, 'Required'),
   approach: z.string().optional(),
-  solution: z.string().optional(),
-  result: z.string().optional(),
+  solution: z.string().min(1, 'Required'),
+  result: z.string().min(1, 'Required'),
   services: z.array(z.string()).optional(),
   kpis: z.array(z.object({ label: z.string(), before: z.string().optional(), after: z.string().optional(), change: z.string().optional(), icon: z.string().optional() })).optional(),
   testimonial: z.object({ quote: z.string().optional(), author: z.string().optional(), role: z.string().optional() }).optional(),
@@ -206,7 +205,7 @@ export function CaseStudyEditPage() {
               <Input label="Tagline" placeholder="Short one-liner shown in listings" {...register('tagline')} />
               <div className="grid gap-4 sm:grid-cols-2">
                 <Input label="Slug" required prefix="/case-studies/" {...register('slug')} error={errors.slug?.message} />
-                <Input label="Client" {...register('client')} />
+                <Input label="Client" required {...register('client')} error={errors.client?.message} />
                 <Input label="Industry" {...register('industry')} />
                 <Input label="Duration" placeholder="e.g. 6 months" {...register('duration')} />
                 <Input label="Year" type="number" {...register('year')} />
@@ -228,10 +227,10 @@ export function CaseStudyEditPage() {
           <Card>
             <div className="text-eyebrow mb-4">03 / Narrative</div>
             <div className="space-y-4">
-              <Textarea label="Challenge" rows={4} {...register('challenge')} />
+              <Textarea label="Challenge" required rows={4} {...register('challenge')} error={errors.challenge?.message} />
               <Textarea label="Approach" rows={4} {...register('approach')} />
-              <Textarea label="Solution" rows={4} {...register('solution')} />
-              <Textarea label="Result" rows={4} {...register('result')} />
+              <Textarea label="Solution" required rows={4} {...register('solution')} error={errors.solution?.message} />
+              <Textarea label="Result" required rows={4} {...register('result')} error={errors.result?.message} />
             </div>
           </Card>
 

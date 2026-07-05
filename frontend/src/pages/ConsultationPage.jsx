@@ -12,14 +12,14 @@ import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { leadsApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
-import { BUDGET_OPTIONS, SERVICE_CATEGORIES } from '@/utils/constants.js';
+import { BUDGET_OPTIONS, TIMELINE_OPTIONS, SERVICE_CATEGORIES } from '@/utils/constants.js';
 import { cn, formatDate } from '@/utils/format.js';
 
 const consultationSchema = z.object({
   firstName: z.string().min(1, 'Required'),
   lastName: z.string().min(1, 'Required'),
   email: z.string().email('Enter a valid email'),
-  phone: z.string().optional(),
+  phone: z.string().min(7, 'Enter a valid phone number'),
   company: z.string().optional(),
   website: z.string().url('Enter a valid URL').optional().or(z.literal('')),
   role: z.string().optional(),
@@ -31,7 +31,7 @@ const consultationSchema = z.object({
   servicesInterested: z.array(z.string()).optional(),
   projectGoals: z.string().min(10, 'Tell us a bit about your goals'),
   budget: z.string().optional(),
-  urgency: z.enum(['low', 'medium', 'high']).default('medium'),
+  urgency: z.enum(['immediate', '1-3_months', '3-6_months', 'exploring']).default('exploring'),
   additionalNotes: z.string().optional(),
   agreeTerms: z.literal(true, { errorMap: () => ({ message: 'Please accept the terms' }) }),
 });
@@ -82,7 +82,7 @@ export default function ConsultationPage() {
       timezone: 'America/New_York',
       durationMinutes: 30,
       meetingType: 'google_meet',
-      urgency: 'medium',
+      urgency: 'exploring',
       servicesInterested: [],
     },
   });
@@ -181,7 +181,7 @@ export default function ConsultationPage() {
                   </div>
                   <div className="grid gap-6 md:grid-cols-2">
                     <Input label="Work email *" type="email" {...register('email')} error={errors.email?.message} />
-                    <Input label="Phone" type="tel" {...register('phone')} error={errors.phone?.message} />
+                    <Input label="Phone *" type="tel" {...register('phone')} error={errors.phone?.message} />
                   </div>
                   <div className="grid gap-6 md:grid-cols-2">
                     <Input label="Company" {...register('company')} error={errors.company?.message} />
@@ -230,6 +230,13 @@ export default function ConsultationPage() {
                     {...register('budget')}
                     error={errors.budget?.message}
                     options={[{ value: '', label: 'Select…' }, ...BUDGET_OPTIONS]}
+                  />
+
+                  <Select
+                    label="How soon are you looking to start?"
+                    {...register('urgency')}
+                    error={errors.urgency?.message}
+                    options={TIMELINE_OPTIONS}
                   />
 
                   <Textarea

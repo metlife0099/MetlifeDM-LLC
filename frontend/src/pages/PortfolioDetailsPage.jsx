@@ -117,12 +117,27 @@ export default function PortfolioDetailsPage() {
         </Container>
       )}
 
+      {/* Description */}
+      {p.description && (
+        <Section tone="ivory" spacing="lg">
+          <Container>
+            <div className="grid gap-16 lg:grid-cols-[1fr_2fr]">
+              <Eyebrow number="01">The story</Eyebrow>
+              <div
+                className="prose prose-lg max-w-3xl text-lg text-slate leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: p.description }}
+              />
+            </div>
+          </Container>
+        </Section>
+      )}
+
       {/* Overview / Challenge / Solution */}
       {(p.overview || p.challenge || p.solution) && (
         <Section tone="ivory" spacing="lg">
           <Container>
             <div className="grid gap-16 lg:grid-cols-[1fr_2fr]">
-              <Eyebrow number="01">Overview</Eyebrow>
+              <Eyebrow number="02">Overview</Eyebrow>
               <div className="space-y-10 max-w-3xl">
                 {p.overview && (
                   <div>
@@ -152,7 +167,7 @@ export default function PortfolioDetailsPage() {
       {p.metrics?.length > 0 && (
         <Section tone="ink" spacing="lg" divider={false}>
           <Container>
-            <div className="text-eyebrow text-ivory/50 mb-4">02 / Results</div>
+            <div className="text-eyebrow text-ivory/50 mb-4">03 / Results</div>
             <h2 className="text-display-lg text-ivory mb-14">
               The <span className="text-italic-fraunces text-ultra-soft">numbers.</span>
             </h2>
@@ -175,7 +190,7 @@ export default function PortfolioDetailsPage() {
       {p.gallery?.length > 0 && (
         <Section tone="ivory" spacing="lg">
           <Container>
-            <Eyebrow number="03">Gallery</Eyebrow>
+            <Eyebrow number="04">Gallery</Eyebrow>
             <div className="grid gap-6 md:grid-cols-2 mt-8">
               {p.gallery.map((img, i) => (
                 <div key={i} className="aspect-[4/3] bg-sand overflow-hidden">

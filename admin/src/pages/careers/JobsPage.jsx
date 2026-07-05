@@ -17,8 +17,8 @@ import { getErrorMessage } from '@/api/client.js';
 import { useDebounce } from '@/hooks/index.js';
 import { formatDate, slugify, humanize } from '@/utils/format.js';
 
-const DEPARTMENTS = ['strategy', 'design', 'engineering', 'content', 'ops', 'sales', 'support'];
-const EMPLOYMENT_TYPES = ['full_time', 'part_time', 'contract', 'internship'];
+const DEPARTMENTS = ['engineering', 'marketing', 'design', 'sales', 'operations', 'content', 'seo', 'ppc', 'social', 'leadership', 'other'];
+const EMPLOYMENT_TYPES = ['full_time', 'part_time', 'contract', 'internship', 'temporary'];
 
 export function JobsListPage() {
   const qc = useQueryClient();
@@ -83,7 +83,7 @@ export function JobsListPage() {
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search jobs…" className="w-64" />
         <Select className="w-40" options={[{ value: '', label: 'All departments' }, ...DEPARTMENTS.map((d) => ({ value: d, label: humanize(d) }))]} value={department} onChange={(e) => setDepartment(e.target.value)} />
-        <Select className="w-32" options={[{ value: '', label: 'All statuses' }, { value: 'open', label: 'Open' }, { value: 'closed', label: 'Closed' }, { value: 'draft', label: 'Draft' }]} value={status} onChange={(e) => setStatus(e.target.value)} />
+        <Select className="w-32" options={[{ value: '', label: 'All statuses' }, { value: 'open', label: 'Open' }, { value: 'paused', label: 'Paused' }, { value: 'closed', label: 'Closed' }]} value={status} onChange={(e) => setStatus(e.target.value)} />
       </FilterBar>
       <DataTable
         columns={columns} rows={data?.data || []} loading={isLoading}
@@ -100,11 +100,11 @@ const jobSchema = z.object({
   title: z.string().min(1, 'Required'),
   slug: z.string().min(1, 'Required'),
   department: z.string().min(1, 'Required'),
-  location: z.string().optional(),
+  location: z.string().min(1, 'Required'),
   employmentType: z.string().optional(),
-  shortDescription: z.string().optional(),
-  description: z.string().optional(),
-  status: z.enum(['open', 'closed', 'draft']),
+  shortDescription: z.string().min(10, 'At least 10 characters'),
+  description: z.string().min(20, 'At least 20 characters'),
+  status: z.enum(['open', 'paused', 'closed']),
   salary: z.object({
     min: z.coerce.number().optional(),
     max: z.coerce.number().optional(),
@@ -131,7 +131,7 @@ export function JobEditPage() {
     resolver: zodResolver(jobSchema),
     defaultValues: {
       title: '', slug: '', department: 'engineering', employmentType: 'full_time',
-      status: 'draft', salary: { currency: 'USD' }, responsibilities: [], requirements: [], benefits: [],
+      status: 'open', salary: { currency: 'USD' }, responsibilities: [], requirements: [], benefits: [],
     },
   });
 
@@ -230,11 +230,11 @@ export function JobEditPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <Input label="Slug" required prefix="/careers/" {...register('slug')} error={errors.slug?.message} />
                 <Select label="Department" required options={DEPARTMENTS.map((d) => ({ value: d, label: humanize(d) }))} {...register('department')} />
-                <Input label="Location" placeholder="Remote (US)" {...register('location')} />
+                <Input label="Location" required placeholder="Remote (US)" {...register('location')} error={errors.location?.message} />
                 <Select label="Employment type" options={EMPLOYMENT_TYPES.map((t) => ({ value: t, label: humanize(t) }))} {...register('employmentType')} />
               </div>
-              <Textarea label="Short description" rows={2} {...register('shortDescription')} />
-              <Textarea label="Full description" rows={6} {...register('description')} />
+              <Textarea label="Short description" required rows={2} {...register('shortDescription')} error={errors.shortDescription?.message} />
+              <Textarea label="Full description" required rows={6} {...register('description')} error={errors.description?.message} />
             </div>
           </Card>
 
@@ -252,8 +252,8 @@ export function JobEditPage() {
           <Card>
             <div className="text-eyebrow mb-4">Publish</div>
             <Select label="Status" options={[
-              { value: 'draft', label: 'Draft' },
               { value: 'open', label: 'Open' },
+              { value: 'paused', label: 'Paused' },
               { value: 'closed', label: 'Closed' },
             ]} {...register('status')} />
           </Card>

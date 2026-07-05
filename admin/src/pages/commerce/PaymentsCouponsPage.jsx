@@ -120,7 +120,7 @@ export function CouponsPage() {
 
   const openEdit = (c) => {
     setEditOpen(c || {});
-    reset(c || { code: '', type: 'percentage', value: 10, isActive: true });
+    reset(c || { code: '', type: 'percent', value: 10, isActive: true });
   };
 
   const columns = [
@@ -129,12 +129,12 @@ export function CouponsPage() {
       key: 'value', label: 'Discount',
       render: (r) => (
         <span className="text-mono text-sm num-plate">
-          {r.type === 'percentage' ? `${r.value}%` : formatMoney(r.value)}
+          {r.type === 'percent' ? `${r.value}%` : formatMoney(r.value)}
         </span>
       ),
     },
-    { key: 'minOrder', label: 'Min order', render: (r) => <span className="text-mono text-xs">{r.minOrder ? formatMoney(r.minOrder) : '—'}</span> },
-    { key: 'usageLimit', label: 'Usage', render: (r) => <span className="text-mono text-xs">{r.usageCount || 0} / {r.usageLimit || '∞'}</span> },
+    { key: 'minPurchase', label: 'Min order', render: (r) => <span className="text-mono text-xs">{r.minPurchase ? formatMoney(r.minPurchase) : '—'}</span> },
+    { key: 'usageLimit', label: 'Usage', render: (r) => <span className="text-mono text-xs">{r.usedCount || 0} / {r.usageLimit || '∞'}</span> },
     { key: 'expiresAt', label: 'Expires', render: (r) => <span className="text-mono text-xs text-slate">{r.expiresAt ? formatDate(r.expiresAt, 'medium') : 'Never'}</span> },
     { key: 'status', label: '', render: (r) => <StatusPill status={r.isActive ? 'active' : 'expired'} /> },
     {
@@ -176,7 +176,7 @@ export function CouponsPage() {
             <Button onClick={handleSubmit((d) => save.mutate({
               ...d,
               value: Number(d.value),
-              minOrder: d.minOrder ? Number(d.minOrder) : undefined,
+              minPurchase: d.minPurchase ? Number(d.minPurchase) : undefined,
               usageLimit: d.usageLimit ? Number(d.usageLimit) : undefined,
               code: (d.code || '').toUpperCase(),
             }))} loading={save.isPending}>Save</Button>
@@ -187,13 +187,13 @@ export function CouponsPage() {
           <Input label="Code" required placeholder="LAUNCH20" {...register('code')} />
           <div className="grid gap-4 sm:grid-cols-2">
             <Select label="Type" options={[
-              { value: 'percentage', label: 'Percentage' },
+              { value: 'percent', label: 'Percentage' },
               { value: 'fixed', label: 'Fixed amount' },
             ]} {...register('type')} />
             <Input label="Value" type="number" required {...register('value')} hint="20 = 20% or $20" />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <Input label="Minimum order" prefix="$" type="number" {...register('minOrder')} />
+            <Input label="Minimum order" prefix="$" type="number" {...register('minPurchase')} />
             <Input label="Usage limit" type="number" placeholder="Unlimited" {...register('usageLimit')} />
           </div>
           <Input label="Expires at" type="datetime-local" {...register('expiresAt')} />

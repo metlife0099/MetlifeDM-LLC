@@ -128,9 +128,10 @@ export default function ServiceDetailsPage() {
           <Container>
             <div className="grid gap-16 lg:grid-cols-[1fr_2fr]">
               <Eyebrow number="01">Overview</Eyebrow>
-              <div className="prose prose-lg max-w-none">
-                <p className="text-lg text-ink leading-relaxed whitespace-pre-line">{service.description}</p>
-              </div>
+              <div
+                className="prose prose-lg max-w-none text-lg text-ink leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: service.description }}
+              />
             </div>
           </Container>
         </Section>

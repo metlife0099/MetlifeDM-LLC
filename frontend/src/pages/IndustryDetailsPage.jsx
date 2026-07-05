@@ -50,9 +50,10 @@ export default function IndustryDetailsPage() {
             <span className="text-italic-fraunces text-ultra">marketing.</span>
           </h1>
           {ind.description && (
-            <p className="text-slate text-lg mt-8 max-w-2xl leading-relaxed whitespace-pre-line">
-              {ind.description}
-            </p>
+            <div
+              className="text-slate text-lg mt-8 max-w-2xl leading-relaxed prose"
+              dangerouslySetInnerHTML={{ __html: ind.description }}
+            />
           )}
         </Container>
       </Section>
