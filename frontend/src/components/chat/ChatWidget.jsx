@@ -37,12 +37,15 @@ export default function ChatWidget() {
     (async () => {
       try {
         if (chatId) {
-          // Existing chat — load messages
-          const { data } = await chatApi.getMessages(chatId);
+          // Existing chat — load messages. Always send guestSessionId: a
+          // chat started before login (or before logout) is still owned by
+          // this browser's persisted guest identity, independent of whether
+          // the visitor happens to be authenticated on this particular request.
+          const { data } = await chatApi.getMessages(chatId, { guestSessionId: guestId() });
           setMessages(data || []);
         } else {
           const { chat } = await chatApi.start({
-            guestSessionId: user ? undefined : guestId(),
+            guestSessionId: guestId(),
             guestName: user ? undefined : 'Guest',
           });
           localStorage.setItem('mdm_chat', chat._id);
@@ -80,7 +83,7 @@ export default function ChatWidget() {
     try {
       const { message, botReply } = await chatApi.sendMessage(chatId, {
         content,
-        guestSessionId: user ? undefined : guestId(),
+        guestSessionId: guestId(),
       });
       setMessages((m) => {
         const filtered = m.filter((x) => !x._id.toString().startsWith('local-'));

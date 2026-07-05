@@ -91,7 +91,7 @@ export const commerceApi = {
 export const chatApi = {
   start: (data) => apiClient.post(E.chat.start, data).then(unwrap),
   sendMessage: (id, data) => apiClient.post(E.chat.messages(id), data).then(unwrap),
-  getMessages: (id) => apiClient.get(E.chat.messages(id)).then(unwrapMeta),
+  getMessages: (id, params) => apiClient.get(E.chat.messages(id), { params }).then(unwrapMeta),
   listMine: () => apiClient.get(E.chat.mine).then(unwrapMeta),
   rate: (id, data) => apiClient.post(E.chat.rate(id), data).then(unwrap),
 };

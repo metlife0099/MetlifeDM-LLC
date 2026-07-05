@@ -13,7 +13,10 @@ import { notify, notifyAdmins } from './notification.controller.js';
 export const startChat = asyncHandler(async (req, res) => {
   const chat = await Chat.create({
     user: req.user?._id,
-    guestSessionId: req.user ? undefined : req.body.guestSessionId,
+    // Keep the browser's guest identity even for authenticated starts, so
+    // ownership can still be matched by guestSessionId if this same browser
+    // continues the chat after logging out later.
+    guestSessionId: req.body.guestSessionId,
     guestName: req.body.guestName,
     guestEmail: req.body.guestEmail,
     ipAddress: req.ip,
@@ -29,9 +32,14 @@ export const sendMessage = asyncHandler(async (req, res) => {
   const chat = await Chat.findById(req.params.id);
   if (!chat) throw ApiError.notFound('Chat not found');
 
+  // A chat is tied to *either* an authenticated user or a guest session id at
+  // creation time. Check both independently of the current request's auth
+  // state — a chat started as a guest and then continued after the visitor
+  // logs in (same browser, same persisted guestSessionId) must still match,
+  // and vice versa. Don't gate either check behind "and the other is absent."
   const isOwner =
     (req.user && chat.user?.toString() === req.user._id.toString()) ||
-    (!req.user && chat.guestSessionId === req.body.guestSessionId);
+    (!!chat.guestSessionId && chat.guestSessionId === req.body.guestSessionId);
   if (!isOwner && !['admin', 'super_admin', 'manager'].includes(req.user?.role)) {
     throw ApiError.forbidden();
   }
@@ -124,6 +132,16 @@ export const sendMessage = asyncHandler(async (req, res) => {
 
 /* GET /chat/:id/messages */
 export const listMessages = asyncHandler(async (req, res) => {
+  const chat = await Chat.findById(req.params.id);
+  if (!chat) throw ApiError.notFound('Chat not found');
+
+  const isOwner =
+    (req.user && chat.user?.toString() === req.user._id.toString()) ||
+    (!!chat.guestSessionId && chat.guestSessionId === req.query.guestSessionId);
+  if (!isOwner && !['admin', 'super_admin', 'manager'].includes(req.user?.role)) {
+    throw ApiError.forbidden();
+  }
+
   const opts = getPaginationOptions({ ...req.query, limit: 100, sortBy: 'createdAt', sortOrder: 'asc' });
   const { items, meta } = await paginate(ChatMessage, { chat: req.params.id, isInternalNote: false }, opts);
   return ApiResponse.ok(res, items, 'Messages', meta);

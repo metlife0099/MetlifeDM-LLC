@@ -70,7 +70,7 @@ const envSchema = z.object({
   MAIL_REPLY_TO: z.string().email(),
 
   GEMINI_API_KEY: z.string().optional(),
-  GEMINI_MODEL: z.string().default('gemini-2.0-flash'),
+  GEMINI_MODEL: z.string().default('gemini-2.5-flash'),
   GEMINI_MAX_TOKENS: z.coerce.number().default(800),
   GEMINI_TEMPERATURE: z.coerce.number().default(0.7),
   CHATBOT_CONFIDENCE_THRESHOLD: z.coerce.number().default(0.6),
