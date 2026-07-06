@@ -88,6 +88,7 @@ export const ENDPOINTS = {
   payments: {
     mine: '/payments/mine',
     byId: (id) => `/payments/${id}`,
+    invoice: (id) => `/payments/${id}/invoice`,
   },
   coupons: {
     validate: '/coupons/validate',

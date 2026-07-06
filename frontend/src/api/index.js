@@ -85,6 +85,7 @@ export const commerceApi = {
   cancelOrder: (id) => apiClient.post(E.orders.cancel(id)).then(unwrap),
   listMyPayments: (params) => apiClient.get(E.payments.mine, { params }).then(unwrapMeta),
   getPayment: (id) => apiClient.get(E.payments.byId(id)).then(unwrap),
+  downloadInvoice: (id) => apiClient.get(E.payments.invoice(id), { responseType: 'blob' }),
   validateCoupon: (code, subtotal) => apiClient.post(E.coupons.validate, { code, subtotal }).then(unwrap),
 };
 

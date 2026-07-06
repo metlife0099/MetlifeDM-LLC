@@ -121,6 +121,7 @@ export const ordersApi = {
 export const paymentsApi = {
   list: (params) => apiClient.get(E.payments.list, { params }).then(unwrapMeta),
   get: (id) => apiClient.get(E.payments.detail(id)).then(unwrap),
+  downloadInvoice: (id) => apiClient.get(E.payments.invoice(id), { responseType: 'blob' }),
 };
 
 /* ————— SUPPORT ————— */

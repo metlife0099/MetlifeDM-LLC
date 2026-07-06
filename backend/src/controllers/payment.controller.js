@@ -1,9 +1,10 @@
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
-import { Payment } from '../models/index.js';
+import { Payment, Settings } from '../models/index.js';
 import { getPaginationOptions, paginate } from '../utils/pagination.js';
 import { refundPayment } from '../services/stripe.service.js';
+import { generateInvoicePdf } from '../services/invoicePdf.service.js';
 
 export const listMyPayments = asyncHandler(async (req, res) => {
   const opts = getPaginationOptions(req.query);
@@ -23,6 +24,28 @@ export const getPayment = asyncHandler(async (req, res) => {
   const isAdmin = ['admin', 'super_admin', 'manager'].includes(req.user.role);
   if (!isOwner && !isAdmin) throw ApiError.forbidden();
   return ApiResponse.ok(res, { payment }, 'Payment');
+});
+
+/* GET /payments/:id/invoice — professional PDF invoice (self or admin) */
+export const downloadInvoice = asyncHandler(async (req, res) => {
+  const payment = await Payment.findById(req.params.id).populate('order').populate('customer', 'firstName lastName email');
+  if (!payment) throw ApiError.notFound('Payment not found');
+  const isOwner = payment.customer._id.toString() === req.user._id.toString();
+  const isAdmin = ['admin', 'super_admin', 'manager'].includes(req.user.role);
+  if (!isOwner && !isAdmin) throw ApiError.forbidden();
+  if (!payment.order) throw ApiError.badRequest('No order linked to this payment');
+
+  const settings = await Settings.getGlobal();
+  const pdfBuffer = await generateInvoicePdf({
+    order: payment.order,
+    payment,
+    settings: settings.toObject(),
+  });
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename="invoice-${payment.invoiceNumber}.pdf"`);
+  res.setHeader('Content-Length', pdfBuffer.length);
+  return res.send(pdfBuffer);
 });
 
 /* Admin */

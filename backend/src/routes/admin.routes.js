@@ -201,6 +201,7 @@ router.post('/orders/:id/refund', adminPanel.orderRefund);
  * ═══════════════════════════════════════════════════════════ */
 router.get('/payments', paymentCtrl.listPayments);
 router.get('/payments/:id', paymentCtrl.getPayment);
+router.get('/payments/:id/invoice', paymentCtrl.downloadInvoice);
 
 /* ═══════════════════════════════════════════════════════════
  * COUPONS

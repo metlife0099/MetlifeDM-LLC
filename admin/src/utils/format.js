@@ -112,3 +112,15 @@ export const statusTone = (status) => {
 };
 
 export const noop = () => {};
+
+/**
+ * Trigger a browser download for a Blob response (e.g. axios responseType:'blob').
+ */
+export const downloadBlob = (blob, filename) => {
+  const url = window.URL.createObjectURL(blob instanceof Blob ? blob : new Blob([blob]));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  window.URL.revokeObjectURL(url);
+};

@@ -41,6 +41,7 @@
     "node-cron": "^4.5.0",
     "nodemailer": "^6.9.16",
     "otp-generator": "^4.0.1",
+    "pdfkit": "^0.19.1",
     "rate-limit-redis": "^4.2.0",
     "sib-api-v3-sdk": "^8.5.0",
     "slugify": "^1.6.6",

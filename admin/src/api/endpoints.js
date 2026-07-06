@@ -141,6 +141,7 @@ export const ENDPOINTS = {
   payments: {
     list: '/admin/payments',
     detail: (id) => `/admin/payments/${id}`,
+    invoice: (id) => `/admin/payments/${id}/invoice`,
   },
   coupons: {
     list: '/admin/coupons',

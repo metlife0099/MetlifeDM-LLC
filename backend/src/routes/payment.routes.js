@@ -10,6 +10,7 @@ router.use(requireAuth);
 
 router.get('/mine', c.listMyPayments);
 router.get('/:id', c.getPayment);
+router.get('/:id/invoice', c.downloadInvoice);
 
 router.get('/', requireAdmin, c.listPayments);
 router.post('/:id/refund', requireAdmin, validate(v.refundSchema), c.refund);

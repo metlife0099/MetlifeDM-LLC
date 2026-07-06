@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowUpRight, Package, XCircle, Receipt, Download, CreditCard } from 'lucide-react';
+import { ArrowUpRight, Package, XCircle, Receipt, Download, CreditCard, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { commerceApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
@@ -9,7 +9,7 @@ import { DashHeader, DashEmpty } from '@/components/dashboard/DashHeader.jsx';
 import { Spinner, Badge, Card } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
-import { formatMoney, formatDate, timeAgo, cn } from '@/utils/format.js';
+import { formatMoney, formatDate, timeAgo, cn, downloadBlob } from '@/utils/format.js';
 
 const STATUSES = ['all', 'pending', 'processing', 'paid', 'completed', 'cancelled'];
 
@@ -93,6 +93,7 @@ export const OrderDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['order', id],
@@ -109,6 +110,18 @@ export const OrderDetailsPage = () => {
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
+
+  const downloadInvoice = async (payment) => {
+    setDownloadingInvoice(true);
+    try {
+      const res = await commerceApi.downloadInvoice(payment._id);
+      downloadBlob(res.data, `invoice-${payment.invoiceNumber}.pdf`);
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    } finally {
+      setDownloadingInvoice(false);
+    }
+  };
 
   if (isLoading) {
     return <div className="flex justify-center py-24"><Spinner size={28} className="text-ultra" /></div>;
@@ -307,14 +320,22 @@ export const OrderDetailsPage = () => {
                 <dt className="text-slate">Invoice #</dt>
                 <dd className="text-mono text-xs">{o.payment.invoiceNumber}</dd>
               </div>
+              <button
+                type="button"
+                onClick={() => downloadInvoice(o.payment)}
+                disabled={downloadingInvoice}
+                className="w-full flex items-center justify-center gap-2 mt-2 pt-3 border-t border-hairline text-mono text-xs uppercase tracking-widest text-ultra hover:text-ink disabled:opacity-50"
+              >
+                <FileText size={12} strokeWidth={1.5} /> {downloadingInvoice ? 'Preparing…' : 'Download invoice PDF'}
+              </button>
               {o.payment.stripeReceiptUrl && (
                 <a
                   href={o.payment.stripeReceiptUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 mt-2 pt-3 border-t border-hairline text-mono text-xs uppercase tracking-widest text-ultra hover:text-ink"
+                  className="flex items-center justify-center gap-2 pt-2 text-mono text-xs uppercase tracking-widest text-slate hover:text-ink"
                 >
-                  <Download size={12} strokeWidth={1.5} /> View receipt
+                  <Download size={12} strokeWidth={1.5} /> View Stripe receipt
                 </a>
               )}
             </dl>

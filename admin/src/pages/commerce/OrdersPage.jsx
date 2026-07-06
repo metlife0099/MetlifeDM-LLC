@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ShoppingBag, ArrowLeft, RefreshCcw, User, Download, CreditCard } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, RefreshCcw, User, Download, CreditCard, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Breadcrumbs, Tabs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
@@ -9,10 +9,10 @@ import { StatusPill, Card, PageLoader, Badge, NewBadge } from '@/components/ui/i
 import { Modal } from '@/components/ui/Modal.jsx';
 import { Select, SearchInput, Textarea, Input } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
-import { ordersApi } from '@/api/index.js';
+import { ordersApi, paymentsApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { useDebounce } from '@/hooks/index.js';
-import { formatMoney, formatDate, timeAgo } from '@/utils/format.js';
+import { formatMoney, formatDate, timeAgo, downloadBlob } from '@/utils/format.js';
 import { ORDER_STATUSES } from '@/utils/constants.js';
 
 /* ============================================================
@@ -88,6 +88,7 @@ export function OrderDetailsPage() {
   const [refundAmount, setRefundAmount] = useState('');
   const [refundReason, setRefundReason] = useState('');
   const [statusNote, setStatusNote] = useState('');
+  const [downloadingInvoice, setDownloadingInvoice] = useState(false);
 
   const { data: order, isLoading } = useQuery({
     queryKey: ['admin', 'order', id],
@@ -116,6 +117,19 @@ export function OrderDetailsPage() {
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
+
+  const downloadInvoice = async () => {
+    if (!order.payment?._id) return;
+    setDownloadingInvoice(true);
+    try {
+      const res = await paymentsApi.downloadInvoice(order.payment._id);
+      downloadBlob(res.data, `invoice-${order.payment.invoiceNumber}.pdf`);
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    } finally {
+      setDownloadingInvoice(false);
+    }
+  };
 
   if (isLoading) return <PageLoader label="Loading order" />;
   if (!order) return null;
@@ -282,14 +296,24 @@ export function OrderDetailsPage() {
                   <div className="text-mono text-xs truncate">{order.stripePaymentIntentId}</div>
                 </div>
               )}
+              {order.payment?._id && (
+                <button
+                  type="button"
+                  onClick={downloadInvoice}
+                  disabled={downloadingInvoice}
+                  className="w-full flex items-center justify-center gap-2 mt-2 pt-2 border-t border-hairline text-mono text-xs uppercase tracking-widest text-ultra hover:text-ink disabled:opacity-50"
+                >
+                  <FileText size={12} strokeWidth={1.5} /> {downloadingInvoice ? 'Preparing…' : 'Download invoice PDF'}
+                </button>
+              )}
               {order.payment?.stripeReceiptUrl && (
                 <a
                   href={order.payment.stripeReceiptUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 mt-2 pt-2 border-t border-hairline text-mono text-xs uppercase tracking-widest text-ultra hover:text-ink"
+                  className="flex items-center justify-center gap-2 pt-2 text-mono text-xs uppercase tracking-widest text-slate hover:text-ink"
                 >
-                  <Download size={12} strokeWidth={1.5} /> View receipt
+                  <Download size={12} strokeWidth={1.5} /> View Stripe receipt
                 </a>
               )}
             </div>

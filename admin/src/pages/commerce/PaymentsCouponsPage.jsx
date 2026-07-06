@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
-import { CreditCard, Tag, Plus, Edit3, Trash2, ExternalLink } from 'lucide-react';
+import { CreditCard, Tag, Plus, Edit3, Trash2, ExternalLink, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader, FilterBar } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
@@ -12,7 +12,7 @@ import Button from '@/components/ui/Button.jsx';
 import { paymentsApi, couponsApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { useDebounce } from '@/hooks/index.js';
-import { formatMoney, formatDate, timeAgo } from '@/utils/format.js';
+import { formatMoney, formatDate, timeAgo, downloadBlob } from '@/utils/format.js';
 
 /* ============================================================
  * PAYMENTS
@@ -21,12 +21,25 @@ export function PaymentsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
+  const [downloadingId, setDownloadingId] = useState(null);
   const debounced = useDebounce(search, 300);
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'payments', { page, debounced, status }],
     queryFn: () => paymentsApi.list({ page, search: debounced, status, limit: 25 }),
   });
+
+  const downloadInvoice = async (payment) => {
+    setDownloadingId(payment._id);
+    try {
+      const res = await paymentsApi.downloadInvoice(payment._id);
+      downloadBlob(res.data, `invoice-${payment.invoiceNumber}.pdf`);
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   const columns = [
     { key: 'reference', label: 'Invoice', render: (r) => <span className="text-mono text-xs">{r.invoiceNumber || r.stripePaymentIntentId?.slice(-12) || r._id?.slice(-8)}</span> },
@@ -52,10 +65,23 @@ export function PaymentsPage() {
     { key: 'createdAt', label: 'Date', render: (r) => <span className="text-mono text-xs text-slate">{timeAgo(r.createdAt)}</span> },
     {
       key: 'actions', label: '', align: 'right',
-      render: (r) => r.stripeReceiptUrl && (
-        <a href={r.stripeReceiptUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 text-slate hover:text-ink" aria-label="Receipt">
-          <ExternalLink size={13} />
-        </a>
+      render: (r) => (
+        <div className="flex items-center justify-end gap-1">
+          <button
+            onClick={() => downloadInvoice(r)}
+            disabled={downloadingId === r._id}
+            className="p-1.5 text-slate hover:text-ink disabled:opacity-40"
+            aria-label="Download invoice PDF"
+            title="Download invoice PDF"
+          >
+            <FileText size={13} />
+          </button>
+          {r.stripeReceiptUrl && (
+            <a href={r.stripeReceiptUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 text-slate hover:text-ink" aria-label="Stripe receipt" title="Stripe receipt">
+              <ExternalLink size={13} />
+            </a>
+          )}
+        </div>
       ),
     },
   ];
