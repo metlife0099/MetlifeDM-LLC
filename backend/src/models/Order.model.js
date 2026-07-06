@@ -39,6 +39,8 @@ const orderSchema = new Schema(
     customer: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     customerEmail: String,
     customerName: String,
+    customerPhone: String,
+    customerWebsite: String,
 
     items: { type: [lineItemSchema], required: true, validate: (v) => v.length > 0 },
 

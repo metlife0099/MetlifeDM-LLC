@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowUpRight, Package, XCircle, Receipt } from 'lucide-react';
+import { ArrowUpRight, Package, XCircle, Receipt, Download, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { commerceApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
@@ -189,6 +189,7 @@ export const OrderDetailsPage = () => {
         </div>
 
         {/* Right: summary */}
+        <div className="space-y-6">
         <Card>
           <div className="text-eyebrow mb-6">Summary</div>
           <dl className="space-y-3">
@@ -232,6 +233,94 @@ export const OrderDetailsPage = () => {
             </Button>
           )}
         </Card>
+
+        {/* Contact & delivery details */}
+        <Card>
+          <div className="text-eyebrow mb-6">Contact &amp; delivery</div>
+          <dl className="space-y-3 text-sm">
+            <div className="flex justify-between gap-4">
+              <dt className="text-slate">Name</dt>
+              <dd className="text-right">{o.customerName || '—'}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-slate">Email</dt>
+              <dd className="text-right break-all">{o.customerEmail || '—'}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-slate">Phone</dt>
+              <dd className="text-right">{o.customerPhone || '—'}</dd>
+            </div>
+            {o.customerWebsite && (
+              <div className="flex justify-between gap-4">
+                <dt className="text-slate">Website</dt>
+                <dd className="text-right truncate">{o.customerWebsite}</dd>
+              </div>
+            )}
+            {o.billingAddress?.line1 && (
+              <div className="pt-3 border-t border-hairline">
+                <dt className="text-slate mb-1">Address</dt>
+                <dd>
+                  {o.billingAddress.line1}{o.billingAddress.line2 ? `, ${o.billingAddress.line2}` : ''}<br />
+                  {[o.billingAddress.city, o.billingAddress.state, o.billingAddress.zip].filter(Boolean).join(', ')}
+                  {o.billingAddress.country ? ` · ${o.billingAddress.country}` : ''}
+                </dd>
+              </div>
+            )}
+            {o.notes && (
+              <div className="pt-3 border-t border-hairline">
+                <dt className="text-slate mb-1">Notes</dt>
+                <dd className="text-slate">{o.notes}</dd>
+              </div>
+            )}
+          </dl>
+        </Card>
+
+        {/* Stripe payment details */}
+        {o.payment && (
+          <Card>
+            <div className="text-eyebrow mb-6">Payment</div>
+            <dl className="space-y-3 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-slate">Status</dt>
+                <dd><Badge tone={o.payment.status === 'succeeded' ? 'success' : 'default'}>{o.payment.status}</Badge></dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-slate">Amount paid</dt>
+                <dd className="text-mono">{formatMoney(o.payment.amount)}</dd>
+              </div>
+              {o.payment.card?.brand && (
+                <div className="flex justify-between">
+                  <dt className="text-slate">Card</dt>
+                  <dd className="text-mono uppercase">
+                    <CreditCard size={12} strokeWidth={1.5} className="inline mr-1.5 -mt-0.5" />
+                    {o.payment.card.brand} •••• {o.payment.card.last4}
+                  </dd>
+                </div>
+              )}
+              {o.payment.paidAt && (
+                <div className="flex justify-between">
+                  <dt className="text-slate">Paid</dt>
+                  <dd className="text-mono text-xs">{formatDate(o.payment.paidAt, 'short')}</dd>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <dt className="text-slate">Invoice #</dt>
+                <dd className="text-mono text-xs">{o.payment.invoiceNumber}</dd>
+              </div>
+              {o.payment.stripeReceiptUrl && (
+                <a
+                  href={o.payment.stripeReceiptUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 mt-2 pt-3 border-t border-hairline text-mono text-xs uppercase tracking-widest text-ultra hover:text-ink"
+                >
+                  <Download size={12} strokeWidth={1.5} /> View receipt
+                </a>
+              )}
+            </dl>
+          </Card>
+        )}
+        </div>
       </div>
     </>
   );

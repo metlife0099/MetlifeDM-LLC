@@ -29,24 +29,31 @@ export function PaymentsPage() {
   });
 
   const columns = [
-    { key: 'reference', label: 'Reference', render: (r) => <span className="text-mono text-xs">{r.reference || r.stripePaymentIntentId?.slice(-12) || r._id?.slice(-8)}</span> },
+    { key: 'reference', label: 'Invoice', render: (r) => <span className="text-mono text-xs">{r.invoiceNumber || r.stripePaymentIntentId?.slice(-12) || r._id?.slice(-8)}</span> },
     {
       key: 'customer', label: 'Customer',
       render: (r) => (
         <div>
           <div className="text-sm">{r.customer?.email || r.customerEmail || '—'}</div>
-          {r.orderNumber && <div className="text-mono text-xs text-slate mt-0.5">Order #{r.orderNumber}</div>}
+          {r.order?.orderNumber && <div className="text-mono text-xs text-slate mt-0.5">Order #{r.order.orderNumber}</div>}
         </div>
       ),
     },
     { key: 'amount', label: 'Amount', align: 'right', render: (r) => <span className="text-mono text-sm num-plate">{formatMoney(r.amount)}</span> },
-    { key: 'method', label: 'Method', render: (r) => <Badge tone="outline">{r.paymentMethod || 'Card'}</Badge> },
+    {
+      key: 'card', label: 'Card',
+      render: (r) => r.card?.brand ? (
+        <span className="text-mono text-xs uppercase inline-flex items-center gap-1.5">
+          <CreditCard size={12} strokeWidth={1.5} /> {r.card.brand} •••• {r.card.last4}
+        </span>
+      ) : <Badge tone="default">{r.method || 'card'}</Badge>,
+    },
     { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.status} /> },
     { key: 'createdAt', label: 'Date', render: (r) => <span className="text-mono text-xs text-slate">{timeAgo(r.createdAt)}</span> },
     {
       key: 'actions', label: '', align: 'right',
-      render: (r) => r.receiptUrl && (
-        <a href={r.receiptUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 text-slate hover:text-ink" aria-label="Receipt">
+      render: (r) => r.stripeReceiptUrl && (
+        <a href={r.stripeReceiptUrl} target="_blank" rel="noopener noreferrer" className="p-1.5 text-slate hover:text-ink" aria-label="Receipt">
           <ExternalLink size={13} />
         </a>
       ),

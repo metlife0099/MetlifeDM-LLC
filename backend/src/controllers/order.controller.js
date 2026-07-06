@@ -41,7 +41,10 @@ const buildItems = async (rawItems) => {
 
 /* POST /orders */
 export const createOrder = asyncHandler(async (req, res) => {
-  const { couponCode, billingAddress, notes } = req.body;
+  const {
+    couponCode, billingAddress, notes,
+    customerName, customerEmail, customerPhone, customerWebsite,
+  } = req.body;
   const { items, subtotal } = await buildItems(req.body.items);
 
   // Coupon
@@ -63,8 +66,10 @@ export const createOrder = asyncHandler(async (req, res) => {
 
   const order = await Order.create({
     customer: req.user._id,
-    customerEmail: req.user.email,
-    customerName: `${req.user.firstName} ${req.user.lastName}`,
+    customerEmail: customerEmail || req.user.email,
+    customerName: customerName || `${req.user.firstName} ${req.user.lastName}`,
+    customerPhone,
+    customerWebsite,
     items,
     subtotal,
     discount,
@@ -78,6 +83,16 @@ export const createOrder = asyncHandler(async (req, res) => {
     source: 'web',
     statusHistory: [{ status: ORDER_STATUS.PENDING, note: 'Order created' }],
   });
+
+  // Mirror the reusable contact details back onto the customer's profile so
+  // they're prefilled automatically next time they check out.
+  const profileUpdates = {};
+  if (billingAddress) profileUpdates.address = billingAddress;
+  if (customerPhone) profileUpdates.phone = customerPhone;
+  if (customerWebsite) profileUpdates['company.website'] = customerWebsite;
+  if (Object.keys(profileUpdates).length) {
+    await User.findByIdAndUpdate(req.user._id, profileUpdates).catch(() => {});
+  }
 
   const user = await User.findById(req.user._id);
   const intent = await createPaymentIntent(order, user);

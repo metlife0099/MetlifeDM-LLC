@@ -71,8 +71,10 @@ const PaymentForm = ({ orderId }) => {
 };
 
 /* ================= Main checkout ================= */
+const emptyAddress = { line1: '', line2: '', city: '', state: '', zip: '', country: 'US' };
+
 export default function CheckoutPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const items = useSelector(selectCartItems);
   const subtotal = useSelector(selectCartSubtotal);
   const discount = useSelector(selectCartDiscount);
@@ -82,16 +84,49 @@ export default function CheckoutPage() {
   const [clientSecret, setClientSecret] = useState(null);
   const [orderId, setOrderId] = useState(null);
   const [step, setStep] = useState('review');
-  const [contactInfo, setContactInfo] = useState({ notes: '' });
+  const [contactInfo, setContactInfo] = useState({ fullName: '', email: '', phone: '', website: '', notes: '', address: emptyAddress });
   const [error, setError] = useState(null);
 
+  // Prefill contact & delivery details from the customer's saved profile —
+  // only fills fields the customer hasn't already typed into, so it never
+  // clobbers an in-progress edit if the profile loads a moment late.
   useEffect(() => {
-    if (items.length === 0 && !clientSecret) {
-      // will show empty state below
-    }
-  }, [items, clientSecret]);
+    if (!user) return;
+    setContactInfo((c) => ({
+      fullName: c.fullName || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+      email: c.email || user.email || '',
+      phone: c.phone || user.phone || '',
+      website: c.website || user.company?.website || '',
+      notes: c.notes,
+      address: {
+        line1: c.address.line1 || user.address?.line1 || '',
+        line2: c.address.line2 || user.address?.line2 || '',
+        city: c.address.city || user.address?.city || '',
+        state: c.address.state || user.address?.state || '',
+        zip: c.address.zip || user.address?.zip || '',
+        country: c.address.country || user.address?.country || 'US',
+      },
+    }));
+  }, [user]);
+
+  const setField = (key, value) => setContactInfo((c) => ({ ...c, [key]: value }));
+  const setAddressField = (key, value) => setContactInfo((c) => ({ ...c, address: { ...c.address, [key]: value } }));
+
+  const isContactValid = Boolean(
+    contactInfo.fullName.trim() &&
+    contactInfo.email.trim() &&
+    contactInfo.phone.trim() &&
+    contactInfo.address.line1.trim() &&
+    contactInfo.address.city.trim() &&
+    contactInfo.address.state.trim() &&
+    contactInfo.address.zip.trim()
+  );
 
   const startCheckout = async () => {
+    if (!isContactValid) {
+      setError('Please fill in your full name, email, phone, and complete address to continue.');
+      return;
+    }
     setError(null);
     setStep('creating');
     try {
@@ -103,6 +138,11 @@ export default function CheckoutPage() {
         })),
         couponCode: coupon?.code,
         notes: contactInfo.notes,
+        customerName: contactInfo.fullName,
+        customerEmail: contactInfo.email,
+        customerPhone: contactInfo.phone,
+        customerWebsite: contactInfo.website,
+        billingAddress: contactInfo.address,
       };
       const { order, clientSecret: secret } = await commerceApi.createOrder(payload);
       setOrderId(order._id);
@@ -161,18 +201,67 @@ export default function CheckoutPage() {
         <Container>
           <div className="grid gap-14 lg:grid-cols-[2fr_1fr]">
             <div className="space-y-10">
-              {/* Notes */}
+              {/* Contact & delivery details */}
               {step === 'review' && (
                 <div>
-                  <Eyebrow number="01">Additional details</Eyebrow>
-                  <div className="mt-6">
-                    <textarea
-                      rows={4}
-                      value={contactInfo.notes}
-                      onChange={(e) => setContactInfo({ notes: e.target.value })}
-                      placeholder="Anything a strategist should know before we kick off? (optional)"
-                      className="w-full bg-transparent border-b border-ink/25 pb-2 pt-4 text-sm placeholder:text-slate focus:border-ultra focus:outline-none resize-none"
+                  <Eyebrow number="01">Contact &amp; delivery details</Eyebrow>
+                  <div className="mt-6 space-y-5">
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <Input
+                        label="Full name" required placeholder="Jane Doe"
+                        value={contactInfo.fullName} onChange={(e) => setField('fullName', e.target.value)}
+                      />
+                      <Input
+                        label="Email" type="email" required placeholder="jane@company.com"
+                        value={contactInfo.email} onChange={(e) => setField('email', e.target.value)}
+                      />
+                    </div>
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <Input
+                        label="Phone" type="tel" required placeholder="+1 (555) 000-0000"
+                        value={contactInfo.phone} onChange={(e) => setField('phone', e.target.value)}
+                      />
+                      <Input
+                        label="Website (optional)" type="url" placeholder="https://yourcompany.com"
+                        value={contactInfo.website} onChange={(e) => setField('website', e.target.value)}
+                      />
+                    </div>
+                    <Input
+                      label="Address line 1" required placeholder="123 Main St"
+                      value={contactInfo.address.line1} onChange={(e) => setAddressField('line1', e.target.value)}
                     />
+                    <Input
+                      label="Address line 2 (optional)" placeholder="Suite, unit, floor…"
+                      value={contactInfo.address.line2} onChange={(e) => setAddressField('line2', e.target.value)}
+                    />
+                    <div className="grid gap-5 sm:grid-cols-4">
+                      <Input
+                        label="City" required
+                        value={contactInfo.address.city} onChange={(e) => setAddressField('city', e.target.value)}
+                      />
+                      <Input
+                        label="State" required
+                        value={contactInfo.address.state} onChange={(e) => setAddressField('state', e.target.value)}
+                      />
+                      <Input
+                        label="ZIP" required
+                        value={contactInfo.address.zip} onChange={(e) => setAddressField('zip', e.target.value)}
+                      />
+                      <Input
+                        label="Country" required
+                        value={contactInfo.address.country} onChange={(e) => setAddressField('country', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-mono text-xs uppercase tracking-widest text-slate">Notes (optional)</label>
+                      <textarea
+                        rows={4}
+                        value={contactInfo.notes}
+                        onChange={(e) => setField('notes', e.target.value)}
+                        placeholder="Anything a strategist should know before we kick off?"
+                        className="w-full bg-transparent border-b border-ink/25 pb-2 pt-2 mt-2 text-sm placeholder:text-slate focus:border-ultra focus:outline-none resize-none"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -187,11 +276,13 @@ export default function CheckoutPage() {
                         {error}
                       </div>
                     )}
-                    <Button size="lg" onClick={startCheckout}>
+                    <Button size="lg" onClick={startCheckout} disabled={!isContactValid}>
                       Continue to payment <ArrowUpRight size={16} strokeWidth={1.5} />
                     </Button>
                     <p className="text-mono text-xs text-slate mt-4">
-                      You&apos;ll enter card details on the next step. No charge until you confirm.
+                      {isContactValid
+                        ? "You'll enter card details on the next step. No charge until you confirm."
+                        : 'Fill in your name, email, phone, and full address above to continue.'}
                     </p>
                   </div>
                 )}

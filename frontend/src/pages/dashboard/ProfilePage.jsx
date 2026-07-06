@@ -8,7 +8,7 @@ import { userApi } from '@/api/index.js';
 import { updateUser } from '@/store/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { DashHeader } from '@/components/dashboard/DashHeader.jsx';
-import { Input, Textarea, Card } from '@/components/ui/index.jsx';
+import { Input, Card } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { initials } from '@/utils/format.js';
@@ -28,10 +28,15 @@ export default function ProfilePage() {
       firstName: user?.firstName || '',
       lastName: user?.lastName || '',
       phone: user?.phone || '',
-      company: user?.company || '',
-      jobTitle: user?.jobTitle || '',
-      website: user?.website || '',
-      bio: user?.bio || '',
+      company: { name: user?.company?.name || '', website: user?.company?.website || '' },
+      address: {
+        line1: user?.address?.line1 || '',
+        line2: user?.address?.line2 || '',
+        city: user?.address?.city || '',
+        state: user?.address?.state || '',
+        zip: user?.address?.zip || '',
+        country: user?.address?.country || 'US',
+      },
     },
   });
 
@@ -107,18 +112,23 @@ export default function ProfilePage() {
         <Input label="Email" type="email" value={user?.email} disabled />
         <div className="grid gap-6 md:grid-cols-2">
           <Input label="Phone" type="tel" {...register('phone')} />
-          <Input label="Company" {...register('company')} />
+          <Input label="Company" {...register('company.name')} />
         </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          <Input label="Job title" {...register('jobTitle')} />
-          <Input label="Website" type="url" {...register('website')} />
+        <Input label="Website" type="url" placeholder="https://yourcompany.com" {...register('company.website')} />
+
+        <div className="pt-2">
+          <div className="text-eyebrow mb-4">Address</div>
+          <div className="space-y-4">
+            <Input label="Address line 1" {...register('address.line1')} />
+            <Input label="Address line 2" {...register('address.line2')} />
+            <div className="grid gap-6 md:grid-cols-4">
+              <Input label="City" {...register('address.city')} />
+              <Input label="State" {...register('address.state')} />
+              <Input label="ZIP" {...register('address.zip')} />
+              <Input label="Country" {...register('address.country')} />
+            </div>
+          </div>
         </div>
-        <Textarea
-          label="Bio"
-          rows={4}
-          placeholder="Optional. Anything about your business."
-          {...register('bio')}
-        />
 
         <div className="pt-4 flex gap-3">
           <Button

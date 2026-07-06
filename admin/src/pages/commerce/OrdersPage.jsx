@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ShoppingBag, ArrowLeft, RefreshCcw, User } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, RefreshCcw, User, Download, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Breadcrumbs, Tabs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
@@ -152,14 +152,14 @@ export function OrderDetailsPage() {
               {(order.items || []).map((item, i) => (
                 <li key={i} className="py-4 grid gap-4 md:grid-cols-[1fr_auto_auto] md:items-center">
                   <div>
-                    <div className="text-sm">{item.name || item.service?.title || 'Item'}</div>
-                    {item.plan && <div className="text-mono text-xs text-slate mt-0.5">{item.plan}</div>}
+                    <div className="text-sm">{item.serviceName || item.service?.title || 'Item'}</div>
+                    {item.planName && <div className="text-mono text-xs text-slate mt-0.5">{item.planName}</div>}
                   </div>
                   <div className="text-mono text-xs text-slate">
                     Qty {item.quantity || 1}
                   </div>
                   <div className="text-mono text-sm num-plate text-right w-24">
-                    {formatMoney(item.total || item.price * (item.quantity || 1))}
+                    {formatMoney(item.subtotal ?? item.unitPrice * (item.quantity || 1))}
                   </div>
                 </li>
               ))}
@@ -175,18 +175,18 @@ export function OrderDetailsPage() {
           </Card>
 
           {/* Timeline */}
-          {order.timeline?.length > 0 && (
+          {order.statusHistory?.length > 0 && (
             <Card padding={false} className="p-6">
               <div className="text-eyebrow mb-4">Timeline</div>
               <ul className="divide-editorial">
-                {order.timeline.map((t, i) => (
+                {order.statusHistory.map((t, i) => (
                   <li key={i} className="py-3 flex items-start gap-3">
                     <div className="w-1.5 h-1.5 rounded-full bg-ultra mt-2 shrink-0" />
                     <div className="flex-1">
-                      <div className="text-sm">{t.event || t.status}</div>
+                      <div className="text-sm capitalize">{t.status}</div>
                       {t.note && <div className="text-slate text-xs mt-0.5">{t.note}</div>}
                       <div className="text-mono text-xs text-slate uppercase tracking-widest mt-1">
-                        {timeAgo(t.at || t.createdAt)}
+                        {timeAgo(t.at)}
                       </div>
                     </div>
                   </li>
@@ -201,9 +201,15 @@ export function OrderDetailsPage() {
           <Card padding={false} className="p-5">
             <div className="text-eyebrow mb-3">Customer</div>
             <div className="text-sm">
-              {order.customer?.firstName ? `${order.customer.firstName} ${order.customer.lastName || ''}` : order.customerEmail || '—'}
+              {order.customerName || (order.customer?.firstName ? `${order.customer.firstName} ${order.customer.lastName || ''}` : order.customerEmail || '—')}
             </div>
-            <div className="text-mono text-xs text-slate mt-1">{order.customer?.email || order.customerEmail}</div>
+            <div className="text-mono text-xs text-slate mt-1">{order.customerEmail || order.customer?.email}</div>
+            {order.customerPhone && <div className="text-mono text-xs text-slate mt-1">{order.customerPhone}</div>}
+            {order.customerWebsite && (
+              <a href={order.customerWebsite} target="_blank" rel="noopener noreferrer" className="text-mono text-xs text-slate hover:text-ultra mt-1 block truncate">
+                {order.customerWebsite}
+              </a>
+            )}
             {order.customer?._id && (
               <Link
                 to={`/users/${order.customer._id}`}
@@ -214,22 +220,77 @@ export function OrderDetailsPage() {
             )}
           </Card>
 
+          {order.billingAddress?.line1 && (
+            <Card padding={false} className="p-5">
+              <div className="text-eyebrow mb-3">Billing address</div>
+              <div className="text-sm">
+                {order.billingAddress.line1}{order.billingAddress.line2 ? `, ${order.billingAddress.line2}` : ''}<br />
+                {[order.billingAddress.city, order.billingAddress.state, order.billingAddress.zip].filter(Boolean).join(', ')}
+                {order.billingAddress.country ? ` · ${order.billingAddress.country}` : ''}
+              </div>
+            </Card>
+          )}
+
+          {order.notes && (
+            <Card padding={false} className="p-5">
+              <div className="text-eyebrow mb-3">Customer notes</div>
+              <div className="text-sm text-slate">{order.notes}</div>
+            </Card>
+          )}
+
           <Card padding={false} className="p-5">
             <div className="text-eyebrow mb-3">Payment</div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-slate">Method</span>
-                <span>{order.paymentMethod || 'Card'}</span>
+                <span className="capitalize">{order.payment?.method || 'Card'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate">Payment status</span>
-                <StatusPill status={order.paymentStatus || order.status} />
+                <StatusPill status={order.payment?.status || order.status} />
               </div>
+              {order.payment?.amount != null && (
+                <div className="flex justify-between">
+                  <span className="text-slate">Amount</span>
+                  <span className="num-plate">{formatMoney(order.payment.amount)}</span>
+                </div>
+              )}
+              {order.payment?.card?.brand && (
+                <div className="flex justify-between">
+                  <span className="text-slate">Card</span>
+                  <span className="uppercase inline-flex items-center gap-1.5">
+                    <CreditCard size={12} strokeWidth={1.5} />
+                    {order.payment.card.brand} •••• {order.payment.card.last4}
+                  </span>
+                </div>
+              )}
+              {order.payment?.paidAt && (
+                <div className="flex justify-between">
+                  <span className="text-slate">Paid</span>
+                  <span className="text-mono text-xs">{formatDate(order.payment.paidAt, 'short')}</span>
+                </div>
+              )}
+              {order.payment?.invoiceNumber && (
+                <div className="flex justify-between">
+                  <span className="text-slate">Invoice #</span>
+                  <span className="text-mono text-xs">{order.payment.invoiceNumber}</span>
+                </div>
+              )}
               {order.stripePaymentIntentId && (
                 <div className="pt-2 border-t border-hairline">
                   <div className="text-mono text-xs text-slate uppercase tracking-widest mb-1">Stripe intent</div>
                   <div className="text-mono text-xs truncate">{order.stripePaymentIntentId}</div>
                 </div>
+              )}
+              {order.payment?.stripeReceiptUrl && (
+                <a
+                  href={order.payment.stripeReceiptUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 mt-2 pt-2 border-t border-hairline text-mono text-xs uppercase tracking-widest text-ultra hover:text-ink"
+                >
+                  <Download size={12} strokeWidth={1.5} /> View receipt
+                </a>
               )}
             </div>
           </Card>

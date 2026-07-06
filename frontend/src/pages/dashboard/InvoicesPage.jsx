@@ -43,15 +43,20 @@ export default function InvoicesPage() {
               <div className="text-mono text-xs text-slate uppercase tracking-widest">
                 {formatDate(p.paidAt || p.createdAt, 'short')}
               </div>
-              <div className="text-mono text-sm">{formatMoney(p.amount)}</div>
+              <div className="text-mono text-sm">
+                {formatMoney(p.amount)}
+                {p.card?.brand && (
+                  <div className="text-mono text-xs text-slate normal-case mt-1">{p.card.brand} •••• {p.card.last4}</div>
+                )}
+              </div>
               <div className="flex items-center gap-3">
                 <Badge tone={p.status === 'succeeded' ? 'success' : p.status === 'refunded' ? 'default' : 'ultra'}>
                   {p.status}
                 </Badge>
-                {p.receiptUrl && (
+                {p.stripeReceiptUrl && (
                   <Button
                     as="a"
-                    href={p.receiptUrl}
+                    href={p.stripeReceiptUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     variant="ghost"

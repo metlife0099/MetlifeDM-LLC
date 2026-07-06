@@ -173,6 +173,16 @@ export function UserDetailsPage() {
               {user.company?.name && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Company</div><div className="mt-1">{user.company.name}</div></div>}
               {user.company?.website && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Website</div><a href={user.company.website} target="_blank" rel="noopener noreferrer" className="mt-1 block hover:text-ultra truncate">{user.company.website}</a></div>}
               {user.company?.industry && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Industry</div><div className="mt-1">{user.company.industry}</div></div>}
+              {user.address?.line1 && (
+                <div className="sm:col-span-2">
+                  <div className="text-mono text-xs text-slate uppercase tracking-widest">Address</div>
+                  <div className="mt-1">
+                    {user.address.line1}{user.address.line2 ? `, ${user.address.line2}` : ''}<br />
+                    {[user.address.city, user.address.state, user.address.zip].filter(Boolean).join(', ')}
+                    {user.address.country ? ` · ${user.address.country}` : ''}
+                  </div>
+                </div>
+              )}
               <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Email verified</div><div className="mt-1">{user.emailVerified ? 'Yes' : 'No'}</div></div>
               <div><div className="text-mono text-xs text-slate uppercase tracking-widest">2FA</div><div className="mt-1">{user.twoFactor?.enabled ? 'Enabled' : 'Disabled'}</div></div>
               <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Last login</div><div className="mt-1 text-mono text-xs">{user.lastLoginAt ? timeAgo(user.lastLoginAt) : 'Never'}</div></div>
