@@ -6,7 +6,7 @@ import connectDatabase, { disconnectDatabase } from './config/database.js';
 import connectRedis, { disconnectRedis } from './config/redis.js';
 import { initSocket } from './sockets/index.js';
 import { startConsultationReminderJob } from './jobs/reminder.job.js';
-import { startCleanupJob } from './jobs/cleanup.job.js';
+import { startCleanupJob, recoverInterruptedCampaigns } from './jobs/cleanup.job.js';
 
 /* ---------------------------------------------------------------
  * Global crash safety
@@ -32,6 +32,7 @@ const start = async () => {
 
     // 1. Database
     await connectDatabase();
+    recoverInterruptedCampaigns().catch(() => {});
 
     // 2. Redis (non-fatal if unavailable)
     await connectRedis();

@@ -2,7 +2,7 @@
  * Reusable branded email layout wrapper.
  * All transactional emails share this shell for consistency.
  */
-export const emailLayout = ({ title, previewText = '', bodyHtml, ctaLabel, ctaUrl, footerNote = '' }) => `<!doctype html>
+export const emailLayout = ({ title, previewText = '', bodyHtml, ctaLabel, ctaUrl, footerNote = '', unsubscribeUrl }) => `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -37,7 +37,11 @@ export const emailLayout = ({ title, previewText = '', bodyHtml, ctaLabel, ctaUr
       <tr>
         <td style="background:#F8FAFC;padding:24px 32px;text-align:center;border-top:1px solid #E2E8F0;">
           <p style="margin:0 0 6px;font-size:12px;color:#64748B;">MetlifeDM LLC · USA</p>
-          <p style="margin:0;font-size:11px;color:#94A3B8;">You're receiving this because you interact with MetlifeDM.<br/><a href="{{unsubscribeUrl}}" style="color:#64748B;">Manage preferences</a></p>
+          <p style="margin:0;font-size:11px;color:#94A3B8;">You're receiving this because you interact with MetlifeDM.${
+            unsubscribeUrl
+              ? `<br/><a href="${unsubscribeUrl}" style="color:#64748B;">Unsubscribe</a>`
+              : ''
+          }</p>
         </td>
       </tr>
     </table>

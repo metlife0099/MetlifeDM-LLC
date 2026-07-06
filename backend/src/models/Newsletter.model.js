@@ -20,6 +20,7 @@ const newsletterSchema = new Schema(
 
     isActive: { type: Boolean, default: true, index: true },
     isVerified: { type: Boolean, default: false },
+    isFeatured: { type: Boolean, default: false, index: true },
     verifyToken: { type: String, select: false },
 
     subscribedAt: { type: Date, default: Date.now },

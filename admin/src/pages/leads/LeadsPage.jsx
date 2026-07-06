@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Mail, Calendar, MailPlus, Trash2, Download, ExternalLink, Plus, UserPlus, Upload, X } from 'lucide-react';
+import { Mail, Calendar, MailPlus, Trash2, Download, ExternalLink, Plus, UserPlus, Upload, X, Star, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Tabs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
@@ -287,6 +287,15 @@ export function SubscribersPage() {
     onError: (e) => toast.error(getErrorMessage(e)),
   });
 
+  const toggleFeatured = useMutation({
+    mutationFn: ({ id, isFeatured }) => leadsApi.updateSubscriber(id, { isFeatured }),
+    onSuccess: (_, { isFeatured }) => {
+      invalidate();
+      toast.success(isFeatured ? 'Marked as featured' : 'Removed from featured');
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+
   const exportCsv = async () => {
     try {
       const response = await leadsApi.exportSubscribers();
@@ -303,6 +312,18 @@ export function SubscribersPage() {
   };
 
   const columns = [
+    {
+      key: 'featured', label: '', align: 'center', width: '2.5rem',
+      render: (r) => (
+        <button
+          onClick={() => toggleFeatured.mutate({ id: r._id, isFeatured: !r.isFeatured })}
+          title={r.isFeatured ? 'Remove from featured' : 'Mark as featured'}
+          className={r.isFeatured ? 'text-warn' : 'text-slate hover:text-warn'}
+        >
+          <Star size={14} strokeWidth={1.5} fill={r.isFeatured ? 'currentColor' : 'none'} />
+        </button>
+      ),
+    },
     {
       key: 'name', label: 'Name',
       render: (r) => <span className="text-sm">{r.name || <span className="text-slate">—</span>}</span>,
@@ -326,10 +347,11 @@ export function SubscribersPage() {
       <PageHeader
         eyebrow="Leads / Newsletter"
         title={<>Newsletter <span className="text-italic-fraunces text-ultra">subscribers</span></>}
-        subtitle="Everyone opted in to updates."
+        subtitle="Everyone opted in to updates. Star a subscriber to add them to the “featured” audience."
         actions={
           <>
             <NewBadge resourceType="subscriber" />
+            <Button variant="ghost" to="/leads/campaigns" icon={Send}>Campaigns</Button>
             <Button variant="ghost" onClick={exportCsv} icon={Download}>Export CSV</Button>
             <Button onClick={() => setAddOpen(true)} icon={UserPlus}>Add subscribers</Button>
           </>

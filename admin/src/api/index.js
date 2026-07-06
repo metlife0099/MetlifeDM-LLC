@@ -92,8 +92,20 @@ export const leadsApi = {
     apiClient
       .post(E.leads.subscribersImport, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
       .then(unwrap),
+  updateSubscriber: (id, data) => apiClient.patch(E.leads.subscriber(id), data).then(unwrap),
   deleteSubscriber: (id) => apiClient.delete(E.leads.subscriber(id)).then(unwrap),
   exportSubscribers: () => apiClient.get(E.leads.exportSubscribers, { responseType: 'blob' }),
+};
+
+/* ===================== CAMPAIGNS ===================== */
+export const campaignsApi = {
+  list: (params) => apiClient.get(E.campaigns.list, { params }).then(unwrapMeta),
+  get: (id) => apiClient.get(E.campaigns.detail(id)).then(unwrap),
+  create: (data) => apiClient.post(E.campaigns.create, data).then(unwrap),
+  update: (id, data) => apiClient.put(E.campaigns.update(id), data).then(unwrap),
+  delete: (id) => apiClient.delete(E.campaigns.delete(id)).then(unwrap),
+  send: (id) => apiClient.post(E.campaigns.send(id)).then(unwrap),
+  sendTest: (id, email) => apiClient.post(E.campaigns.test(id), { email }).then(unwrap),
 };
 
 /* ————— COMMERCE ————— */

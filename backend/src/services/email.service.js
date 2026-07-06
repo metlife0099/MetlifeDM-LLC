@@ -93,6 +93,9 @@ export const emailService = {
       html: tpl.adminNewLeadEmail({ lead, type }),
     });
   },
+
+  /* Marketing campaign blast — used by campaign.controller.js */
+  campaignSend: (to, subject, html) => send({ to, subject, html }),
 };
 
 export default emailService;

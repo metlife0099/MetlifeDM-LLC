@@ -27,3 +27,4 @@ export { default as Media } from './Media.model.js';
 export { default as Redirect } from './Redirect.model.js';
 export { default as EmailTemplate } from './EmailTemplate.model.js';
 export { default as Page } from './Page.model.js';
+export { default as Campaign } from './Campaign.model.js';

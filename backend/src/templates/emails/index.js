@@ -159,6 +159,15 @@ export const newsletterWelcomeEmail = () =>
     ctaUrl: brand('/blog'),
   });
 
+export const campaignEmail = ({ subject, preheader, bodyHtml, unsubscribeUrl }) =>
+  emailLayout({
+    title: subject,
+    previewText: preheader || '',
+    bodyHtml,
+    unsubscribeUrl,
+    footerNote: "You're receiving this because you subscribed to MetlifeDM LLC updates.",
+  });
+
 export const adminNewLeadEmail = ({ lead, type }) =>
   emailLayout({
     title: `🚨 New ${type} lead`,

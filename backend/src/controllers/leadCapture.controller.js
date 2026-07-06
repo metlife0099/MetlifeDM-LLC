@@ -156,9 +156,19 @@ export const newsletter = {
     const opts = getPaginationOptions(req.query);
     const filter = {};
     if (req.query.active === 'true') filter.isActive = true;
+    if (req.query.featured === 'true') filter.isFeatured = true;
     if (opts.search) filter.email = { $regex: opts.search, $options: 'i' };
     const { items, meta } = await paginate(Newsletter, filter, opts);
     return ApiResponse.ok(res, items, 'Subscribers', meta);
+  }),
+  /* Admin: toggle isFeatured / isActive / rename a subscriber */
+  update: asyncHandler(async (req, res) => {
+    const allowed = ['name', 'isFeatured', 'isActive', 'tags'];
+    const patch = {};
+    for (const key of allowed) if (key in req.body) patch[key] = req.body[key];
+    const subscriber = await Newsletter.findByIdAndUpdate(req.params.id, patch, { new: true });
+    if (!subscriber) throw ApiError.notFound('Subscriber not found');
+    return ApiResponse.ok(res, { subscriber }, 'Updated');
   }),
   remove: asyncHandler(async (req, res) => {
     await Newsletter.findByIdAndDelete(req.params.id);

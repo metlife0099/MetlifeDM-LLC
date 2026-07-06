@@ -64,6 +64,12 @@ const ConsultationsModule = lazy(() =>
 const SubscribersModule = lazy(() =>
   import('@/pages/leads/LeadsPage.jsx').then((m) => ({ default: m.SubscribersPage }))
 );
+const CampaignsModule = lazy(() =>
+  import('@/pages/leads/CampaignsPage.jsx').then((m) => ({ default: m.CampaignsPage }))
+);
+const CampaignEditModule = lazy(() =>
+  import('@/pages/leads/CampaignsPage.jsx').then((m) => ({ default: m.CampaignEditorPage }))
+);
 
 const OrdersListModule = lazy(() =>
   import('@/pages/commerce/OrdersPage.jsx').then((m) => ({ default: m.OrdersListPage }))
@@ -173,6 +179,8 @@ export default function App() {
           <Route path="/leads/contacts" element={withSuspense(ContactsModule, 'Loading contacts')} />
           <Route path="/leads/consultations" element={withSuspense(ConsultationsModule, 'Loading consultations')} />
           <Route path="/leads/subscribers" element={withSuspense(SubscribersModule, 'Loading subscribers')} />
+          <Route path="/leads/campaigns" element={withSuspense(CampaignsModule, 'Loading campaigns')} />
+          <Route path="/leads/campaigns/:id" element={withSuspense(CampaignEditModule, 'Loading campaign')} />
 
           {/* Commerce */}
           <Route path="/commerce/orders" element={withSuspense(OrdersListModule, 'Loading orders')} />

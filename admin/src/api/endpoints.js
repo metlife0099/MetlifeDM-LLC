@@ -119,6 +119,17 @@ export const ENDPOINTS = {
     exportSubscribers: '/admin/leads/subscribers/export',
   },
 
+  /* ————— Campaigns ————— */
+  campaigns: {
+    list: '/admin/campaigns',
+    detail: (id) => `/admin/campaigns/${id}`,
+    create: '/admin/campaigns',
+    update: (id) => `/admin/campaigns/${id}`,
+    delete: (id) => `/admin/campaigns/${id}`,
+    send: (id) => `/admin/campaigns/${id}/send`,
+    test: (id) => `/admin/campaigns/${id}/test`,
+  },
+
   /* ————— Commerce ————— */
   orders: {
     list: '/admin/orders',

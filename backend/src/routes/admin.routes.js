@@ -28,6 +28,7 @@ import * as mediaCtrl from '../controllers/media.controller.js';
 import * as settingsCtrl from '../controllers/settings.controller.js';
 import * as pageCtrl from '../controllers/page.controller.js';
 import * as notificationCtrl from '../controllers/notification.controller.js';
+import * as campaignCtrl from '../controllers/campaign.controller.js';
 
 // ————— admin-panel-specific controller —————
 import * as adminPanel from '../controllers/adminPanel.controller.js';
@@ -169,8 +170,22 @@ router.get('/leads/subscribers', newsletterCtrl.list);
 router.post('/leads/subscribers', newsletterCtrl.createOne);
 router.post('/leads/subscribers/bulk', newsletterCtrl.createBulk);
 router.post('/leads/subscribers/import', spreadsheetUpload.single('file'), newsletterCtrl.importFile);
-router.delete('/leads/subscribers/:id', newsletterCtrl.remove);
 router.get('/leads/subscribers/export', adminPanel.subscribersExport);
+router.put('/leads/subscribers/:id', newsletterCtrl.update);
+router.patch('/leads/subscribers/:id', newsletterCtrl.update);
+router.delete('/leads/subscribers/:id', newsletterCtrl.remove);
+
+/* ═══════════════════════════════════════════════════════════
+ * CAMPAIGNS · marketing / newsletter blasts
+ * ═══════════════════════════════════════════════════════════ */
+router.get('/campaigns', campaignCtrl.list);
+router.get('/campaigns/:id', campaignCtrl.getById);
+router.post('/campaigns', campaignCtrl.create);
+router.put('/campaigns/:id', campaignCtrl.update);
+router.patch('/campaigns/:id', campaignCtrl.update);
+router.delete('/campaigns/:id', campaignCtrl.remove);
+router.post('/campaigns/:id/send', campaignCtrl.send);
+router.post('/campaigns/:id/test', campaignCtrl.sendTest);
 
 /* ═══════════════════════════════════════════════════════════
  * ORDERS

@@ -63,6 +63,7 @@ export const NAV_SECTIONS = [
       { label: 'Contact forms', href: '/leads/contacts', icon: 'Mail' },
       { label: 'Consultations', href: '/leads/consultations', icon: 'Calendar' },
       { label: 'Newsletter', href: '/leads/subscribers', icon: 'MailPlus' },
+      { label: 'Campaigns', href: '/leads/campaigns', icon: 'Send' },
     ],
   },
   {
@@ -139,6 +140,20 @@ export const CONTACT_STATUSES = [
   { value: 'converted', label: 'Converted' },
   { value: 'lost', label: 'Lost' },
   { value: 'spam', label: 'Spam' },
+];
+
+export const CAMPAIGN_STATUSES = [
+  { value: 'draft', label: 'Draft' },
+  { value: 'sending', label: 'Sending' },
+  { value: 'sent', label: 'Sent' },
+  { value: 'partial', label: 'Partially sent' },
+  { value: 'failed', label: 'Failed' },
+];
+
+export const CAMPAIGN_AUDIENCES = [
+  { value: 'all', label: 'All active subscribers' },
+  { value: 'featured', label: 'Featured subscribers' },
+  { value: 'selected', label: 'Selected subscribers' },
 ];
 
 export const CONSULTATION_STATUSES = [
