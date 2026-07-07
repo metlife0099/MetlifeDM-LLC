@@ -3,21 +3,21 @@ import { cn } from '@/utils/format.js';
 import { Link } from 'react-router-dom';
 
 const base =
-  'inline-flex items-center justify-center gap-2 font-medium text-sm transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap';
+  'inline-flex items-center justify-center gap-2 font-medium text-sm transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.96] disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100 whitespace-nowrap cursor-pointer';
 
 const variants = {
   primary:
-    'bg-ink text-ivory hover:bg-ultra hover:-translate-y-0.5 hover:shadow-[0_16px_40px_-12px_rgba(21,71,255,0.5)]',
+    'btn-shine bg-ink text-ivory hover:bg-ultra hover:-translate-y-0.5 hover:shadow-[0_16px_40px_-12px_rgba(21,71,255,0.5)]',
   ultra:
-    'bg-ultra text-ivory hover:bg-ink hover:-translate-y-0.5',
+    'btn-shine bg-ultra text-ivory hover:bg-ink hover:-translate-y-0.5 hover:shadow-[0_16px_40px_-12px_rgba(10,23,48,0.4)]',
   ghost:
-    'text-ink hover:bg-ink hover:text-ivory border border-hairline',
+    'text-ink hover:bg-ink hover:text-ivory border border-hairline hover:-translate-y-0.5',
   outline:
-    'border border-ink text-ink hover:bg-ink hover:text-ivory',
+    'border border-ink text-ink hover:bg-ink hover:text-ivory hover:-translate-y-0.5',
   underline:
     'text-ink relative after:absolute after:left-0 after:bottom-0 after:h-px after:w-full after:bg-current after:origin-right after:scale-x-100 hover:after:origin-left after:transition-transform',
   inverse:
-    'bg-ivory text-ink hover:bg-ultra hover:text-ivory',
+    'bg-ivory text-ink hover:bg-ultra hover:text-ivory hover:-translate-y-0.5',
 };
 
 const sizes = {

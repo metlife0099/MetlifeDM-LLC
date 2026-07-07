@@ -58,18 +58,28 @@ export default function Navbar() {
 
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-8">
-            {NAV_MAIN.map((item) => (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={cn(
-                  'text-sm relative py-1 link-underline',
-                  pathname.startsWith(item.href) ? 'text-ink' : 'text-ink/70 hover:text-ink'
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {NAV_MAIN.map((item) => {
+              const active = pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className={cn(
+                    'text-sm relative py-2',
+                    active ? 'text-ink' : 'text-ink/70 hover:text-ink link-underline'
+                  )}
+                >
+                  {item.label}
+                  {active && (
+                    <motion.span
+                      layoutId="nav-active-indicator"
+                      className="nav-indicator-glow absolute left-0 right-0 -bottom-0.5 h-0.5 bg-ultra"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Actions */}
@@ -208,21 +218,28 @@ export default function Navbar() {
             className="lg:hidden fixed inset-x-0 top-20 bottom-0 bg-ivory z-40 overflow-y-auto"
           >
             <div className="px-6 py-8 flex flex-col divide-editorial">
-              {NAV_MAIN.map((item, i) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className="flex items-center justify-between py-5 group"
-                >
-                  <span className="text-display-sm text-ink">{item.label}</span>
-                  <span className="num-plate text-slate text-xs">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-                </Link>
-              ))}
-              <Link to="/contact" className="flex items-center justify-between py-5">
-                <span className="text-display-sm text-ink">Contact</span>
-                <span className="num-plate text-slate text-xs">
+              {NAV_MAIN.map((item, i) => {
+                const active = pathname.startsWith(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    className="flex items-center justify-between py-5 group"
+                  >
+                    <span className={cn('text-display-sm transition-colors', active ? 'text-ultra' : 'text-ink group-hover:text-ultra')}>
+                      {item.label}
+                    </span>
+                    <span className={cn('num-plate text-xs transition-colors', active ? 'text-ultra' : 'text-slate')}>
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                  </Link>
+                );
+              })}
+              <Link to="/contact" className="flex items-center justify-between py-5 group">
+                <span className={cn('text-display-sm transition-colors', pathname.startsWith('/contact') ? 'text-ultra' : 'text-ink group-hover:text-ultra')}>
+                  Contact
+                </span>
+                <span className={cn('num-plate text-xs transition-colors', pathname.startsWith('/contact') ? 'text-ultra' : 'text-slate')}>
                   {String(NAV_MAIN.length + 1).padStart(2, '0')}
                 </span>
               </Link>

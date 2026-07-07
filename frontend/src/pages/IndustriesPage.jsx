@@ -31,6 +31,20 @@ export default function IndustriesPage() {
         </Container>
       </Section>
 
+      {/* Image band */}
+      <div className="relative h-[40vh] md:h-[50vh] overflow-hidden img-zoom">
+        <motion.img
+          initial={{ scale: 1.1, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1600&q=80&auto=format&fit=crop"
+          alt="Industry benchmark analytics"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-ink/30" />
+      </div>
+
       <Section tone="ivory" spacing="lg" divider={false}>
         <Container>
           {isLoading ? (

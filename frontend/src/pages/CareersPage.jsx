@@ -78,6 +78,27 @@ export default function CareersPage() {
         </Container>
       </Section>
 
+      {/* Image band */}
+      <div className="relative h-[50vh] md:h-[60vh] overflow-hidden img-zoom">
+        <motion.img
+          initial={{ scale: 1.15, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+          src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1600&q=80&auto=format&fit=crop"
+          alt="Our team collaborating"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-linear-to-t from-ink/75 via-transparent to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-8 md:p-14">
+          <Container className="px-0! md:px-4!">
+            <p className="text-ivory text-lg md:text-2xl max-w-xl leading-relaxed text-italic-fraunces">
+              &ldquo;Remote-first, ownership-heavy, and genuinely fun to work at.&rdquo;
+            </p>
+          </Container>
+        </div>
+      </div>
+
       {/* Openings */}
       <Section tone="ivory" spacing="lg">
         <Container>

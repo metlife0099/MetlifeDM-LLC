@@ -1,8 +1,16 @@
+import { motion } from 'framer-motion';
 import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
 import { StatsBand, CtaBanner, TestimonialsCarousel } from '@/components/sections/index.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { useQuery } from '@tanstack/react-query';
 import { contentApi } from '@/api/index.js';
+
+const TEAM = [
+  { name: 'Sarah Chen', role: 'Founder & CEO', photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&q=80&auto=format&fit=crop' },
+  { name: 'Marcus Webb', role: 'Head of Paid Media', photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80&auto=format&fit=crop' },
+  { name: 'David Torres', role: 'Director of SEO', photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&q=80&auto=format&fit=crop' },
+  { name: 'Emily Hart', role: 'Head of Content', photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=600&q=80&auto=format&fit=crop' },
+];
 
 const VALUES = [
   { title: 'Measured, not sold', body: 'We optimize for the metrics you actually care about — pipeline, revenue, ROAS — not vanity numbers.' },
@@ -54,6 +62,27 @@ export default function AboutPage() {
         </Container>
       </Section>
 
+      {/* Image band */}
+      <div className="relative h-[60vh] md:h-[70vh] overflow-hidden img-zoom">
+        <motion.img
+          initial={{ scale: 1.15, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+          src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&q=80&auto=format&fit=crop"
+          alt="The MetlifeDM team collaborating in our studio"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-linear-to-t from-ink/70 via-ink/10 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-8 md:p-14">
+          <Container className="px-0! md:px-4!">
+            <p className="text-ivory text-lg md:text-2xl max-w-2xl leading-relaxed text-italic-fraunces">
+              &ldquo;We hire like it&apos;s our own money on the line — because for our clients, it is.&rdquo;
+            </p>
+          </Container>
+        </div>
+      </div>
+
       {/* Stats */}
       <StatsBand stats={TEAM_STATS} />
 
@@ -78,12 +107,47 @@ export default function AboutPage() {
         </Container>
       </Section>
 
+      {/* Team */}
+      <Section tone="ivorySoft" spacing="lg">
+        <Container>
+          <Eyebrow number="02">The people</Eyebrow>
+          <h2 className="text-display-lg mt-4 mb-14 max-w-2xl">
+            Senior strategists,<br /><span className="text-italic-fraunces text-ultra">not account managers.</span>
+          </h2>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {TEAM.map((member, i) => (
+              <motion.div
+                key={member.name}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.6, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                className="group"
+              >
+                <div className="img-zoom aspect-4/5 bg-sand overflow-hidden hover-glow">
+                  <img
+                    src={member.photo}
+                    alt={member.name}
+                    className="w-full h-full object-cover grayscale-15 group-hover:grayscale-0 transition-[filter] duration-700"
+                    loading="lazy"
+                  />
+                </div>
+                <div className="mt-4">
+                  <div className="text-sm text-ink">{member.name}</div>
+                  <div className="text-mono text-xs text-slate mt-1">{member.role}</div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </Container>
+      </Section>
+
       {/* Timeline */}
       <Section tone="ink" spacing="lg" divider={false}>
         <Container>
           <div className="grid gap-16 lg:grid-cols-[1fr_1.4fr]">
             <div>
-              <div className="text-eyebrow text-ivory/50 mb-4">02 / History</div>
+              <div className="text-eyebrow text-ivory/50 mb-4">03 / History</div>
               <h2 className="text-display-lg text-ivory">Twelve years,<br /><span className="text-italic-fraunces text-ultra-soft">one thesis.</span></h2>
             </div>
             <ol className="border-t border-ivory/10">

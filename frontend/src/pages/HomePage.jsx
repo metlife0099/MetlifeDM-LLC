@@ -199,6 +199,39 @@ export default function HomePage() {
         subtitle="Every engagement follows the same four-step arc. Predictable milestones, quantified deliverables, no surprises."
       />
 
+      {/* Image band — results in the wild */}
+      <div className="relative h-[55vh] md:h-[65vh] overflow-hidden img-zoom">
+        <motion.img
+          initial={{ scale: 1.15, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+          src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1600&q=80&auto=format&fit=crop"
+          alt="A client and strategist celebrating a campaign win"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-linear-to-r from-ink/80 via-ink/20 to-transparent" />
+        <div className="absolute inset-0 flex items-center">
+          <Container>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="max-w-lg"
+            >
+              <Eyebrow className="text-ivory/60">Real results</Eyebrow>
+              <p className="text-ivory text-2xl md:text-4xl mt-6 leading-tight text-italic-fraunces">
+                Clients don&apos;t hire us twice by accident.
+              </p>
+              <p className="text-ivory/70 mt-6 max-w-md leading-relaxed">
+                94% client retention. Senior strategists who stay on your account for years, not months.
+              </p>
+            </motion.div>
+          </Container>
+        </div>
+      </div>
+
       {/* Testimonials */}
       {testimonials.length > 0 && <TestimonialsCarousel testimonials={testimonials} />}
 
