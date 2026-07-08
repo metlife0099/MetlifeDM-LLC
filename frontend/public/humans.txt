@@ -1,0 +1,16 @@
+/* TEAM */
+    Company: MetlifeDM LLC
+    Site: https://metlifedm.com
+    Location: United States
+    Contact: team@metlifedm.com
+
+/* THANKS */
+    All our clients, past and present.
+
+/* SITE */
+    Last update: 2026-07-04
+    Language: English
+    Doctype: HTML5
+    Standards: HTML5, CSS3, ES2024
+    Components: React 19, Vite 6, Tailwind CSS v4, Node.js 20, Express, MongoDB, Redis, Stripe
+    Software: Visual Studio Code, Figma

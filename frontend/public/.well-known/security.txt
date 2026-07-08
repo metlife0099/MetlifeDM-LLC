@@ -1,0 +1,13 @@
+# Security policy for MetlifeDM LLC
+# https://securitytxt.org · RFC 9116
+#
+# If you've found a security issue on metlifedm.com, please email us at the
+# address below. We treat every report seriously and respond within 48 hours.
+
+Contact: mailto:security@metlifedm.com
+Contact: https://metlifedm.com/security
+Expires: 2027-12-31T23:59:59.000Z
+Preferred-Languages: en
+Canonical: https://metlifedm.com/.well-known/security.txt
+Policy: https://metlifedm.com/security-policy
+Acknowledgments: https://metlifedm.com/security/acknowledgments
