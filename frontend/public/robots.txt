@@ -1,0 +1,86 @@
+# MetlifeDM LLC — robots.txt
+# https://metlifedm.com
+#
+# This static file is a fallback. In production, requests to /robots.txt
+# should be proxied to the backend which serves a dynamic version editable
+# from the admin panel.
+
+User-agent: *
+Allow: /
+Allow: /services
+Allow: /industries
+Allow: /portfolio
+Allow: /case-studies
+Allow: /blog
+Allow: /pricing
+Allow: /contact
+Allow: /consultation
+Allow: /about
+Allow: /careers
+Allow: /testimonials
+Allow: /faq
+
+# Auth & account areas — don't index
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /2fa
+
+# Customer portal — don't index
+Disallow: /account
+Disallow: /account/*
+Disallow: /dashboard
+Disallow: /dashboard/*
+Disallow: /checkout
+Disallow: /checkout/*
+Disallow: /orders
+Disallow: /orders/*
+
+# API and admin — never index
+Disallow: /api
+Disallow: /api/*
+Disallow: /admin
+Disallow: /admin/*
+
+# Search and filter URLs — noindex but crawlable so links pass equity
+Disallow: /*?search=
+Disallow: /*?category=
+Disallow: /*?tag=
+Disallow: /*?page=
+Disallow: /*?ref=
+Disallow: /*?utm_
+
+# Common crawler traps
+Disallow: /*.json$
+Disallow: /*?*sort=
+Disallow: /*?*filter=
+
+# Bad bots — block outright
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /
+
+# Allow AI crawlers explicitly (remove if you don't want your content in AI training)
+User-agent: GPTBot
+Allow: /blog
+Allow: /case-studies
+Disallow: /account
+
+User-agent: Google-Extended
+Allow: /
+
+# Sitemap location
+Sitemap: https://metlifedm.com/sitemap.xml
