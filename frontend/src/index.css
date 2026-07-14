@@ -107,35 +107,16 @@
     border-radius: 2px;
   }
 
-  /* ---------------- Custom scrollbar ---------------- */
+  /* ---------------- Hidden scrollbar (scroll still works) ---------------- */
   html {
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-ultra) var(--color-ivory-soft);
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* legacy Edge/IE */
   }
 
   ::-webkit-scrollbar {
-    width: 11px;
-    height: 11px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: var(--color-ivory-soft);
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, var(--color-ultra-soft), var(--color-ultra));
-    border-radius: 999px;
-    border: 3px solid var(--color-ivory-soft);
-    background-clip: padding-box;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-ink);
-    background-clip: padding-box;
-  }
-
-  ::-webkit-scrollbar-corner {
-    background: var(--color-ivory-soft);
+    display: none; /* Chrome / Safari / Chromium Edge */
+    width: 0;
+    height: 0;
   }
 
   @media (prefers-reduced-motion: reduce) {

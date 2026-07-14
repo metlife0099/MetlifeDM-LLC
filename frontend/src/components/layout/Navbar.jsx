@@ -11,6 +11,14 @@ import { useAuth } from '@/hooks/useAuth.js';
 import Button from '@/components/ui/Button.jsx';
 import { cn, initials } from '@/utils/format.js';
 
+// Routes whose hero section renders a full-bleed dark background image —
+// the header floats transparent/light-text over them until the user
+// scrolls past, then solidifies like everywhere else.
+const DARK_HERO_ROUTES = new Set([
+  '/', '/about', '/services', '/industries', '/portfolio', '/case-studies',
+  '/pricing', '/blog', '/testimonials', '/faq', '/careers', '/contact', '/consultation',
+]);
+
 export default function Navbar() {
   const dispatch = useDispatch();
   const { pathname } = useLocation();
@@ -21,6 +29,9 @@ export default function Navbar() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
   useScrollLock(mobileOpen);
+
+  const isDarkHero = DARK_HERO_ROUTES.has(pathname);
+  const floating = isDarkHero && !scrolled && !mobileOpen;
 
   useEffect(() => {
     dispatch(toggleMobileMenu(false));
@@ -43,16 +54,22 @@ export default function Navbar() {
     <header
       className={cn(
         'sticky top-0 z-50 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
-        scrolled ? 'bg-ivory/90 backdrop-blur-lg border-b border-hairline' : 'bg-ivory'
+        floating
+          ? 'bg-transparent'
+          : mobileOpen
+            ? 'bg-ivory'
+            : scrolled
+              ? 'bg-ivory/80 backdrop-blur-xl border-b border-hairline shadow-[0_1px_0_0_rgba(10,23,48,0.04),0_12px_24px_-16px_rgba(10,23,48,0.15)]'
+              : 'bg-ivory'
       )}
     >
       <div className="mx-auto max-w-[88rem] px-6 md:px-10 lg:px-14">
         <div className="flex h-20 items-center justify-between gap-8">
           {/* Wordmark */}
           <Link to="/" className="flex items-center gap-2 group" aria-label="Home">
-            <span className="text-display-sm text-ink font-medium">
+            <span className={cn('text-display-sm font-medium transition-colors duration-500', floating ? 'text-ivory' : 'text-ink')}>
               {SITE.name}
-              <span className="text-ultra">.</span>
+              <span className={floating ? 'text-ultra-soft' : 'text-ultra'}>.</span>
             </span>
           </Link>
 
@@ -65,15 +82,17 @@ export default function Navbar() {
                   key={item.href}
                   to={item.href}
                   className={cn(
-                    'text-sm relative py-2',
-                    active ? 'text-ink' : 'text-ink/70 hover:text-ink link-underline'
+                    'text-sm relative py-2 transition-colors duration-500',
+                    floating
+                      ? active ? 'text-ivory' : 'text-ivory/65 hover:text-ivory'
+                      : active ? 'text-ink' : 'text-ink/70 hover:text-ink link-underline'
                   )}
                 >
                   {item.label}
                   {active && (
                     <motion.span
                       layoutId="nav-active-indicator"
-                      className="nav-indicator-glow absolute left-0 right-0 -bottom-0.5 h-0.5 bg-ultra"
+                      className={cn('nav-indicator-glow absolute left-0 right-0 -bottom-0.5 h-0.5', floating ? 'bg-ivory' : 'bg-ultra')}
                       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                     />
                   )}
@@ -87,7 +106,10 @@ export default function Navbar() {
             {/* Cart */}
             <Link
               to="/cart"
-              className="relative p-2 -m-2 text-ink/70 hover:text-ink transition-colors"
+              className={cn(
+                'relative p-2 -m-2 transition-colors duration-500',
+                floating ? 'text-ivory/80 hover:text-ivory' : 'text-ink/70 hover:text-ink'
+              )}
               aria-label="Cart"
             >
               <ShoppingBag size={18} strokeWidth={1.5} />
@@ -106,7 +128,10 @@ export default function Navbar() {
                   className="flex items-center gap-2 group py-1"
                   aria-label="Account menu"
                 >
-                  <span className="w-8 h-8 grid place-items-center bg-ink text-ivory text-mono text-xs">
+                  <span className={cn(
+                    'w-8 h-8 grid place-items-center text-mono text-xs transition-colors duration-500',
+                    floating ? 'bg-ivory text-ink' : 'bg-ink text-ivory'
+                  )}>
                     {user?.avatar?.url ? (
                       <img src={user.avatar.url} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -116,7 +141,11 @@ export default function Navbar() {
                   <ChevronDown
                     size={14}
                     strokeWidth={1.5}
-                    className={cn('text-slate transition-transform', userMenuOpen && 'rotate-180')}
+                    className={cn(
+                      'transition-transform',
+                      floating ? 'text-ivory/70' : 'text-slate',
+                      userMenuOpen && 'rotate-180'
+                    )}
                   />
                 </button>
                 <AnimatePresence>
@@ -171,12 +200,18 @@ export default function Navbar() {
                 </AnimatePresence>
               </div>
             ) : (
-              <Link to="/login" className="text-sm link-underline text-ink/70 hover:text-ink">
+              <Link
+                to="/login"
+                className={cn(
+                  'text-sm transition-colors duration-500',
+                  floating ? 'text-ivory/80 hover:text-ivory' : 'text-ink/70 hover:text-ink link-underline'
+                )}
+              >
                 Log in
               </Link>
             )}
 
-            <Button to="/consultation" size="md">
+            <Button to="/consultation" size="md" variant={floating ? 'inverse' : 'primary'}>
               Book a call
               <ArrowUpRight size={14} strokeWidth={1.5} />
             </Button>
@@ -186,7 +221,7 @@ export default function Navbar() {
           <div className="lg:hidden flex items-center gap-2">
             <Link
               to="/cart"
-              className="relative p-2 text-ink/70"
+              className={cn('relative p-2 transition-colors duration-500', floating ? 'text-ivory/80' : 'text-ink/70')}
               aria-label="Cart"
             >
               <ShoppingBag size={20} strokeWidth={1.5} />
@@ -198,7 +233,7 @@ export default function Navbar() {
             </Link>
             <button
               onClick={() => dispatch(toggleMobileMenu())}
-              className="p-2 -mr-2"
+              className={cn('p-2 -mr-2 transition-colors duration-500', floating ? 'text-ivory' : 'text-ink')}
               aria-label="Toggle menu"
             >
               {mobileOpen ? <X size={22} strokeWidth={1.25} /> : <Menu size={22} strokeWidth={1.25} />}

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Star, Quote } from 'lucide-react';
-import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
+import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner, StatsBand } from '@/components/sections/index.jsx';
@@ -28,20 +28,24 @@ export default function TestimonialsPage() {
         description="What US business owners say about working with MetlifeDM. Unedited quotes with real names, companies, and metrics."
       />
 
-      <Section tone="ivory" spacing="lg" divider={false}>
-        <Container>
-          <Eyebrow number="00">Testimonials / Unedited quotes</Eyebrow>
-          <h1 className="text-display-hero mt-8 max-w-4xl">
+      <Section tone="ink" spacing="lg" divider={false} className="relative">
+        <HeroImage
+          src="https://images.unsplash.com/photo-1590650046871-92c887180603?w=1920&q=80&auto=format&fit=crop"
+          alt="Clients meeting over coffee"
+        />
+        <Container className="relative z-10">
+          <Eyebrow number="00" light>Testimonials / Unedited quotes</Eyebrow>
+          <h1 className="text-display-hero mt-8 max-w-4xl text-ivory">
             In their<br />
-            <span className="text-italic-fraunces text-ultra">own words.</span>
+            <span className="text-italic-fraunces text-ultra-soft">own words.</span>
           </h1>
-          <p className="text-slate text-lg mt-8 max-w-xl leading-relaxed">
+          <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
             No paraphrasing, no cropping. Every quote below comes from a real US business owner who agreed to be named — with the metric we moved for them attached.
           </p>
         </Container>
       </Section>
 
-      <StatsBand items={STATS} />
+      <StatsBand stats={STATS} />
 
       <Section tone="ivory" spacing="lg" divider={false}>
         <Container>

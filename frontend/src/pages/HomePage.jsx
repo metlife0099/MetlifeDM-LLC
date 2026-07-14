@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, ArrowRight } from 'lucide-react';
-import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
+import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import {
@@ -82,19 +82,23 @@ export default function HomePage() {
       />
 
       {/* ============ HERO ============ */}
-      <Section tone="ivory" spacing="xl" divider={false} className="relative overflow-hidden">
-        <Container>
+      <Section tone="ink" spacing="xl" divider={false} className="relative">
+        <HeroImage
+          src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&q=80&auto=format&fit=crop"
+          alt="Strategists collaborating around a laptop"
+        />
+        <Container className="relative z-10">
           <div className="grid gap-16 lg:grid-cols-[1.4fr_1fr] lg:items-end">
             <div>
-              <Eyebrow number="00">Digital marketing / Est. 2013</Eyebrow>
+              <Eyebrow number="00" light>Digital marketing / Est. 2013</Eyebrow>
               <motion.h1
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-                className="text-display-hero mt-8"
+                className="text-display-hero mt-8 text-ivory"
               >
                 Growth is a{' '}
-                <span className="text-italic-fraunces text-ultra">discipline,</span>
+                <span className="text-italic-fraunces text-ultra-soft">discipline,</span>
                 <br />
                 not a lottery.
               </motion.h1>
@@ -102,9 +106,9 @@ export default function HomePage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1, delay: 0.3 }}
-                className="mt-8 max-w-xl text-lg text-slate leading-relaxed"
+                className="mt-8 max-w-xl text-lg text-ivory/75 leading-relaxed"
               >
-                We&apos;re a US-based agency of senior strategists helping <strong className="text-ink">200+
+                We&apos;re a US-based agency of senior strategists helping <strong className="text-ivory">200+
                 brands</strong> compound revenue through SEO, paid media, content, and AI-powered marketing —
                 with measurable results in the first 90 days.
               </motion.p>
@@ -114,10 +118,10 @@ export default function HomePage() {
                 transition={{ duration: 1, delay: 0.5 }}
                 className="mt-12 flex flex-wrap gap-4"
               >
-                <Button to="/consultation" size="lg">
+                <Button to="/consultation" size="lg" variant="inverse">
                   Book a strategy call <ArrowUpRight size={16} strokeWidth={1.5} />
                 </Button>
-                <Button to="/case-studies" variant="ghost" size="lg">
+                <Button to="/case-studies" variant="ghost" size="lg" className="border-ivory/30 text-ivory hover:bg-ivory hover:text-ink">
                   See how we work
                 </Button>
               </motion.div>
@@ -130,7 +134,7 @@ export default function HomePage() {
               transition={{ duration: 1, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
               className="relative"
             >
-              <div className="border border-hairline p-8 md:p-10 bg-ivory-soft">
+              <div className="border border-hairline p-8 md:p-10 bg-ivory-soft shadow-[0_32px_64px_-24px_rgba(0,0,0,0.5)]">
                 <div className="text-eyebrow mb-4">Live · Q3 2025 client benchmark</div>
                 <div className="text-mono text-xs text-slate mb-2">Organic revenue, YoY</div>
                 <div className="text-display-hero num-plate leading-none text-ink">

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Check, ArrowUpRight } from 'lucide-react';
-import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
+import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
@@ -32,26 +32,30 @@ export default function PricingPage() {
       <Seo title="Pricing" description="Transparent pricing across all MetlifeDM marketing services. Monthly, quarterly, and annual plans available." />
 
       {/* Hero */}
-      <Section tone="ivory" spacing="lg" divider={false}>
-        <Container>
-          <Eyebrow number="00">Pricing / Transparent by default</Eyebrow>
-          <h1 className="text-display-hero mt-8 max-w-4xl">
+      <Section tone="ink" spacing="lg" divider={false} className="relative">
+        <HeroImage
+          src="https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=1920&q=80&auto=format&fit=crop"
+          alt="Investment growing"
+        />
+        <Container className="relative z-10">
+          <Eyebrow number="00" light>Pricing / Transparent by default</Eyebrow>
+          <h1 className="text-display-hero mt-8 max-w-4xl text-ivory">
             Pricing you can<br />
-            <span className="text-italic-fraunces text-ultra">verify in a spreadsheet.</span>
+            <span className="text-italic-fraunces text-ultra-soft">verify in a spreadsheet.</span>
           </h1>
-          <p className="text-slate text-lg mt-8 max-w-xl leading-relaxed">
+          <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
             No lock-ins. No hidden fees. Cancel any time. Every plan includes a senior strategist, monthly review, and full dashboard access.
           </p>
 
           {/* Billing toggle */}
-          <div className="mt-12 inline-flex items-center border border-hairline p-1">
+          <div className="mt-12 inline-flex items-center border border-ivory/25 p-1">
             {['monthly', 'yearly'].map((b) => (
               <button
                 key={b}
                 onClick={() => setBilling(b)}
                 className={cn(
                   'px-6 py-2 text-mono text-xs uppercase tracking-widest transition-colors',
-                  billing === b ? 'bg-ink text-ivory' : 'text-slate hover:text-ink'
+                  billing === b ? 'bg-ivory text-ink' : 'text-ivory/70 hover:text-ivory'
                 )}
               >
                 {b}

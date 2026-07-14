@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
+import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { StatsBand, CtaBanner, TestimonialsCarousel } from '@/components/sections/index.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { useQuery } from '@tanstack/react-query';
@@ -44,44 +44,27 @@ export default function AboutPage() {
       <Seo title="About" description="MetlifeDM LLC — a US-based agency of senior marketers helping 200+ brands grow since 2013." />
 
       {/* Hero */}
-      <Section tone="ivory" spacing="xl" divider={false}>
-        <Container>
-          <Eyebrow number="00">About / Est. 2013</Eyebrow>
-          <h1 className="text-display-hero mt-8 max-w-5xl">
+      <Section tone="ink" spacing="xl" divider={false} className="relative">
+        <HeroImage
+          src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1920&q=80&auto=format&fit=crop"
+          alt="The MetlifeDM team collaborating in our studio"
+        />
+        <Container className="relative z-10">
+          <Eyebrow number="00" light>About / Est. 2013</Eyebrow>
+          <h1 className="text-display-hero mt-8 max-w-5xl text-ivory">
             We&apos;re a small agency<br />
-            with a <span className="text-italic-fraunces text-ultra">strong opinion</span> about growth.
+            with a <span className="text-italic-fraunces text-ultra-soft">strong opinion</span> about growth.
           </h1>
           <div className="grid gap-8 lg:grid-cols-2 mt-16 max-w-6xl">
-            <p className="text-lg text-slate leading-relaxed">
+            <p className="text-lg text-ivory/75 leading-relaxed">
               MetlifeDM started in a Manhattan coworking space in 2013 with a simple thesis: US businesses were being sold campaigns when they needed systems. A decade later, we&apos;ve grown into a 45-person team across the US, but the thesis hasn&apos;t changed.
             </p>
-            <p className="text-lg text-slate leading-relaxed">
+            <p className="text-lg text-ivory/75 leading-relaxed">
               We take on around 15 new clients a year — brands that value senior strategy, transparent reporting, and results that compound. If that sounds like you, we&apos;d love to meet.
             </p>
           </div>
         </Container>
       </Section>
-
-      {/* Image band */}
-      <div className="relative h-[60vh] md:h-[70vh] overflow-hidden img-zoom">
-        <motion.img
-          initial={{ scale: 1.15, opacity: 0 }}
-          whileInView={{ scale: 1, opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-          src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=1600&q=80&auto=format&fit=crop"
-          alt="The MetlifeDM team collaborating in our studio"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-linear-to-t from-ink/70 via-ink/10 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-8 md:p-14">
-          <Container className="px-0! md:px-4!">
-            <p className="text-ivory text-lg md:text-2xl max-w-2xl leading-relaxed text-italic-fraunces">
-              &ldquo;We hire like it&apos;s our own money on the line — because for our clients, it is.&rdquo;
-            </p>
-          </Container>
-        </div>
-      </div>
 
       {/* Stats */}
       <StatsBand stats={TEAM_STATS} />

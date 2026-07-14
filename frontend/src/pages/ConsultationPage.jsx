@@ -6,7 +6,7 @@ import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Video, ArrowUpRight, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
+import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Input, Textarea, Select, Checkbox } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
@@ -136,14 +136,18 @@ export default function ConsultationPage() {
     <>
       <Seo title="Book a consultation" description="Book a free 30-minute strategy call with MetlifeDM's senior strategists. No pitch — just a plan." />
 
-      <Section tone="ivory" spacing="lg" divider={false}>
-        <Container>
-          <Eyebrow number="00">Consultation / 30-minute strategy call</Eyebrow>
-          <h1 className="text-display-hero mt-8 max-w-4xl">
+      <Section tone="ink" spacing="lg" divider={false} className="relative">
+        <HeroImage
+          src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?w=1920&q=80&auto=format&fit=crop"
+          alt="A strategy conversation"
+        />
+        <Container className="relative z-10">
+          <Eyebrow number="00" light>Consultation / 30-minute strategy call</Eyebrow>
+          <h1 className="text-display-hero mt-8 max-w-4xl text-ivory">
             Book a strategy call.<br />
-            <span className="text-italic-fraunces text-ultra">No pitch. Just a plan.</span>
+            <span className="text-italic-fraunces text-ultra-soft">No pitch. Just a plan.</span>
           </h1>
-          <p className="text-slate text-lg mt-8 max-w-xl leading-relaxed">
+          <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
             A senior strategist reviews your funnel, benchmarks your competitors, and gives you 3 actionable next steps — for free, in 30 minutes.
           </p>
 

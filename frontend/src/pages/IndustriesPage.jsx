@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
-import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
+import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
@@ -18,32 +18,22 @@ export default function IndustriesPage() {
     <>
       <Seo title="Industries" description="Specialized digital marketing for e-commerce, SaaS, healthcare, real estate, legal, and financial services." />
 
-      <Section tone="ivory" spacing="lg" divider={false}>
-        <Container>
-          <Eyebrow number="00">Industries / Specialized playbooks</Eyebrow>
-          <h1 className="text-display-hero mt-8 max-w-4xl">
+      <Section tone="ink" spacing="lg" divider={false} className="relative">
+        <HeroImage
+          src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1920&q=80&auto=format&fit=crop"
+          alt="Industry benchmark analytics"
+        />
+        <Container className="relative z-10">
+          <Eyebrow number="00" light>Industries / Specialized playbooks</Eyebrow>
+          <h1 className="text-display-hero mt-8 max-w-4xl text-ivory">
             We speak<br />
-            <span className="text-italic-fraunces text-ultra">your industry.</span>
+            <span className="text-italic-fraunces text-ultra-soft">your industry.</span>
           </h1>
-          <p className="text-slate text-lg mt-8 max-w-xl leading-relaxed">
+          <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
             Every industry has its own buyers, compliance, and competitive dynamics. We&apos;ve built dedicated playbooks for the ones we know best.
           </p>
         </Container>
       </Section>
-
-      {/* Image band */}
-      <div className="relative h-[40vh] md:h-[50vh] overflow-hidden img-zoom">
-        <motion.img
-          initial={{ scale: 1.1, opacity: 0 }}
-          whileInView={{ scale: 1, opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-          src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1600&q=80&auto=format&fit=crop"
-          alt="Industry benchmark analytics"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-ink/30" />
-      </div>
 
       <Section tone="ivory" spacing="lg" divider={false}>
         <Container>

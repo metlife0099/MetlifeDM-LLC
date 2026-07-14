@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
-import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
+import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
@@ -28,14 +28,18 @@ export default function PortfolioPage() {
     <>
       <Seo title="Portfolio" description="Selected work from MetlifeDM — websites, campaigns, and brand systems for US businesses." />
 
-      <Section tone="ivory" spacing="lg" divider={false}>
-        <Container>
-          <Eyebrow number="00">Portfolio / Selected work</Eyebrow>
-          <h1 className="text-display-hero mt-8 max-w-4xl">
+      <Section tone="ink" spacing="lg" divider={false} className="relative">
+        <HeroImage
+          src="https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=1920&q=80&auto=format&fit=crop"
+          alt="Creative work in progress"
+        />
+        <Container className="relative z-10">
+          <Eyebrow number="00" light>Portfolio / Selected work</Eyebrow>
+          <h1 className="text-display-hero mt-8 max-w-4xl text-ivory">
             Work<br />
-            <span className="text-italic-fraunces text-ultra">worth the receipt.</span>
+            <span className="text-italic-fraunces text-ultra-soft">worth the receipt.</span>
           </h1>
-          <p className="text-slate text-lg mt-8 max-w-xl leading-relaxed">
+          <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
             A cross-section of websites, ad creative, and full brand systems we&apos;ve shipped over the past twelve years. Every one has real KPIs attached.
           </p>
         </Container>

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { MapPin, Clock, ArrowUpRight, Briefcase } from 'lucide-react';
-import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
+import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner, Badge } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
@@ -49,14 +49,18 @@ export default function CareersPage() {
         description="Join MetlifeDM. We're hiring strategists, designers, engineers, and content operators who care about craft."
       />
 
-      <Section tone="ivory" spacing="lg" divider={false}>
-        <Container>
-          <Eyebrow number="00">Careers / We&apos;re hiring</Eyebrow>
-          <h1 className="text-display-hero mt-8 max-w-4xl">
+      <Section tone="ink" spacing="lg" divider={false} className="relative">
+        <HeroImage
+          src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1920&q=80&auto=format&fit=crop"
+          alt="Our team collaborating"
+        />
+        <Container className="relative z-10">
+          <Eyebrow number="00" light>Careers / We&apos;re hiring</Eyebrow>
+          <h1 className="text-display-hero mt-8 max-w-4xl text-ivory">
             Build the<br />
-            <span className="text-italic-fraunces text-ultra">work you want to be known for.</span>
+            <span className="text-italic-fraunces text-ultra-soft">work you want to be known for.</span>
           </h1>
-          <p className="text-slate text-lg mt-8 max-w-xl leading-relaxed">
+          <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
             Remote-first (US only). Small teams. Real ownership. Every hire changes the shape of the company.
           </p>
         </Container>
@@ -77,27 +81,6 @@ export default function CareersPage() {
           </div>
         </Container>
       </Section>
-
-      {/* Image band */}
-      <div className="relative h-[50vh] md:h-[60vh] overflow-hidden img-zoom">
-        <motion.img
-          initial={{ scale: 1.15, opacity: 0 }}
-          whileInView={{ scale: 1, opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-          src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1600&q=80&auto=format&fit=crop"
-          alt="Our team collaborating"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-linear-to-t from-ink/75 via-transparent to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-8 md:p-14">
-          <Container className="px-0! md:px-4!">
-            <p className="text-ivory text-lg md:text-2xl max-w-xl leading-relaxed text-italic-fraunces">
-              &ldquo;Remote-first, ownership-heavy, and genuinely fun to work at.&rdquo;
-            </p>
-          </Container>
-        </div>
-      </div>
 
       {/* Openings */}
       <Section tone="ivory" spacing="lg">

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Search, Plus, Minus } from 'lucide-react';
-import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
+import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
@@ -48,25 +48,29 @@ export default function FaqPage() {
         description="Answers to common questions about MetlifeDM's services, pricing, timelines, and process."
       />
 
-      <Section tone="ivory" spacing="lg" divider={false}>
-        <Container>
-          <Eyebrow number="00">FAQ / Straight answers</Eyebrow>
-          <h1 className="text-display-hero mt-8 max-w-4xl">
+      <Section tone="ink" spacing="lg" divider={false} className="relative">
+        <HeroImage
+          src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1920&q=80&auto=format&fit=crop"
+          alt="Team discussing a question"
+        />
+        <Container className="relative z-10">
+          <Eyebrow number="00" light>FAQ / Straight answers</Eyebrow>
+          <h1 className="text-display-hero mt-8 max-w-4xl text-ivory">
             Questions.<br />
-            <span className="text-italic-fraunces text-ultra">Answered plainly.</span>
+            <span className="text-italic-fraunces text-ultra-soft">Answered plainly.</span>
           </h1>
-          <p className="text-slate text-lg mt-8 max-w-xl leading-relaxed">
+          <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
             Everything we get asked most often, organized so you can find what you need in under a minute.
           </p>
 
           <div className="mt-12 max-w-md relative">
-            <Search size={16} strokeWidth={1.5} className="absolute left-0 top-3 text-slate" />
+            <Search size={16} strokeWidth={1.5} className="absolute left-0 top-3 text-ivory/60" />
             <input
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search questions…"
-              className="w-full bg-transparent border-b border-ink/25 pl-7 pb-3 pt-3 text-base placeholder:text-slate focus:border-ultra focus:outline-none"
+              className="w-full bg-transparent border-b border-ivory/30 pl-7 pb-3 pt-3 text-base text-ivory placeholder:text-ivory/50 focus:border-ultra-soft focus:outline-none"
             />
           </div>
         </Container>

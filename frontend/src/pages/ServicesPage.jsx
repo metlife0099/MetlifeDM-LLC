@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion';
-import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
+import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { ServicesGrid, CtaBanner } from '@/components/sections/index.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
 import Seo from '@/components/seo/Seo.jsx';
@@ -32,32 +31,22 @@ export default function ServicesPage() {
         description="SEO, PPC, content, social, web development, and AI marketing services for USA businesses."
       />
 
-      <Section tone="ivory" spacing="lg" divider={false}>
-        <Container>
-          <Eyebrow number="00">Services / All disciplines</Eyebrow>
-          <h1 className="text-display-hero mt-8 max-w-4xl">
+      <Section tone="ink" spacing="lg" divider={false} className="relative">
+        <HeroImage
+          src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1920&q=80&auto=format&fit=crop"
+          alt="Live campaign analytics dashboard"
+        />
+        <Container className="relative z-10">
+          <Eyebrow number="00" light>Services / All disciplines</Eyebrow>
+          <h1 className="text-display-hero mt-8 max-w-4xl text-ivory">
             Marketing services,<br />
-            <span className="text-italic-fraunces text-ultra">built to compound.</span>
+            <span className="text-italic-fraunces text-ultra-soft">built to compound.</span>
           </h1>
-          <p className="text-slate text-lg mt-8 max-w-xl leading-relaxed">
+          <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
             Every service ships with quantified KPIs, a senior strategist, and monthly ROI reporting. Explore what fits your growth stage.
           </p>
         </Container>
       </Section>
-
-      {/* Image band */}
-      <div className="relative h-[40vh] md:h-[50vh] overflow-hidden img-zoom">
-        <motion.img
-          initial={{ scale: 1.1, opacity: 0 }}
-          whileInView={{ scale: 1, opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-          src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1600&q=80&auto=format&fit=crop"
-          alt="Live campaign analytics dashboard"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-ink/30" />
-      </div>
 
       {/* Category filter */}
       <div className="sticky top-20 z-30 bg-ivory border-y border-hairline">

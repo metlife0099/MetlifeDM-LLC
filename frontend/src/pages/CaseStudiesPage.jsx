@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
-import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
+import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
@@ -28,14 +28,18 @@ export default function CaseStudiesPage() {
     <>
       <Seo title="Case Studies" description="Detailed case studies showing measurable ROI from MetlifeDM's SEO, PPC, and content campaigns for US businesses." />
 
-      <Section tone="ivory" spacing="lg" divider={false}>
-        <Container>
-          <Eyebrow number="00">Case studies / Receipts, not promises</Eyebrow>
-          <h1 className="text-display-hero mt-8 max-w-4xl">
+      <Section tone="ink" spacing="lg" divider={false} className="relative">
+        <HeroImage
+          src="https://images.unsplash.com/photo-1543286386-2e659306cd6c?w=1920&q=80&auto=format&fit=crop"
+          alt="Growth chart sketched on paper"
+        />
+        <Container className="relative z-10">
+          <Eyebrow number="00" light>Case studies / Receipts, not promises</Eyebrow>
+          <h1 className="text-display-hero mt-8 max-w-4xl text-ivory">
             The receipts.<br />
-            <span className="text-italic-fraunces text-ultra">Numbered.</span>
+            <span className="text-italic-fraunces text-ultra-soft">Numbered.</span>
           </h1>
-          <p className="text-slate text-lg mt-8 max-w-xl leading-relaxed">
+          <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
             Real client engagements, real KPIs, real revenue. Each case study includes the brief, the strategy, and the exact metric we moved.
           </p>
         </Container>

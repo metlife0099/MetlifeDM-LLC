@@ -5,7 +5,7 @@ import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, ArrowUpRight } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
+import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Input, Textarea, Select, Checkbox } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
@@ -79,14 +79,18 @@ export default function ContactPage() {
       <Seo title="Contact" description="Get in touch with MetlifeDM. We respond to every inquiry within one business day." />
 
       {/* Hero */}
-      <Section tone="ivory" spacing="lg" divider={false}>
-        <Container>
-          <Eyebrow number="00">Contact / Let&apos;s talk</Eyebrow>
-          <h1 className="text-display-hero mt-8 max-w-4xl">
+      <Section tone="ink" spacing="lg" divider={false} className="relative">
+        <HeroImage
+          src="https://images.unsplash.com/photo-1423666639041-f56000c27a9a?w=1920&q=80&auto=format&fit=crop"
+          alt="Getting in touch"
+        />
+        <Container className="relative z-10">
+          <Eyebrow number="00" light>Contact / Let&apos;s talk</Eyebrow>
+          <h1 className="text-display-hero mt-8 max-w-4xl text-ivory">
             Start the<br />
-            <span className="text-italic-fraunces text-ultra">conversation.</span>
+            <span className="text-italic-fraunces text-ultra-soft">conversation.</span>
           </h1>
-          <p className="text-slate text-lg mt-8 max-w-xl leading-relaxed">
+          <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
             Tell us about your business. We&apos;ll get back within one business day with next steps or thoughtful questions — no auto-responders, no drip campaigns.
           </p>
         </Container>
