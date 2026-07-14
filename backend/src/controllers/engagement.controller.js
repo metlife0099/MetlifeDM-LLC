@@ -103,7 +103,10 @@ export const faq = {
   list: asyncHandler(async (req, res) => {
     const filter = { isPublished: true };
     if (req.query.category) filter.category = req.query.category;
-    const items = await FAQ.find(filter).sort({ order: 1, createdAt: -1 });
+    if (req.query.featured === 'true') filter.isFeatured = true;
+    let query = FAQ.find(filter).sort({ order: 1, createdAt: -1 });
+    if (req.query.limit) query = query.limit(Number(req.query.limit));
+    const items = await query;
     return ApiResponse.ok(res, items, 'FAQs');
   }),
   listAdmin: asyncHandler(async (req, res) => {

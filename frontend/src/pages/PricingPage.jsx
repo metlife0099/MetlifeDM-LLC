@@ -33,7 +33,7 @@ export default function PricingPage() {
 
   const { data: faqs = [] } = useQuery({
     queryKey: ['faqs', 'pricing'],
-    queryFn: () => contentApi.listFaqs({ category: 'billing', limit: 6 }),
+    queryFn: () => contentApi.listFaqs({ category: 'pricing', limit: 6 }),
   });
 
   return (
@@ -230,6 +230,39 @@ export default function PricingPage() {
           )}
         </Container>
       </Section>
+
+      {/* Image band */}
+      <div className="relative h-[40vh] md:h-[50vh] overflow-hidden img-zoom">
+        <motion.img
+          initial={{ scale: 1.15, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+          src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1600&q=80&auto=format&fit=crop"
+          alt="Team reviewing pricing and ROI numbers"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-linear-to-r from-ink/80 via-ink/20 to-transparent" />
+        <div className="absolute inset-0 flex items-center">
+          <Container>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="max-w-lg"
+            >
+              <Eyebrow className="text-ivory/60">No surprises</Eyebrow>
+              <p className="text-ivory text-2xl md:text-4xl mt-6 leading-tight text-italic-fraunces">
+                Every dollar mapped to a deliverable.
+              </p>
+              <p className="text-ivory/70 mt-6 max-w-md leading-relaxed">
+                You'll always know exactly what you're paying for and what it produced.
+              </p>
+            </motion.div>
+          </Container>
+        </div>
+      </div>
 
       {faqs.length > 0 && <FaqAccordion items={faqs} eyebrow="Pricing FAQ" />}
 

@@ -70,8 +70,8 @@ export default function HomePage() {
   });
 
   const { data: faqs = [] } = useQuery({
-    queryKey: ['faqs'],
-    queryFn: () => contentApi.listFaqs({ limit: 6 }),
+    queryKey: ['faqs', 'featured'],
+    queryFn: () => contentApi.listFaqs({ featured: 'true', limit: 6 }),
   });
 
   return (

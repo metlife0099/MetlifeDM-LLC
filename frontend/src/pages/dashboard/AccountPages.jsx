@@ -12,6 +12,7 @@ import { addItem } from '@/store/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { DashHeader, DashEmpty } from '@/components/dashboard/DashHeader.jsx';
 import { Spinner, Card, Input, Badge } from '@/components/ui/index.jsx';
+import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { formatMoney, timeAgo, cn } from '@/utils/format.js';
@@ -142,10 +143,7 @@ export const NotificationsPage = () => {
                 key={n._id}
                 {...(n.link ? { to: n.link } : {})}
                 onClick={() => !n.isRead && markRead.mutate(n._id)}
-                className={cn(
-                  'py-5 flex items-start gap-4 group',
-                  n.link && 'cursor-pointer'
-                )}
+                className="py-5 flex items-start gap-4 group cursor-pointer"
               >
                 <div className={cn('w-9 h-9 grid place-items-center shrink-0', n.isRead ? 'bg-sand' : 'bg-ultra-tint')}>
                   <Bell size={14} strokeWidth={1.5} className={n.isRead ? 'text-slate' : 'text-ultra'} />
@@ -187,6 +185,7 @@ export const SecurityPage = () => {
   const [step2FA, setStep2FA] = useState('idle');
   const [qrData, setQrData] = useState(null);
   const [otp, setOtp] = useState('');
+  const [showLogoutAllConfirm, setShowLogoutAllConfirm] = useState(false);
 
   const {
     register,
@@ -316,13 +315,26 @@ export const SecurityPage = () => {
           </p>
           <Button
             variant="ghost"
-            onClick={() => confirm('Sign out of all devices?') && logoutAll.mutate()}
+            onClick={() => setShowLogoutAllConfirm(true)}
             disabled={logoutAll.isPending}
           >
             {logoutAll.isPending ? 'Signing out…' : 'Sign out of all devices'}
           </Button>
         </Card>
       </div>
+
+      <ConfirmDialog
+        open={showLogoutAllConfirm}
+        onClose={() => setShowLogoutAllConfirm(false)}
+        onConfirm={() => {
+          logoutAll.mutate();
+          setShowLogoutAllConfirm(false);
+        }}
+        title="Sign out of all devices?"
+        description="You'll be logged out everywhere, including this device, and will need to sign in again."
+        confirmLabel="Sign out everywhere"
+        variant="ultra"
+      />
     </>
   );
 };

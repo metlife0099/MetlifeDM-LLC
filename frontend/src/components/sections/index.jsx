@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
-import { ChevronDown, Star, ArrowUpRight } from 'lucide-react';
+import { ChevronDown, Star, ArrowUpRight, MessageCircleQuestion } from 'lucide-react';
 import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
 import { Card } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
@@ -166,49 +166,80 @@ export const CtaBanner = ({
 );
 
 /* ================== FAQ ACCORDION ================== */
-export const FaqAccordion = ({ items = [], eyebrow = '04 / FAQ' }) => {
+export const FaqAccordion = ({
+  items = [],
+  eyebrow = '04 / FAQ',
+  image = 'https://images.unsplash.com/photo-1520333789090-1afc82db536a?w=1200&q=80&auto=format&fit=crop',
+}) => {
   const [open, setOpen] = useState(0);
   return (
     <Section tone="ivory" spacing="lg">
       <Container>
-        <div className="grid gap-12 lg:grid-cols-[1fr_1.6fr]">
+        {/* Heading row — full width, on its own */}
+        <div className="flex items-end justify-between mb-14 gap-8 flex-wrap">
           <div>
             <Eyebrow>{eyebrow}</Eyebrow>
-            <h2 className="text-display-lg mt-4">Frequently<br />asked.</h2>
-            <p className="text-slate text-sm mt-6 max-w-sm leading-relaxed">
-              Can&apos;t find your answer?{' '}
-              <Link to="/contact" className="link-underline text-ink">
-                Ask us directly
-              </Link>
-              .
-            </p>
+            <h2 className="text-display-lg mt-4 max-w-2xl">Frequently asked.</h2>
           </div>
-          <div className="divide-editorial border-t border-hairline">
-            {items.map((item, i) => (
-              <div key={item._id || i}>
-                <button
-                  onClick={() => setOpen(open === i ? -1 : i)}
-                  className="w-full py-6 flex items-center justify-between gap-6 text-left group"
-                >
-                  <span className={cn('text-display-sm transition-colors', open === i ? 'text-ink' : 'text-ink/80')}>
-                    {item.question}
-                  </span>
-                  <ChevronDown
-                    size={20}
-                    strokeWidth={1.5}
-                    className={cn('shrink-0 transition-transform duration-500', open === i && 'rotate-180')}
-                  />
-                </button>
-                <motion.div
-                  initial={false}
-                  animate={{ height: open === i ? 'auto' : 0, opacity: open === i ? 1 : 0 }}
-                  transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                  className="overflow-hidden"
-                >
-                  <p className="pb-6 text-slate leading-relaxed max-w-2xl">{item.answer}</p>
-                </motion.div>
+          <Button to="/contact" variant="underline" size="md">
+            Ask us directly <ArrowUpRight size={14} strokeWidth={1.5} />
+          </Button>
+        </div>
+
+        {/* Image + Q&A, side by side */}
+        <div className="grid gap-12 lg:grid-cols-[1fr_1.6fr] items-stretch">
+          {image && (
+            <div className="hidden lg:block relative min-h-[28rem] overflow-hidden border border-hairline img-zoom">
+              <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+              <div className="absolute inset-0 bg-linear-to-t from-ink/70 via-transparent to-transparent" />
+              <div className="absolute bottom-5 left-5 right-5 flex items-center gap-2 text-ivory">
+                <MessageCircleQuestion size={16} strokeWidth={1.5} />
+                <span className="text-mono text-xs uppercase tracking-widest">Real answers, no fluff</span>
               </div>
-            ))}
+            </div>
+          )}
+          <div className="divide-editorial border-t border-hairline self-start">
+            {items.map((item, i) => {
+              const isOpen = open === i;
+              return (
+                <div key={item._id || i} className="group">
+                  <button
+                    onClick={() => setOpen(isOpen ? -1 : i)}
+                    className={cn(
+                      'w-full py-6 px-4 -mx-4 flex items-center justify-between gap-6 text-left cursor-pointer rounded-sm transition-colors duration-300',
+                      isOpen ? 'bg-ivory-soft' : 'hover:bg-ivory-soft'
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        'text-display-sm transition-colors duration-300',
+                        isOpen ? 'text-ultra' : 'text-ink/80 group-hover:text-ink'
+                      )}
+                    >
+                      {item.question}
+                    </span>
+                    <span
+                      className={cn(
+                        'shrink-0 w-9 h-9 grid place-items-center border rounded-full transition-all duration-300',
+                        isOpen
+                          ? 'bg-ink text-ivory border-ink rotate-180'
+                          : 'border-hairline group-hover:border-ink group-hover:-translate-y-0.5'
+                      )}
+                    >
+                      <ChevronDown size={16} strokeWidth={1.5} />
+                    </span>
+                  </button>
+                  <motion.div
+                    initial={false}
+                    animate={{ height: isOpen ? 'auto' : 0, opacity: isOpen ? 1 : 0 }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    className="overflow-hidden"
+                  >
+                    <p className="pb-6 px-4 -mx-4 text-slate leading-relaxed max-w-2xl">{item.answer}</p>
+                  </motion.div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </Container>

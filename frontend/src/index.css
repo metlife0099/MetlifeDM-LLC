@@ -52,6 +52,17 @@
     scroll-behavior: auto;
   }
 
+  button,
+  [role='button'],
+  a,
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
   body {
     font-family: var(--font-body);
     background: var(--color-ivory);

@@ -15,6 +15,7 @@ import { commerceApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
 import { Card, Input, Spinner } from '@/components/ui/index.jsx';
+import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { formatMoney } from '@/utils/format.js';
@@ -28,6 +29,7 @@ export default function CartPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [couponCode, setCouponCode] = useState('');
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const validateCoupon = useMutation({
     mutationFn: ({ code, subtotal }) => commerceApi.validateCoupon(code, subtotal),
@@ -85,13 +87,26 @@ export default function CartPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => confirm('Clear cart?') && dispatch(clearCart())}
+              onClick={() => setShowClearConfirm(true)}
             >
               <Trash2 size={14} strokeWidth={1.5} /> Clear cart
             </Button>
           </div>
         </Container>
       </Section>
+
+      <ConfirmDialog
+        open={showClearConfirm}
+        onClose={() => setShowClearConfirm(false)}
+        onConfirm={() => {
+          dispatch(clearCart());
+          setShowClearConfirm(false);
+        }}
+        title="Clear cart?"
+        description="This will remove all items from your cart. This can't be undone."
+        confirmLabel="Clear cart"
+        variant="ultra"
+      />
 
       <Section spacing="lg">
         <Container>

@@ -102,6 +102,16 @@ export default function ContactPage() {
             {/* Contact info sidebar */}
             <div>
               <div className="space-y-10 lg:sticky lg:top-32">
+                <div className="relative aspect-4/3 overflow-hidden border border-hairline img-zoom">
+                  <img
+                    src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=900&q=80&auto=format&fit=crop"
+                    alt="MetlifeDM team at work"
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-linear-to-t from-ink/70 via-transparent to-transparent" />
+                </div>
+
                 <div>
                   <Eyebrow number="01">Direct</Eyebrow>
                   <div className="mt-6 space-y-6">

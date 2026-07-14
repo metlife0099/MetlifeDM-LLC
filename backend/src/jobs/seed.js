@@ -152,11 +152,61 @@ const seedIndustries = async () => {
 
 const seedFAQs = async () => {
   const faqs = [
-    { question: 'How long until I see results?', answer: 'SEO typically shows results in 3-6 months; paid ads can deliver same-week traffic and leads.', category: 'general' },
-    { question: 'Do you sign contracts?', answer: 'We offer month-to-month agreements as well as 6/12-month options with discounted rates.', category: 'billing' },
-    { question: 'Are you based in the USA?', answer: 'Yes! MetlifeDM LLC is a US-registered agency with team members across North America.', category: 'general' },
-    { question: 'Do you offer white-label services?', answer: 'Yes, we partner with agencies looking to white-label our SEO, PPC, and content services.', category: 'services' },
-    { question: 'What industries do you specialize in?', answer: 'E-commerce, SaaS, healthcare, real estate, legal, and financial services — but we work across most B2B and B2C niches.', category: 'services' },
+    { question: 'How long until I see results?', answer: 'SEO typically shows results in 3-6 months; paid ads can deliver same-week traffic and leads.', category: 'general', order: 20 },
+    { question: 'Do you sign contracts?', answer: 'We offer month-to-month agreements as well as 6/12-month options with discounted rates.', category: 'payment', order: 21 },
+    { question: 'Are you based in the USA?', answer: 'Yes! MetlifeDM LLC is a US-registered agency with team members across North America.', category: 'general', order: 22 },
+    { question: 'Do you offer white-label services?', answer: 'Yes, we partner with agencies looking to white-label our SEO, PPC, and content services.', category: 'services', order: 23 },
+    { question: 'What industries do you specialize in?', answer: 'E-commerce, SaaS, healthcare, real estate, legal, and financial services — but we work across most B2B and B2C niches.', category: 'services', order: 24 },
+    {
+      question: "What's the Big Deal with Digital Marketing in 2025?",
+      answer: "Buckle up—digital marketing is your ticket to explosive growth! In today's fast-paced, screen-obsessed world, it's how you connect with millions, skyrocket your brand, and turn clicks into cash. From social media dominance to SEO wizardry, we've got the tools to make your business unstoppable!",
+      category: 'general', isFeatured: true, order: 1,
+    },
+    {
+      question: 'Why Should I Choose Your Agency Over the Competition?',
+      answer: "Because we're not just marketers—we're growth hackers on a mission! Based right here in the USA, we live and breathe the latest trends, cutting-edge tech, and bold strategies that deliver jaw-dropping results. No fluff, no excuses—just pure, high-octane success tailored to YOU!",
+      category: 'general', isFeatured: true, order: 2,
+    },
+    {
+      question: 'How Fast Can I See Results from Digital Marketing?',
+      answer: "Hold onto your hat—results can start rolling in FAST! With PPC ads, you could see clicks in hours. SEO and content? Think weeks to months for that sweet, long-term dominance. We hustle hard to get you ROI at lightning speed—let's talk timelines!",
+      category: 'process', isFeatured: true, order: 3,
+    },
+    {
+      question: 'What Services Do You Offer to Crush It Online?',
+      answer: "We're your one-stop shop for digital dominance! SEO that climbs the ranks, PPC that packs a punch, social media that stops the scroll, content that converts, and web design that wows. Ready to unleash the full arsenal? Let's do this!",
+      category: 'services', isFeatured: true, order: 4,
+    },
+    {
+      question: 'How Much Does Digital Marketing Cost?',
+      answer: "No cookie-cutter pricing here—we customize the firepower to fit your goals! Whether you're a small biz ready to rumble or a big player aiming to reign supreme, we've got plans from budget-friendly to all-out blitz. Hit us up for a free quote and let's ignite your budget!",
+      category: 'pricing', isFeatured: true, order: 5,
+    },
+    {
+      question: "Can You Guarantee I'll Hit #1 on Google?",
+      answer: 'We\'re bold, not magicians! Google\'s a wild beast, but we\'ve got the skills to tame it with killer SEO, epic content, and relentless optimization—we\'ll push you to the top faster than you can say "search engine supremacy." Let\'s get climbing!',
+      category: 'seo', isFeatured: true, order: 6,
+    },
+    {
+      question: 'How Do You Keep Up with Crazy Digital Trends?',
+      answer: "We're trendsetters, not followers! Our team's plugged into the pulse of the world wide digital scene—think AI-powered ads, TikTok takeovers, and algorithm updates. We don't just keep up; we stay ahead so your brand's always the one to watch!",
+      category: 'general', order: 25,
+    },
+    {
+      question: 'Will Social Media Really Boost My Business?',
+      answer: "Heck yes! Social's where the party's at—billions of users, endless opportunities. We'll craft scroll-stopping posts, viral campaigns, and targeted ads that turn likes into loyal customers. Ready to blow up your follower count? Let's roll!",
+      category: 'services', order: 26,
+    },
+    {
+      question: "What's the Secret Sauce to Winning at Digital Marketing?",
+      answer: "It's no secret—it's strategy, grit, and a dash of creativity! We mix data-driven insights with bold ideas to create campaigns that hit hard and stick. Your success? That's our obsession—let's cook up something legendary!",
+      category: 'general', order: 27,
+    },
+    {
+      question: 'How Do I Get Started with You Rockstars?',
+      answer: "Easy—let's kick things into high gear! Drop us a line, grab a free consultation, and watch us turn your vision into a digital powerhouse. No delays, no excuses—just pure marketing adrenaline. Ready?",
+      category: 'support', order: 28,
+    },
   ];
   for (const f of faqs) await upsert(FAQ, { question: f.question }, { ...f, isPublished: true });
 };

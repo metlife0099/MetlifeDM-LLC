@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { ServicesGrid, CtaBanner } from '@/components/sections/index.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
@@ -91,6 +92,39 @@ export default function ServicesPage() {
           )}
         </Container>
       </Section>
+
+      {/* Image band */}
+      <div className="relative h-[45vh] md:h-[55vh] overflow-hidden img-zoom">
+        <motion.img
+          initial={{ scale: 1.15, opacity: 0 }}
+          whileInView={{ scale: 1, opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+          src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=1600&q=80&auto=format&fit=crop"
+          alt="Strategist team reviewing a campaign roadmap"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-linear-to-r from-ink/80 via-ink/20 to-transparent" />
+        <div className="absolute inset-0 flex items-center">
+          <Container>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="max-w-lg"
+            >
+              <Eyebrow className="text-ivory/60">Every engagement</Eyebrow>
+              <p className="text-ivory text-2xl md:text-4xl mt-6 leading-tight text-italic-fraunces">
+                One team, every channel, one dashboard.
+              </p>
+              <p className="text-ivory/70 mt-6 max-w-md leading-relaxed">
+                Mix and match services — most clients run 2-3 in parallel under a single senior strategist.
+              </p>
+            </motion.div>
+          </Container>
+        </div>
+      </div>
 
       <CtaBanner
         title="Not sure which service fits?"

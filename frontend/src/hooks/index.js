@@ -104,6 +104,18 @@ export const useLocalStorage = (key, initial) => {
 };
 
 /**
+ * Escape key handler (for modals / drawers).
+ */
+export const useEscape = (handler, active = true) => {
+  useEffect(() => {
+    if (!active) return;
+    const onKey = (e) => e.key === 'Escape' && handler(e);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [handler, active]);
+};
+
+/**
  * Scroll lock (for modals / mobile menu).
  */
 export const useScrollLock = (locked) => {

@@ -7,6 +7,7 @@ import { commerceApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { DashHeader, DashEmpty } from '@/components/dashboard/DashHeader.jsx';
 import { Spinner, Badge, Card } from '@/components/ui/index.jsx';
+import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { formatMoney, formatDate, timeAgo, cn, downloadBlob } from '@/utils/format.js';
@@ -94,6 +95,7 @@ export const OrderDetailsPage = () => {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [downloadingInvoice, setDownloadingInvoice] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['order', id],
@@ -150,7 +152,7 @@ export const OrderDetailsPage = () => {
           ['pending', 'processing'].includes(o.status) && (
             <Button
               variant="ghost"
-              onClick={() => confirm('Cancel this order?') && cancel.mutate()}
+              onClick={() => setShowCancelConfirm(true)}
               disabled={cancel.isPending}
             >
               <XCircle size={14} strokeWidth={1.5} />
@@ -343,6 +345,19 @@ export const OrderDetailsPage = () => {
         )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={showCancelConfirm}
+        onClose={() => setShowCancelConfirm(false)}
+        onConfirm={() => {
+          cancel.mutate();
+          setShowCancelConfirm(false);
+        }}
+        title="Cancel this order?"
+        description="We'll stop processing this order. If you've already been charged, refunds are handled per our refund policy."
+        confirmLabel="Cancel order"
+        variant="ultra"
+      />
     </>
   );
 };
