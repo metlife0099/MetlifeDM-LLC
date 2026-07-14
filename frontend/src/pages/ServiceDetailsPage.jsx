@@ -88,9 +88,15 @@ export default function ServiceDetailsPage() {
                 {service.shortDescription}
               </p>
               <div className="mt-10 flex flex-wrap gap-4">
-                <Button size="lg" variant="inverse" onClick={() => addToCart(null)}>
-                  <ShoppingBag size={16} strokeWidth={1.5} /> Add to cart
-                </Button>
+                {service.pricingPlans?.length > 0 ? (
+                  <Button size="lg" variant="inverse" href="#pricing">
+                    View pricing <ArrowUpRight size={16} strokeWidth={1.5} />
+                  </Button>
+                ) : (
+                  <Button size="lg" variant="inverse" onClick={() => addToCart(null)}>
+                    <ShoppingBag size={16} strokeWidth={1.5} /> Add to cart
+                  </Button>
+                )}
                 <Button to="/consultation" variant="ghost" size="lg" className="border-ivory/30 text-ivory hover:bg-ivory hover:text-ink">
                   Book a call
                 </Button>
@@ -182,7 +188,7 @@ export default function ServiceDetailsPage() {
 
       {/* Pricing plans */}
       {service.pricingPlans?.length > 0 && (
-        <Section tone="ink" spacing="lg" divider={false}>
+        <Section id="pricing" tone="ink" spacing="lg" divider={false} className="scroll-mt-24">
           <Container>
             <div className="text-eyebrow text-ivory/50 mb-4">04 / Pricing</div>
             <h2 className="text-display-lg text-ivory mb-14">Choose your plan</h2>

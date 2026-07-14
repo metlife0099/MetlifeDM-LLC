@@ -1,15 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
-import { ChevronDown, Star, ArrowUpRight, ShoppingBag } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { ChevronDown, Star, ArrowUpRight } from 'lucide-react';
 import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
 import { Card } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
-import { addItem } from '@/store/index.js';
 import { cn, formatMoney } from '@/utils/format.js';
 import { useInView } from '@/hooks/index.js';
 import 'swiper/css';
@@ -221,15 +218,6 @@ export const FaqAccordion = ({ items = [], eyebrow = '04 / FAQ' }) => {
 
 /* ================== SERVICES GRID ================== */
 export const ServicesGrid = ({ services = [], showAll = true }) => {
-  const dispatch = useDispatch();
-
-  const handleAddToCart = (e, service) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dispatch(addItem({ service, plan: null, quantity: 1 }));
-    toast.success(`${service.title} added to cart`);
-  };
-
   return (
   <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
     {services.map((s, i) => (
@@ -274,13 +262,10 @@ export const ServicesGrid = ({ services = [], showAll = true }) => {
               Starting at <span className="text-ink">{formatMoney(s.startingPrice)}</span>/mo
             </div>
           )}
-          <div className="mt-6 flex gap-3">
-            <Button size="sm" className="flex-1" onClick={(e) => handleAddToCart(e, s)}>
-              <ShoppingBag size={14} strokeWidth={1.5} />
-              Add to cart
-            </Button>
-            <Button to={`/services/${s.slug}`} variant="ghost" size="sm" className="flex-1">
+          <div className="mt-6">
+            <Button to={`/services/${s.slug}`} size="sm" className="w-full">
               Read more
+              <ArrowUpRight size={14} strokeWidth={1.5} />
             </Button>
           </div>
         </div>

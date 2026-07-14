@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
-import { Check, ShoppingBag, Star } from 'lucide-react';
+import { Check, ShoppingBag, Star, ArrowUpRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
@@ -143,12 +143,9 @@ export default function PricingPage() {
                       </div>
                     </div>
                     <div className="flex gap-3 shrink-0">
-                      <Button size="sm" onClick={() => handleAddToCart(service)}>
-                        <ShoppingBag size={14} strokeWidth={1.5} />
-                        Add to cart
-                      </Button>
-                      <Button to={`/services/${service.slug}`} variant="ghost" size="sm">
+                      <Button to={`/services/${service.slug}`} size="sm">
                         Read more
+                        <ArrowUpRight size={14} strokeWidth={1.5} />
                       </Button>
                     </div>
                   </div>
