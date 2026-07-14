@@ -7,7 +7,7 @@ import { ChevronDown, Star, ArrowUpRight } from 'lucide-react';
 import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
 import { Card } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
-import { cn } from '@/utils/format.js';
+import { cn, formatMoney } from '@/utils/format.js';
 import { useInView } from '@/hooks/index.js';
 import 'swiper/css';
 
@@ -218,51 +218,79 @@ export const FaqAccordion = ({ items = [], eyebrow = '04 / FAQ' }) => {
 
 /* ================== SERVICES GRID ================== */
 export const ServicesGrid = ({ services = [], showAll = true }) => (
-  <div className="grid gap-px bg-hairline border border-hairline">
+  <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
     {services.map((s, i) => (
-      <Link
+      <motion.div
         key={s._id || i}
-        to={`/services/${s.slug}`}
-        className="bg-ivory p-8 md:p-10 group transition-colors duration-500 hover:bg-ink hover:text-ivory md:grid md:grid-cols-[auto_1fr_auto] md:items-center md:gap-8"
+        initial={{ opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.6, delay: (i % 6) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+        className="group bg-ivory border border-hairline hover-lift hover:border-ink transition-colors duration-500 flex flex-col"
       >
-        <div className="num-plate text-slate text-sm group-hover:text-ivory/50 transition-colors mb-4 md:mb-0">
-          {String(i + 1).padStart(2, '0')}
-        </div>
-        <div>
-          <h3 className="text-display-sm mb-2 flex items-center gap-3">
-            {s.icon && <span className="text-2xl">{s.icon}</span>}
-            {s.title}
-          </h3>
-          <p className="text-sm max-w-xl group-hover:text-ivory/70 text-slate leading-relaxed">
-            {s.shortDescription}
-          </p>
-        </div>
-        <div className="flex items-center gap-4 mt-6 md:mt-0">
-          {s.startingPrice && (
-            <div className="text-mono text-xs uppercase tracking-widest">
-              from ${s.startingPrice.toLocaleString()}
+        <Link to={`/services/${s.slug}`} className="block img-zoom relative aspect-16/10 bg-sand overflow-hidden">
+          {s.heroImage?.url ? (
+            <img src={s.heroImage.url} alt={s.title} className="h-full w-full object-cover" loading="lazy" />
+          ) : (
+            <div className="h-full w-full grid place-items-center bg-linear-to-br from-ink via-ink-soft to-ultra text-6xl">
+              {s.icon || '✦'}
             </div>
           )}
-          <ArrowUpRight
-            size={20}
-            strokeWidth={1.25}
-            className="transition-transform duration-300 group-hover:rotate-45"
-          />
+          {s.isFeatured && (
+            <span className="absolute top-4 right-4 bg-ultra text-ivory text-mono text-[0.65rem] uppercase tracking-widest px-2.5 py-1">
+              Featured
+            </span>
+          )}
+        </Link>
+
+        <div className="p-6 md:p-8 flex flex-col flex-1">
+          {s.category && (
+            <div className="text-eyebrow mb-3">{s.category.replace(/_/g, ' ')}</div>
+          )}
+          <Link to={`/services/${s.slug}`}>
+            <h3 className="text-display-sm group-hover:text-ultra transition-colors flex items-center gap-2">
+              {s.icon && <span className="text-xl">{s.icon}</span>}
+              {s.title}
+            </h3>
+          </Link>
+          <p className="text-slate text-sm mt-3 leading-relaxed line-clamp-3 flex-1">
+            {s.shortDescription}
+          </p>
+          {s.startingPrice != null && (
+            <div className="mt-5 pt-5 border-t border-hairline text-mono text-xs uppercase tracking-widest text-slate">
+              Starting at <span className="text-ink">{formatMoney(s.startingPrice)}</span>/mo
+            </div>
+          )}
+          <div className="mt-6 flex gap-3">
+            <Button to="/consultation" size="sm" className="flex-1">
+              Get started
+            </Button>
+            <Button to={`/services/${s.slug}`} variant="ghost" size="sm" className="flex-1">
+              Read more
+            </Button>
+          </div>
         </div>
-      </Link>
+      </motion.div>
     ))}
     {showAll && (
-      <Link
-        to="/services"
-        className="bg-ivory p-8 md:p-10 flex items-center justify-between group hover:bg-ultra hover:text-ivory transition-colors"
+      <motion.div
+        initial={{ opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.6, delay: (services.length % 6) * 0.08, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="text-display-sm">View all services</div>
-        <ArrowUpRight
-          size={20}
-          strokeWidth={1.25}
-          className="group-hover:rotate-45 transition-transform duration-300"
-        />
-      </Link>
+        <Link
+          to="/services"
+          className="group h-full min-h-70 flex flex-col items-center justify-center gap-4 border border-dashed border-hairline hover:border-ink hover:bg-ink hover:text-ivory transition-all duration-500 p-8 text-center"
+        >
+          <div className="text-display-sm">View all services</div>
+          <ArrowUpRight
+            size={24}
+            strokeWidth={1.25}
+            className="group-hover:rotate-45 transition-transform duration-300"
+          />
+        </Link>
+      </motion.div>
     )}
   </div>
 );

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Check, ArrowUpRight } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
@@ -104,26 +105,39 @@ export default function PricingPage() {
               <Spinner size={28} className="text-ultra" />
             </div>
           ) : services.length ? (
-            <div className="space-y-24">
-              {services.map((service) => (
-                <div key={service._id}>
-                  <div className="flex items-end justify-between mb-8 gap-6 flex-wrap">
-                    <div>
-                      <div className="text-eyebrow mb-3">
-                        {service.category?.replace('_', ' ')}
+            <div className="space-y-10">
+              {services.map((service, si) => (
+                <motion.div
+                  key={service._id}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-80px' }}
+                  transition={{ duration: 0.6, delay: (si % 4) * 0.06, ease: [0.22, 1, 0.36, 1] }}
+                  className="border border-hairline hover:border-ink transition-colors duration-500 p-6 md:p-10 hover-lift"
+                >
+                  <div className="flex items-start justify-between mb-10 gap-6 flex-wrap">
+                    <div className="flex items-start gap-5">
+                      {service.icon && (
+                        <div className="w-14 h-14 shrink-0 grid place-items-center bg-ink text-ivory text-2xl">
+                          {service.icon}
+                        </div>
+                      )}
+                      <div>
+                        <div className="text-eyebrow mb-2">
+                          {service.category?.replace(/_/g, ' ')}
+                        </div>
+                        <h2 className="text-display-md">{service.title}</h2>
+                        <p className="text-slate text-sm mt-3 max-w-xl leading-relaxed">{service.shortDescription}</p>
                       </div>
-                      <h2 className="text-display-md flex items-center gap-3">
-                        {service.icon && <span>{service.icon}</span>}
-                        {service.title}
-                      </h2>
-                      <p className="text-slate text-sm mt-3 max-w-xl">{service.shortDescription}</p>
                     </div>
-                    <Link
-                      to={`/services/${service.slug}`}
-                      className="text-mono text-xs uppercase tracking-widest link-underline text-ink"
-                    >
-                      Full details →
-                    </Link>
+                    <div className="flex gap-3 shrink-0">
+                      <Button to="/consultation" size="sm">
+                        Get started
+                      </Button>
+                      <Button to={`/services/${service.slug}`} variant="ghost" size="sm">
+                        Read more
+                      </Button>
+                    </div>
                   </div>
 
                   {service.pricingPlans?.length > 0 ? (
@@ -184,7 +198,7 @@ export default function PricingPage() {
                       <Button to="/consultation" size="md">Get a quote</Button>
                     </div>
                   )}
-                </div>
+                </motion.div>
               ))}
             </div>
           ) : (

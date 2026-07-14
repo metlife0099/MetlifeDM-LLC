@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, Check, X, Star } from 'lucide-react';
-import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
+import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Badge, Spinner } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
@@ -67,33 +67,37 @@ export default function ServiceDetailsPage() {
       />
 
       {/* Hero */}
-      <Section tone="ivory" spacing="lg" divider={false}>
-        <Container>
-          <Link to="/services" className="text-mono text-xs uppercase tracking-widest text-slate hover:text-ink link-underline">
+      <Section tone="ink" spacing="lg" divider={false} className="relative">
+        <HeroImage
+          src={service.heroImage?.url || 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1920&q=80&auto=format&fit=crop'}
+          alt={service.title}
+        />
+        <Container className="relative z-10">
+          <Link to="/services" className="text-mono text-xs uppercase tracking-widest text-ivory/60 hover:text-ivory link-underline">
             ← All services
           </Link>
           <div className="grid gap-12 lg:grid-cols-[1.6fr_1fr] mt-8">
             <div>
               <div className="flex items-center gap-3 mb-6">
                 {service.icon && <span className="text-3xl">{service.icon}</span>}
-                <Badge>{service.category?.replace('_', ' ')}</Badge>
+                <Badge>{service.category?.replace(/_/g, ' ')}</Badge>
                 {service.isFeatured && <Badge tone="ultra">Featured</Badge>}
               </div>
-              <h1 className="text-display-hero max-w-3xl">{service.title}</h1>
-              <p className="mt-8 max-w-2xl text-lg text-slate leading-relaxed">
+              <h1 className="text-display-hero max-w-3xl text-ivory">{service.title}</h1>
+              <p className="mt-8 max-w-2xl text-lg text-ivory/75 leading-relaxed">
                 {service.shortDescription}
               </p>
               <div className="mt-10 flex flex-wrap gap-4">
-                <Button size="lg" onClick={() => addToCart(null)}>
+                <Button size="lg" variant="inverse" onClick={() => addToCart(null)}>
                   Get started <ArrowUpRight size={16} strokeWidth={1.5} />
                 </Button>
-                <Button to="/consultation" variant="ghost" size="lg">
+                <Button to="/consultation" variant="ghost" size="lg" className="border-ivory/30 text-ivory hover:bg-ivory hover:text-ink">
                   Book a call
                 </Button>
               </div>
             </div>
             {/* Right stats card */}
-            <div className="border border-hairline p-8 bg-ivory-soft">
+            <div className="border border-hairline p-8 bg-ivory-soft shadow-[0_32px_64px_-24px_rgba(0,0,0,0.5)] hover-glow">
               <div className="text-eyebrow mb-6">Snapshot</div>
               <dl className="space-y-4">
                 <div className="flex justify-between text-mono text-sm border-b border-hairline pb-3">
@@ -102,7 +106,7 @@ export default function ServiceDetailsPage() {
                 </div>
                 <div className="flex justify-between text-mono text-sm border-b border-hairline pb-3">
                   <dt className="text-slate">Category</dt>
-                  <dd className="text-ink">{service.category?.replace('_', ' ')}</dd>
+                  <dd className="text-ink">{service.category?.replace(/_/g, ' ')}</dd>
                 </div>
                 <div className="flex justify-between text-mono text-sm border-b border-hairline pb-3">
                   <dt className="text-slate">Rating</dt>
@@ -143,13 +147,24 @@ export default function ServiceDetailsPage() {
           <Container>
             <Eyebrow number="02">What you get</Eyebrow>
             <h2 className="text-display-lg mt-4 mb-14">Included in every engagement</h2>
-            <div className="grid gap-px bg-hairline border border-hairline">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {(service.features || service.benefits || []).map((f, i) => (
-                <div key={i} className="bg-ivory p-8">
-                  {f.icon && <div className="text-2xl mb-4">{f.icon}</div>}
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-60px' }}
+                  transition={{ duration: 0.6, delay: (i % 6) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                  className="group bg-ivory border border-hairline hover:border-ink hover-lift transition-colors duration-500 p-8"
+                >
+                  {f.icon && (
+                    <div className="w-12 h-12 grid place-items-center bg-ink text-ivory text-xl mb-6 group-hover:bg-ultra transition-colors duration-500">
+                      {f.icon}
+                    </div>
+                  )}
                   <h3 className="text-display-sm mb-3">{f.title}</h3>
                   <p className="text-slate text-sm leading-relaxed">{f.description}</p>
-                </div>
+                </motion.div>
               ))}
             </div>
           </Container>

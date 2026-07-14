@@ -18,6 +18,9 @@ const DARK_HERO_ROUTES = new Set([
   '/', '/about', '/services', '/industries', '/portfolio', '/case-studies',
   '/pricing', '/blog', '/testimonials', '/faq', '/careers', '/contact', '/consultation',
 ]);
+const DARK_HERO_PREFIXES = ['/services/'];
+const isDarkHeroRoute = (pathname) =>
+  DARK_HERO_ROUTES.has(pathname) || DARK_HERO_PREFIXES.some((p) => pathname.startsWith(p));
 
 export default function Navbar() {
   const dispatch = useDispatch();
@@ -30,7 +33,7 @@ export default function Navbar() {
   const userMenuRef = useRef(null);
   useScrollLock(mobileOpen);
 
-  const isDarkHero = DARK_HERO_ROUTES.has(pathname);
+  const isDarkHero = isDarkHeroRoute(pathname);
   const floating = isDarkHero && !scrolled && !mobileOpen;
 
   useEffect(() => {
