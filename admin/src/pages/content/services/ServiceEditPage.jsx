@@ -35,6 +35,7 @@ const planSchema = z.object({
   deliveryTimeDays: z.coerce.number().optional(),
   revisions: z.coerce.number().optional(),
   isPopular: z.boolean().optional(),
+  features: z.array(z.object({ label: z.string().min(1, 'Required'), included: z.boolean().optional() })).optional(),
 });
 
 const schema = z.object({
@@ -380,43 +381,26 @@ export default function ServiceEditPage() {
                 variant="ghost"
                 size="xs"
                 icon={Plus}
-                onClick={() => plansArr.append({ name: '', price: 0, billingCycle: 'monthly' })}
+                onClick={() => plansArr.append({ name: '', price: 0, billingCycle: 'monthly', features: [] })}
               >
                 Add plan
               </Button>
             </div>
             {plansArr.fields.length === 0 ? (
-              <div className="text-slate text-sm">No pricing plans yet.</div>
+              <div className="text-slate text-sm">
+                No pricing plans yet. Add 2–3 variants (e.g. Basic, Pro, Business) so clients can compare tiers.
+              </div>
             ) : (
               <div className="space-y-4">
                 {plansArr.fields.map((f, i) => (
-                  <div key={f.id} className="border border-hairline p-4 relative">
-                    <button
-                      type="button"
-                      onClick={() => plansArr.remove(i)}
-                      className="absolute top-3 right-3 text-slate hover:text-danger"
-                    >
-                      <Trash2 size={13} strokeWidth={1.5} />
-                    </button>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <Input label="Plan name" {...register(`pricingPlans.${i}.name`)} />
-                      <Input label="Tagline" {...register(`pricingPlans.${i}.tagline`)} />
-                      <Input label="Price" type="number" prefix="$" {...register(`pricingPlans.${i}.price`)} />
-                      <Input label="Compare-at price" type="number" prefix="$" {...register(`pricingPlans.${i}.compareAtPrice`)} />
-                      <Input label="Currency" placeholder="USD" {...register(`pricingPlans.${i}.currency`)} />
-                      <Select
-                        label="Billing cycle"
-                        options={BILLING_CYCLES}
-                        {...register(`pricingPlans.${i}.billingCycle`)}
-                      />
-                      <Input label="CTA label" placeholder="Get Started" {...register(`pricingPlans.${i}.ctaLabel`)} />
-                      <Input label="Delivery time (days)" type="number" {...register(`pricingPlans.${i}.deliveryTimeDays`)} />
-                      <Input label="Revisions" type="number" {...register(`pricingPlans.${i}.revisions`)} />
-                      <div className="flex items-center pt-6">
-                        <Switch label="Popular" {...register(`pricingPlans.${i}.isPopular`)} />
-                      </div>
-                    </div>
-                  </div>
+                  <PricingPlanRow
+                    key={f.id}
+                    control={control}
+                    register={register}
+                    errors={errors}
+                    index={i}
+                    onRemove={() => plansArr.remove(i)}
+                  />
                 ))}
               </div>
             )}
@@ -459,5 +443,92 @@ export default function ServiceEditPage() {
         </aside>
       </div>
     </form>
+  );
+}
+
+/**
+ * One pricing-plan card in the "Pricing plans" repeater. Kept as its own
+ * component (rather than inline in a .map()) because its nested "features"
+ * checklist needs its own useFieldArray — hooks can't be called inside a
+ * loop callback in the parent.
+ */
+function PricingPlanRow({ control, register, errors, index, onRemove }) {
+  const featuresArr = useFieldArray({ control, name: `pricingPlans.${index}.features` });
+
+  return (
+    <div className="border border-hairline p-4 relative">
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute top-3 right-3 text-slate hover:text-danger"
+      >
+        <Trash2 size={13} strokeWidth={1.5} />
+      </button>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Input
+          label="Plan name"
+          placeholder="e.g. Basic Website"
+          required
+          {...register(`pricingPlans.${index}.name`)}
+          error={errors.pricingPlans?.[index]?.name?.message}
+        />
+        <Input label="Tagline" placeholder="e.g. For small businesses just getting started" {...register(`pricingPlans.${index}.tagline`)} />
+        <Input label="Price" type="number" prefix="$" {...register(`pricingPlans.${index}.price`)} />
+        <Input label="Compare-at price" type="number" prefix="$" {...register(`pricingPlans.${index}.compareAtPrice`)} />
+        <Input label="Currency" placeholder="USD" {...register(`pricingPlans.${index}.currency`)} />
+        <Select
+          label="Billing cycle"
+          options={BILLING_CYCLES}
+          {...register(`pricingPlans.${index}.billingCycle`)}
+        />
+        <Input label="CTA label" placeholder="Add to cart" {...register(`pricingPlans.${index}.ctaLabel`)} />
+        <Input label="Delivery time (days)" type="number" {...register(`pricingPlans.${index}.deliveryTimeDays`)} />
+        <Input label="Revisions" type="number" {...register(`pricingPlans.${index}.revisions`)} />
+        <div className="flex items-center pt-6">
+          <Switch label="Popular" {...register(`pricingPlans.${index}.isPopular`)} />
+        </div>
+      </div>
+
+      {/* Per-plan feature checklist */}
+      <div className="mt-5 pt-5 border-t border-hairline">
+        <div className="flex items-center justify-between mb-3">
+          <div className="text-mono text-xs uppercase tracking-widest text-slate">Features included in this plan</div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            icon={Plus}
+            onClick={() => featuresArr.append({ label: '', included: true })}
+          >
+            Add feature
+          </Button>
+        </div>
+        {featuresArr.fields.length === 0 ? (
+          <div className="text-slate text-xs">No features listed for this plan yet.</div>
+        ) : (
+          <div className="space-y-2">
+            {featuresArr.fields.map((feat, fi) => (
+              <div key={feat.id} className="flex items-center gap-3">
+                <Switch {...register(`pricingPlans.${index}.features.${fi}.included`)} />
+                <Input
+                  className="flex-1"
+                  placeholder="e.g. Up to 5 pages"
+                  {...register(`pricingPlans.${index}.features.${fi}.label`)}
+                  error={errors.pricingPlans?.[index]?.features?.[fi]?.label?.message}
+                />
+                <button
+                  type="button"
+                  onClick={() => featuresArr.remove(fi)}
+                  className="text-slate hover:text-danger shrink-0"
+                  aria-label="Remove feature"
+                >
+                  <Trash2 size={13} strokeWidth={1.5} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

@@ -15,9 +15,10 @@ export const listServices = asyncHandler(async (req, res) => {
   if (req.query.category) filter.category = req.query.category;
   if (req.query.featured === 'true') filter.isFeatured = true;
   if (req.query.industry) filter.industries = req.query.industry;
+  if (req.query.hasPricing === 'true') filter['pricingPlans.0'] = { $exists: true };
   if (opts.search) filter.$text = { $search: opts.search };
   const { items, meta } = await paginate(Service, filter, opts, {
-    select: 'title slug shortDescription icon heroImage category startingPrice isFeatured stats',
+    select: 'title slug shortDescription icon heroImage category startingPrice isFeatured stats pricingPlans',
   });
   return ApiResponse.ok(res, items, 'Services', meta);
 });

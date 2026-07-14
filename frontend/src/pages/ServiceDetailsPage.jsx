@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, Check, X, Star } from 'lucide-react';
+import { ArrowUpRight, Check, X, Star, ShoppingBag } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Badge, Spinner } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
@@ -89,7 +89,7 @@ export default function ServiceDetailsPage() {
               </p>
               <div className="mt-10 flex flex-wrap gap-4">
                 <Button size="lg" variant="inverse" onClick={() => addToCart(null)}>
-                  Get started <ArrowUpRight size={16} strokeWidth={1.5} />
+                  <ShoppingBag size={16} strokeWidth={1.5} /> Add to cart
                 </Button>
                 <Button to="/consultation" variant="ghost" size="lg" className="border-ivory/30 text-ivory hover:bg-ivory hover:text-ink">
                   Book a call
@@ -225,7 +225,8 @@ export default function ServiceDetailsPage() {
                     className="mt-8 w-full"
                     size="lg"
                   >
-                    {plan.ctaLabel || 'Get started'}
+                    <ShoppingBag size={14} strokeWidth={1.5} />
+                    {plan.ctaLabel || 'Add to cart'}
                   </Button>
                 </motion.div>
               ))}

@@ -20,7 +20,7 @@ const pricingPlanSchema = new Schema(
     stripeProductId: String,
     features: [{ label: String, included: { type: Boolean, default: true } }],
     isPopular: { type: Boolean, default: false },
-    ctaLabel: { type: String, default: 'Get Started' },
+    ctaLabel: { type: String, default: 'Add to cart' },
     deliveryTimeDays: Number,
     revisions: { type: Number, default: 0 },
   },

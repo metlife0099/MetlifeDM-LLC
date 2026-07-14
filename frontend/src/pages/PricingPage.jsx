@@ -1,19 +1,22 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
-import { Check, ArrowUpRight } from 'lucide-react';
+import { Check, ShoppingBag, Star } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner, FaqAccordion } from '@/components/sections/index.jsx';
 import { contentApi } from '@/api/index.js';
+import { addItem } from '@/store/index.js';
 import { formatMoney } from '@/utils/format.js';
 import { SERVICE_CATEGORIES } from '@/utils/constants.js';
 import { cn } from '@/utils/format.js';
 
 export default function PricingPage() {
+  const dispatch = useDispatch();
   const [category, setCategory] = useState('');
   const [billing, setBilling] = useState('monthly');
 
@@ -22,6 +25,11 @@ export default function PricingPage() {
     queryFn: () =>
       contentApi.listServices({ category: category || undefined, hasPricing: 'true', limit: 30 }).then((r) => r.data),
   });
+
+  const handleAddToCart = (service, plan = null) => {
+    dispatch(addItem({ service, plan, quantity: 1 }));
+    toast.success(`${plan?.name || service.title} added to cart`);
+  };
 
   const { data: faqs = [] } = useQuery({
     queryKey: ['faqs', 'pricing'],
@@ -68,14 +76,16 @@ export default function PricingPage() {
       </Section>
 
       {/* Category filter */}
-      <div className="sticky top-20 z-30 bg-ivory border-y border-hairline">
+      <div className="sticky top-20 z-30 bg-ivory/90 backdrop-blur-xl border-y border-hairline shadow-[0_1px_0_0_rgba(10,23,48,0.04),0_12px_24px_-16px_rgba(10,23,48,0.1)]">
         <Container className="py-4 overflow-x-auto">
           <div className="flex gap-2 min-w-max">
             <button
               onClick={() => setCategory('')}
               className={cn(
-                'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors',
-                !category ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
+                'px-5 py-2.5 rounded-full text-mono text-xs uppercase tracking-widest border transition-all duration-300',
+                !category
+                  ? 'bg-ink text-ivory border-ink shadow-[0_8px_20px_-8px_rgba(10,23,48,0.5)]'
+                  : 'border-hairline hover:border-ink hover:-translate-y-0.5'
               )}
             >
               All services
@@ -85,8 +95,10 @@ export default function PricingPage() {
                 key={c.value}
                 onClick={() => setCategory(c.value)}
                 className={cn(
-                  'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors flex items-center gap-2',
-                  category === c.value ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
+                  'px-5 py-2.5 rounded-full text-mono text-xs uppercase tracking-widest border transition-all duration-300 flex items-center gap-2',
+                  category === c.value
+                    ? 'bg-ultra text-ivory border-ultra shadow-[0_8px_20px_-8px_rgba(21,71,255,0.5)]'
+                    : 'border-hairline hover:border-ink hover:-translate-y-0.5'
                 )}
               >
                 <span>{c.icon}</span>
@@ -131,8 +143,9 @@ export default function PricingPage() {
                       </div>
                     </div>
                     <div className="flex gap-3 shrink-0">
-                      <Button to="/consultation" size="sm">
-                        Get started
+                      <Button size="sm" onClick={() => handleAddToCart(service)}>
+                        <ShoppingBag size={14} strokeWidth={1.5} />
+                        Add to cart
                       </Button>
                       <Button to={`/services/${service.slug}`} variant="ghost" size="sm">
                         Read more
@@ -141,25 +154,33 @@ export default function PricingPage() {
                   </div>
 
                   {service.pricingPlans?.length > 0 ? (
-                    <div className="grid gap-px bg-hairline border border-hairline md:grid-cols-3">
+                    <div className="grid gap-6 md:grid-cols-3">
                       {service.pricingPlans.slice(0, 3).map((plan) => {
                         const price = billing === 'yearly' ? plan.price * 12 * 0.85 : plan.price;
                         return (
                           <div
                             key={plan._id}
                             className={cn(
-                              'bg-ivory p-8 flex flex-col',
-                              plan.isPopular && 'bg-ink text-ivory'
+                              'relative p-8 flex flex-col border transition-all duration-500',
+                              plan.isPopular
+                                ? 'bg-ink text-ivory border-ink shadow-[0_32px_64px_-24px_rgba(10,23,48,0.5)] md:-translate-y-3 hover:-translate-y-4'
+                                : 'bg-ivory border-hairline hover:border-ink hover-lift'
                             )}
                           >
                             {plan.isPopular && (
-                              <div className="text-mono text-xs uppercase tracking-widest text-ultra-soft mb-3">
+                              <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-ultra text-ivory text-mono text-[0.65rem] uppercase tracking-widest px-3 py-1.5">
+                                <Star size={11} strokeWidth={0} className="fill-current" />
                                 Most popular
                               </div>
                             )}
                             <h3 className={cn('text-display-sm', plan.isPopular ? 'text-ivory' : 'text-ink')}>
                               {plan.name}
                             </h3>
+                            {plan.tagline && (
+                              <p className={cn('text-xs mt-2 leading-relaxed', plan.isPopular ? 'text-ivory/60' : 'text-slate')}>
+                                {plan.tagline}
+                              </p>
+                            )}
                             <div className="mt-6 flex items-baseline gap-2">
                               <span className={cn('text-display-md num-plate', plan.isPopular ? 'text-ivory' : 'text-ink')}>
                                 {formatMoney(price)}
@@ -177,13 +198,13 @@ export default function PricingPage() {
                               ))}
                             </ul>
                             <Button
-                              to={`/services/${service.slug}`}
+                              onClick={() => handleAddToCart(service, plan)}
                               variant={plan.isPopular ? 'inverse' : 'primary'}
-                              className="mt-8"
+                              className="mt-8 w-full"
                               size="md"
                             >
-                              Choose {plan.name}
-                              <ArrowUpRight size={14} strokeWidth={1.5} />
+                              <ShoppingBag size={14} strokeWidth={1.5} />
+                              {plan.ctaLabel || 'Add to cart'}
                             </Button>
                           </div>
                         );
