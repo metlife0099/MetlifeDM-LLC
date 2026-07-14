@@ -38,24 +38,6 @@ const StatCard = ({ stat, index }) => {
   );
 };
 
-/* ================== TRUSTED BY ================== */
-export const TrustedByStrip = ({ logos, title = 'Trusted by teams at' }) => (
-  <div className="border-y border-hairline bg-ivory">
-    <Container className="py-10">
-      <div className="grid gap-6 md:grid-cols-6 md:items-center">
-        <div className="md:col-span-2 text-eyebrow">{title}</div>
-        <div className="md:col-span-4 flex items-center gap-8 md:gap-14 flex-wrap opacity-60">
-          {logos.slice(0, 6).map((l, i) => (
-            <span key={i} className="text-display-sm text-ink/50">
-              {l.name}
-            </span>
-          ))}
-        </div>
-      </div>
-    </Container>
-  </div>
-);
-
 /* ================== PROCESS TIMELINE ================== */
 export const ProcessTimeline = ({ steps, eyebrow = '02 / Process', title, subtitle }) => (
   <Section tone="ivory" spacing="lg">

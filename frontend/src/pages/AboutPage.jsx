@@ -20,7 +20,7 @@ const VALUES = [
 ];
 
 const TIMELINE = [
-  { year: '2013', event: 'Founded in New York with 3 SEO strategists' },
+  { year: '2013', event: 'Founded in Miami with 3 SEO strategists' },
   { year: '2015', event: 'Grew to 15 US clients, expanded into paid media' },
   { year: '2018', event: 'Named Top 10 US SEO agency by Clutch' },
   { year: '2021', event: 'Reached 100 clients; opened content & branding practice' },

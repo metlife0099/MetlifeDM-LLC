@@ -34,7 +34,7 @@ const FALLBACKS = {
       { heading: 'Confidentiality', body: 'We treat all client information as confidential and do not disclose it without written permission (case-study feature-requests always require your sign-off).' },
       { heading: 'Warranty & liability', body: 'We warrant that we will perform services professionally. Our total liability is limited to fees paid in the 12 months preceding the claim. We are not liable for indirect or consequential damages.' },
       { heading: 'Termination', body: 'Either party may terminate for material breach with 30 days written notice and opportunity to cure. Fees for work performed through the termination date remain due.' },
-      { heading: 'Governing law', body: 'These terms are governed by the laws of the State of New York. Any dispute is resolved in New York County courts.' },
+      { heading: 'Governing law', body: 'These terms are governed by the laws of the State of Florida. Any dispute is resolved in Miami-Dade County courts.' },
     ],
   },
   cookies: {

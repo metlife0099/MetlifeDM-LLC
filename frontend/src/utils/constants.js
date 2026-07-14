@@ -3,7 +3,7 @@ export const SITE = {
   legalName: 'MetlifeDM LLC',
   tagline: 'Digital marketing excellence for USA businesses',
   founded: 2013,
-  city: 'New York, NY',
+  city: 'Miami, FL',
 };
 
 export const NAV_MAIN = [
@@ -97,7 +97,7 @@ export const TICKER_ITEMS = [
   '4.9★ average rating',
   '12 years in business',
   '45 team members',
-  'HQ: New York, NY',
+  'HQ: Miami, FL',
   'Ranked Top 10 US agency 2024',
   '$2.4M+ ad spend managed monthly',
 ];

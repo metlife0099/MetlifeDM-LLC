@@ -5,58 +5,13 @@ import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.j
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import {
-  StatsBand,
-  ProcessTimeline,
   TestimonialsCarousel,
   CtaBanner,
   FaqAccordion,
   ServicesGrid,
-  TrustedByStrip,
 } from '@/components/sections/index.jsx';
+import { BrandStory, PlatformShowcase, BuilderFeatures, WhyUsTimeline } from '@/components/home/index.jsx';
 import { contentApi } from '@/api/index.js';
-
-const HERO_STATS = [
-  { label: 'Average client ROI increase', value: '312', suffix: '%' },
-  { label: 'US brands served since 2013', value: '200', suffix: '+' },
-  { label: 'Average client rating', value: '4.9', suffix: '★' },
-  { label: 'Ad spend managed monthly', value: '2.4', suffix: 'M' },
-];
-
-const PROCESS_STEPS = [
-  {
-    title: 'Discover',
-    description:
-      'We audit your funnel, benchmark competitors, and identify the highest-leverage channels — no cookie-cutter playbooks.',
-    duration: 'Week 1',
-  },
-  {
-    title: 'Strategize',
-    description:
-      'A senior strategist builds your 90-day plan with quantified targets. You approve before we spend a dollar.',
-    duration: 'Week 2',
-  },
-  {
-    title: 'Execute',
-    description:
-      'Our specialist team ships campaigns, content, and technical fixes on a weekly cadence — visible in your dashboard.',
-    duration: 'Ongoing',
-  },
-  {
-    title: 'Measure',
-    description:
-      'Real-time reporting on the KPIs that matter. Monthly reviews, transparent ROI, and honest recommendations.',
-    duration: 'Monthly',
-  },
-];
-
-const TRUSTED_LOGOS = [
-  { name: 'NORTHWIND' },
-  { name: 'WELLSPRING' },
-  { name: 'HELIX' },
-  { name: 'PARAGON' },
-  { name: 'CIVIX' },
-  { name: 'AURELIUS' },
-];
 
 export default function HomePage() {
   const { data: featuredServices = [] } = useQuery({
@@ -79,6 +34,27 @@ export default function HomePage() {
       <Seo
         title="Digital marketing excellence for USA businesses"
         description="MetlifeDM helps 200+ US businesses grow through SEO, PPC, content, and AI-powered marketing. Measurable ROI, transparent pricing, senior strategists."
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'LocalBusiness',
+          '@id': 'https://metlifedm.com/#organization',
+          name: 'MetlifeDM LLC',
+          image: 'https://images.unsplash.com/photo-1506966953602-c20cc11f75e3?w=1200&q=80&auto=format&fit=crop',
+          description:
+            'MetlifeDM is a Miami, FL-based digital marketing agency helping 200+ US businesses grow through SEO, PPC, content, and AI-powered marketing.',
+          url: 'https://metlifedm.com',
+          telephone: '+1-800-555-0199',
+          priceRange: '$$',
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: 'Miami',
+            addressRegion: 'FL',
+            addressCountry: 'US',
+          },
+          areaServed: 'US',
+          foundingDate: '2013',
+          sameAs: [],
+        }}
       />
 
       {/* ============ HERO ============ */}
@@ -162,18 +138,15 @@ export default function HomePage() {
         </Container>
       </Section>
 
-      {/* Trusted by */}
-      <TrustedByStrip logos={TRUSTED_LOGOS} title="Selected clients" />
-
-      {/* Stats band */}
-      <StatsBand stats={HERO_STATS} />
+      {/* Brand story */}
+      <BrandStory />
 
       {/* Services */}
       <Section tone="ivory" spacing="lg">
         <Container>
           <div className="flex items-end justify-between mb-14 gap-8 flex-wrap">
             <div>
-              <Eyebrow number="01">Services</Eyebrow>
+              <Eyebrow number="02">Services</Eyebrow>
               <h2 className="text-display-lg mt-4 max-w-3xl">
                 Full-stack marketing<br />
                 built for <span className="text-italic-fraunces text-ultra">compounding.</span>
@@ -191,17 +164,11 @@ export default function HomePage() {
         </Container>
       </Section>
 
-      {/* Process */}
-      <ProcessTimeline
-        steps={PROCESS_STEPS}
-        title={
-          <>
-            A process,<br />
-            <span className="text-italic-fraunces text-ultra">not a promise.</span>
-          </>
-        }
-        subtitle="Every engagement follows the same four-step arc. Predictable milestones, quantified deliverables, no surprises."
-      />
+      {/* Platform showcase */}
+      <PlatformShowcase />
+
+      {/* Website builder features */}
+      <BuilderFeatures />
 
       {/* Image band — results in the wild */}
       <div className="relative h-[55vh] md:h-[65vh] overflow-hidden img-zoom">
@@ -235,6 +202,9 @@ export default function HomePage() {
           </Container>
         </div>
       </div>
+
+      {/* Why us — timeline */}
+      <WhyUsTimeline />
 
       {/* Testimonials */}
       {testimonials.length > 0 && <TestimonialsCarousel testimonials={testimonials} />}

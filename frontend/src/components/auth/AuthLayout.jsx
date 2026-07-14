@@ -28,7 +28,7 @@ export default function AuthLayout() {
       {/* Right: editorial panel */}
       <div className="hidden lg:flex bg-ink text-ivory p-14 flex-col justify-between relative overflow-hidden">
         <div className="text-eyebrow text-ivory/50">
-          Est. 2013 / New York
+          Est. 2013 / Miami
         </div>
         <motion.div
           initial={{ opacity: 0, y: 16 }}
