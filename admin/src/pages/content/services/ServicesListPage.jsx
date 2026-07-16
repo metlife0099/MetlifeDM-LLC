@@ -23,7 +23,7 @@ export default function ServicesListPage() {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
   const [status, setStatus] = useState('');
-  const [sort, setSort] = useState({ key: 'createdAt', direction: 'desc' });
+  const [sort, setSort] = useState({ key: 'order', direction: 'asc' });
   const [deleteId, setDeleteId] = useState(null);
   const debounced = useDebounce(search, 300);
 
@@ -72,6 +72,13 @@ export default function ServicesListPage() {
           </div>
         </div>
       ),
+    },
+    {
+      key: 'order',
+      label: 'Order',
+      sortable: true,
+      align: 'right',
+      render: (row) => <span className="text-mono text-xs text-slate">{row.order ?? 0}</span>,
     },
     {
       key: 'category',

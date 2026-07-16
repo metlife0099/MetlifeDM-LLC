@@ -11,6 +11,10 @@ const bust = () => invalidateCache(`${CACHE_KEYS.SERVICES_LIST}*`);
 /* Public list */
 export const listServices = asyncHandler(async (req, res) => {
   const opts = getPaginationOptions(req.query);
+  // Services default to manual `order` (ascending) rather than newest-first —
+  // admins control display sequence via the "Display order" field. Callers
+  // that explicitly request a different sort (e.g. admin column clicks) win.
+  if (!req.query.sortBy) opts.sort = { order: 1, createdAt: -1 };
   const filter = { isPublished: true };
   if (req.query.category) filter.category = req.query.category;
   if (req.query.featured === 'true') filter.isFeatured = true;
@@ -78,6 +82,7 @@ export const deleteService = asyncHandler(async (req, res) => {
 
 export const listAllAdmin = asyncHandler(async (req, res) => {
   const opts = getPaginationOptions(req.query);
+  if (!req.query.sortBy) opts.sort = { order: 1, createdAt: -1 };
   const filter = {};
   if (req.query.category) filter.category = req.query.category;
   if (req.query.status) filter.isPublished = req.query.status === 'published';

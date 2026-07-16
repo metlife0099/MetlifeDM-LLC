@@ -15,8 +15,13 @@ import { contentApi } from '@/api/index.js';
 
 export default function HomePage() {
   const { data: featuredServices = [] } = useQuery({
-    queryKey: ['services', 'featured'],
-    queryFn: () => contentApi.listServices({ featured: 'true', limit: 5 }).then((r) => r.data),
+    queryKey: ['services', 'home'],
+    // Show the top services by display order — not gated behind the separate
+    // "Featured" toggle, so newly added services show up here immediately.
+    queryFn: () =>
+      contentApi
+        .listServices({ limit: 5, sortBy: 'order', sortOrder: 'asc' })
+        .then((r) => r.data),
   });
 
   const { data: testimonials = [] } = useQuery({

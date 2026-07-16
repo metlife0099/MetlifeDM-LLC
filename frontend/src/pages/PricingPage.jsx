@@ -30,7 +30,9 @@ export default function PricingPage() {
   const { data: services = [], isLoading } = useQuery({
     queryKey: ['services', 'pricing', category],
     queryFn: () =>
-      contentApi.listServices({ category: category || undefined, hasPricing: 'true', limit: 30 }).then((r) => r.data),
+      contentApi
+        .listServices({ category: category || undefined, hasPricing: 'true', limit: 30, sortBy: 'order', sortOrder: 'asc' })
+        .then((r) => r.data),
   });
 
   const handleAddToCart = (service, plan = null) => {

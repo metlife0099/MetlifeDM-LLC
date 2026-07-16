@@ -18,7 +18,9 @@ export default function ServicesPage() {
   const { data: services = [], isLoading } = useQuery({
     queryKey: ['services', 'list', category],
     queryFn: () =>
-      contentApi.listServices({ category: category || undefined, limit: 30 }).then((r) => r.data),
+      contentApi
+        .listServices({ category: category || undefined, limit: 30, sortBy: 'order', sortOrder: 'asc' })
+        .then((r) => r.data),
   });
 
   const setCategory = (c) => {
