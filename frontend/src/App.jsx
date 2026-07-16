@@ -7,7 +7,8 @@ import ProtectedRoute from '@/components/auth/ProtectedRoute.jsx';
 import { PageLoader } from '@/components/ui/index.jsx';
 
 /* Eager: homepage */
-import HomePage from '@/pages/HomePage.jsx';
+// import HomePage from '@/pages/HomePage.jsx';
+const HomePage = lazy(() => import('@/pages/HomePage.jsx'));
 
 /* Route-split — Step 3 public pages */
 const AboutPage = lazy(() => import('@/pages/AboutPage.jsx'));
