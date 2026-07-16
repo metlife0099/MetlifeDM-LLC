@@ -39,12 +39,30 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 900,
       rollupOptions: {
         output: {
-          manualChunks: {
-            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-            'redux-vendor': ['@reduxjs/toolkit', 'react-redux'],
-            'query-vendor': ['@tanstack/react-query', 'axios'],
-            'motion-vendor': ['framer-motion', 'gsap'],
-            'ui-vendor': ['lucide-react', 'swiper', '@studio-freight/lenis'],
+          // Function form (not the object-literal shorthand) so every module —
+          // including ones only reachable through a lazy `import()` in App.jsx —
+          // gets consistently bucketed. The object form doesn't catch transitive
+          // deps like `scheduler` / `use-sync-external-store`, which could get
+          // duplicated into a different chunk than react-dom itself, yielding two
+          // live React instances and "useContext(...) is null" errors in prod.
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return undefined;
+            if (
+              id.includes('/react/') ||
+              id.includes('/react-dom/') ||
+              id.includes('/react-router') ||
+              id.includes('/scheduler/') ||
+              id.includes('/use-sync-external-store/')
+            ) {
+              return 'react-vendor';
+            }
+            if (id.includes('@reduxjs/toolkit') || id.includes('/react-redux/')) return 'redux-vendor';
+            if (id.includes('@tanstack/react-query') || id.includes('/axios/')) return 'query-vendor';
+            if (id.includes('framer-motion') || id.includes('/gsap/')) return 'motion-vendor';
+            if (id.includes('lucide-react') || id.includes('/swiper/') || id.includes('@studio-freight/lenis')) {
+              return 'ui-vendor';
+            }
+            return undefined;
           },
         },
       },
