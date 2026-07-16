@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
+import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
 import { contentApi } from '@/api/index.js';
@@ -47,30 +48,30 @@ export default function CaseStudiesPage() {
 
       {industries.length > 0 && (
         <div className="sticky top-20 z-30 bg-ivory border-y border-hairline">
-          <Container className="py-4 overflow-x-auto">
-            <div className="flex gap-2 min-w-max">
+          <Container>
+            <ScrollTabs trackClassName="py-4">
               <button
                 onClick={() => setIndustry('')}
                 className={cn(
-                  'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors',
+                  'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors whitespace-nowrap',
                   !industry ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
                 )}
               >
                 All industries
               </button>
-              {industries.slice(0, 8).map((i) => (
+              {industries.map((i) => (
                 <button
                   key={i._id}
                   onClick={() => setIndustry(i._id)}
                   className={cn(
-                    'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors',
+                    'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors whitespace-nowrap',
                     industry === i._id ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
                   )}
                 >
                   {i.name}
                 </button>
               ))}
-            </div>
+            </ScrollTabs>
           </Container>
         </div>
       )}

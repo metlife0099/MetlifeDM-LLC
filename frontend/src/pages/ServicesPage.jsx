@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { ServicesGrid, CtaBanner } from '@/components/sections/index.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
+import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { contentApi } from '@/api/index.js';
 import { SERVICE_CATEGORIES } from '@/utils/constants.js';
@@ -51,12 +52,12 @@ export default function ServicesPage() {
 
       {/* Category filter */}
       <div className="sticky top-20 z-30 bg-ivory border-y border-hairline">
-        <Container className="py-4 overflow-x-auto">
-          <div className="flex gap-2 min-w-max">
+        <Container>
+          <ScrollTabs trackClassName="py-4">
             <button
               onClick={() => setCategory('')}
               className={cn(
-                'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors',
+                'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors whitespace-nowrap',
                 !category ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
               )}
             >
@@ -67,7 +68,7 @@ export default function ServicesPage() {
                 key={c.value}
                 onClick={() => setCategory(c.value)}
                 className={cn(
-                  'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors flex items-center gap-2',
+                  'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors flex items-center gap-2 whitespace-nowrap',
                   category === c.value ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
                 )}
               >
@@ -75,7 +76,7 @@ export default function ServicesPage() {
                 {c.label}
               </button>
             ))}
-          </div>
+          </ScrollTabs>
         </Container>
       </div>
 

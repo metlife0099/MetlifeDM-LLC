@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import { ChevronDown, Star, ArrowUpRight, MessageCircleQuestion } from 'lucide-react';
@@ -39,35 +39,81 @@ const StatCard = ({ stat, index }) => {
 };
 
 /* ================== PROCESS TIMELINE ================== */
-export const ProcessTimeline = ({ steps, eyebrow = '02 / Process', title, subtitle }) => (
-  <Section tone="ivory" spacing="lg">
-    <Container>
-      <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr]">
-        <div>
+const ProcessRow = ({ step: s, index: i, total, progress }) => {
+  const isEven = i % 2 === 0;
+  // Node fills in from muted to solid black as the scroll-progress line reaches it.
+  const nodeColor = useTransform(progress, [i / total, (i + 0.6) / total], ['#a8b0c0', '#0a1730']);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-100px' }}
+      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      className="relative flex flex-col lg:flex-row items-start lg:items-center gap-5 py-6 lg:py-10"
+    >
+      {/* Icon node on the center line */}
+      <div className="relative z-10 shrink-0 lg:absolute lg:left-1/2 lg:-translate-x-1/2">
+        <motion.div
+          style={{ backgroundColor: nodeColor }}
+          className="w-14 h-14 grid place-items-center text-ivory text-xl rounded-full border-4 border-ivory shadow-[0_8px_24px_-8px_rgba(10,23,48,0.35)]"
+        >
+          {s.icon || String(i + 1).padStart(2, '0')}
+        </motion.div>
+      </div>
+
+      {/* Content — floats left or right of the center line on desktop */}
+      <div className={cn('group w-full lg:w-[calc(50%-3rem)]', isEven ? 'lg:mr-auto' : 'lg:ml-auto')}>
+        <div className="border border-hairline hover:border-ink hover-lift transition-colors duration-500 bg-ivory-soft p-6 md:p-8">
+          <div className="num-plate text-slate text-xs mb-2">Step {String(i + 1).padStart(2, '0')}</div>
+          <h3 className="text-display-sm group-hover:text-ultra transition-colors duration-300">{s.title}</h3>
+          <p className="text-slate text-sm mt-3 leading-relaxed">{s.description}</p>
+          {s.duration && (
+            <div className="mt-4 inline-flex items-center gap-2 text-mono text-xs uppercase tracking-widest text-ultra">
+              {s.duration}
+            </div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export const ProcessTimeline = ({ steps, eyebrow = '02 / Process', title, subtitle }) => {
+  const trackRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: trackRef,
+    offset: ['start 0.75', 'end 0.4'],
+  });
+  const lineHeight = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
+
+  return (
+    <Section tone="ivory" spacing="lg">
+      <Container>
+        <div className="max-w-2xl mb-16">
           <Eyebrow>{eyebrow}</Eyebrow>
           <h2 className="text-display-lg mt-4">{title}</h2>
           {subtitle && <p className="text-slate text-lg mt-6 max-w-md leading-relaxed">{subtitle}</p>}
         </div>
-        <ol className="divide-editorial border-t border-hairline">
-          {steps.map((s, i) => (
-            <li key={i} className="grid grid-cols-[auto_1fr] gap-6 py-8">
-              <span className="num-plate text-slate text-sm w-10">{String(i + 1).padStart(2, '0')}</span>
-              <div>
-                <h3 className="text-display-sm mb-2">{s.title}</h3>
-                <p className="text-slate text-sm leading-relaxed max-w-lg">{s.description}</p>
-                {s.duration && (
-                  <div className="mt-3 text-mono text-xs uppercase tracking-widest text-ultra">
-                    {s.duration}
-                  </div>
-                )}
-              </div>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </Container>
-  </Section>
-);
+
+        <div ref={trackRef} className="relative">
+          {/* Static track */}
+          <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-hairline" />
+          {/* Animated progress line — draws downward as the timeline scrolls into view */}
+          <motion.div
+            style={{ height: lineHeight }}
+            className="hidden lg:block absolute left-1/2 top-0 w-px -translate-x-1/2 origin-top bg-ink shadow-[0_0_10px_1px_rgba(10,23,48,0.35)]"
+          />
+          <div>
+            {steps.map((s, i) => (
+              <ProcessRow key={i} step={s} index={i} total={steps.length} progress={scrollYProgress} />
+            ))}
+          </div>
+        </div>
+      </Container>
+    </Section>
+  );
+};
 
 /* ================== TESTIMONIALS CAROUSEL ================== */
 export const TestimonialsCarousel = ({ testimonials = [], eyebrow = '03 / What clients say' }) => {

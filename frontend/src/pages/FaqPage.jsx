@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Search, ChevronDown, MessageCircleQuestion, Clock, ThumbsUp, Sparkles } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
+import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
@@ -84,8 +85,8 @@ export default function FaqPage() {
       </Section>
 
       <div className="sticky top-20 z-30 bg-ivory border-y border-hairline">
-        <Container className="py-4 overflow-x-auto">
-          <div className="flex gap-2 min-w-max">
+        <Container>
+          <ScrollTabs trackClassName="py-4">
             {CATEGORIES.map((c) => (
               <button
                 key={c.value}
@@ -94,14 +95,14 @@ export default function FaqPage() {
                   setOpenIdx(null);
                 }}
                 className={cn(
-                  'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors',
+                  'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors whitespace-nowrap',
                   category === c.value ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
                 )}
               >
                 {c.label}
               </button>
             ))}
-          </div>
+          </ScrollTabs>
         </Container>
       </div>
 

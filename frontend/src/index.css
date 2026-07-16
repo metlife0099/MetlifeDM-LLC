@@ -317,6 +317,18 @@
   .nav-indicator-glow {
     box-shadow: 0 0 12px 1px color-mix(in srgb, var(--color-ultra) 55%, transparent);
   }
+
+  /* Scrollable row (e.g. category filter tabs) that scrolls without showing a scrollbar */
+  .scrollbar-hide {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* legacy Edge/IE */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome / Safari / Chromium Edge */
+    width: 0;
+    height: 0;
+  }
 }
 
 /* ---------------------------------------------------------------

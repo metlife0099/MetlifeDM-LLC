@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Search, ArrowUpRight, Clock } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner, Badge } from '@/components/ui/index.jsx';
+import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
 import { contentApi } from '@/api/index.js';
@@ -80,12 +81,12 @@ export default function BlogPage() {
 
       {/* Category filter */}
       <div className="sticky top-20 z-30 bg-ivory border-y border-hairline">
-        <Container className="py-4 overflow-x-auto">
-          <div className="flex gap-2 min-w-max">
+        <Container>
+          <ScrollTabs trackClassName="py-4">
             <button
               onClick={() => setCategory('')}
               className={cn(
-                'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors',
+                'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors whitespace-nowrap',
                 !category ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
               )}
             >
@@ -96,7 +97,7 @@ export default function BlogPage() {
                 key={c._id}
                 onClick={() => setCategory(c.slug || c._id)}
                 className={cn(
-                  'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors',
+                  'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors whitespace-nowrap',
                   category === (c.slug || c._id) ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
                 )}
               >
@@ -104,7 +105,7 @@ export default function BlogPage() {
                 {c.name}
               </button>
             ))}
-          </div>
+          </ScrollTabs>
         </Container>
       </div>
 

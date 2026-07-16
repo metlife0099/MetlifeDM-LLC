@@ -7,6 +7,7 @@ import { commerceApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { DashHeader, DashEmpty } from '@/components/dashboard/DashHeader.jsx';
 import { Spinner, Badge, Card } from '@/components/ui/index.jsx';
+import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
 import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
@@ -32,7 +33,7 @@ export const OrdersListPage = () => {
       />
 
       {/* Filter */}
-      <div className="flex gap-2 mb-8 overflow-x-auto pb-1">
+      <ScrollTabs className="mb-8" trackClassName="pb-1">
         {STATUSES.map((s) => (
           <button
             key={s}
@@ -45,7 +46,7 @@ export const OrdersListPage = () => {
             {s}
           </button>
         ))}
-      </div>
+      </ScrollTabs>
 
       {isLoading ? (
         <div className="flex justify-center py-24"><Spinner size={28} className="text-ultra" /></div>

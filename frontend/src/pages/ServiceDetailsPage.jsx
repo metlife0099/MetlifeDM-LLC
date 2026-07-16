@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, Check, X, Star, ShoppingBag } from 'lucide-react';
+import { ArrowUpRight, Check, Star, ShoppingBag } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Badge, Spinner } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
@@ -56,14 +56,32 @@ export default function ServiceDetailsPage() {
         title={service.title}
         description={service.shortDescription}
         image={service.heroImage?.url}
-        jsonLd={{
-          '@context': 'https://schema.org',
-          '@type': 'Service',
-          name: service.title,
-          description: service.shortDescription,
-          provider: { '@type': 'Organization', name: 'MetlifeDM LLC' },
-          areaServed: 'US',
-        }}
+        jsonLd={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Service',
+            name: service.title,
+            description: service.shortDescription,
+            provider: { '@type': 'Organization', name: 'MetlifeDM LLC' },
+            areaServed: 'US',
+          },
+          ...(service.process?.length > 0
+            ? [
+                {
+                  '@context': 'https://schema.org',
+                  '@type': 'HowTo',
+                  name: `How our ${service.title} process works`,
+                  description: service.shortDescription,
+                  step: service.process.map((s, i) => ({
+                    '@type': 'HowToStep',
+                    position: i + 1,
+                    name: s.title,
+                    text: s.description,
+                  })),
+                },
+              ]
+            : []),
+        ]}
       />
 
       {/* Hero */}
@@ -89,7 +107,7 @@ export default function ServiceDetailsPage() {
               </p>
               <div className="mt-10 flex flex-wrap gap-4">
                 {service.pricingPlans?.length > 0 ? (
-                  <Button size="lg" variant="inverse" href="#pricing">
+                  <Button size="lg" variant="inverse" to="/pricing">
                     View pricing <ArrowUpRight size={16} strokeWidth={1.5} />
                   </Button>
                 ) : (
@@ -147,14 +165,14 @@ export default function ServiceDetailsPage() {
         </Section>
       )}
 
-      {/* Features & Benefits */}
-      {(service.features?.length || service.benefits?.length) > 0 && (
+      {/* Features */}
+      {service.features?.length > 0 && (
         <Section tone="ivory" spacing="lg">
           <Container>
             <Eyebrow number="02">What you get</Eyebrow>
             <h2 className="text-display-lg mt-4 mb-14">Included in every engagement</h2>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {(service.features || service.benefits || []).map((f, i) => (
+              {service.features.map((f, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, y: 24 }}
@@ -177,68 +195,48 @@ export default function ServiceDetailsPage() {
         </Section>
       )}
 
-      {/* Process */}
-      {service.process?.length > 0 && (
-        <ProcessTimeline
-          steps={service.process}
-          eyebrow="03 / How we work"
-          title={<>Our{' '}<span className="text-italic-fraunces text-ultra">process.</span></>}
-        />
-      )}
-
-      {/* Pricing plans */}
-      {service.pricingPlans?.length > 0 && (
-        <Section id="pricing" tone="ink" spacing="lg" divider={false} className="scroll-mt-24">
+      {/* Benefits */}
+      {service.benefits?.length > 0 && (
+        <Section tone="ivorySoft" spacing="lg">
           <Container>
-            <div className="text-eyebrow text-ivory/50 mb-4">04 / Pricing</div>
-            <h2 className="text-display-lg text-ivory mb-14">Choose your plan</h2>
-            <div className="grid gap-6 md:grid-cols-3">
-              {service.pricingPlans.map((plan, i) => (
+            <div className="max-w-2xl mb-14">
+              <Eyebrow number="03">Why it works</Eyebrow>
+              <h2 className="text-display-lg mt-4">
+                Built for <span className="text-italic-fraunces text-ultra">real outcomes.</span>
+              </h2>
+              <p className="text-slate text-lg mt-6 leading-relaxed">
+                Beyond the deliverables — here&apos;s the actual business impact you can expect.
+              </p>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {service.benefits.map((b, i) => (
                 <motion.div
-                  key={plan._id || i}
-                  initial={{ opacity: 0, y: 20 }}
+                  key={i}
+                  initial={{ opacity: 0, y: 24 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: i * 0.1 }}
-                  viewport={{ once: true }}
-                  className={`bg-ivory p-8 border ${plan.isPopular ? 'border-ultra shadow-[0_20px_60px_-20px_rgba(21,71,255,0.4)]' : 'border-transparent'} flex flex-col`}
+                  viewport={{ once: true, margin: '-60px' }}
+                  transition={{ duration: 0.6, delay: (i % 6) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                  className="group bg-ivory border border-hairline hover:border-ink hover-lift transition-colors duration-500 p-8"
                 >
-                  {plan.isPopular && (
-                    <div className="text-mono text-xs uppercase tracking-widest text-ultra mb-3">Most popular</div>
-                  )}
-                  <h3 className="text-display-sm">{plan.name}</h3>
-                  {plan.tagline && <p className="text-slate text-sm mt-2">{plan.tagline}</p>}
-                  <div className="mt-6 flex items-baseline gap-2">
-                    <span className="text-display-lg num-plate">{formatMoney(plan.price, plan.currency)}</span>
-                    <span className="text-mono text-xs text-slate uppercase">/ {plan.billingCycle?.replace('_', ' ')}</span>
+                  <div className="w-12 h-12 grid place-items-center bg-sand group-hover:bg-ultra text-ink group-hover:text-ivory text-xl rounded-full mb-6 transition-colors duration-500">
+                    {b.icon || <Check size={18} strokeWidth={2} />}
                   </div>
-                  <ul className="mt-8 space-y-3 flex-1">
-                    {(plan.features || []).map((f, j) => (
-                      <li key={j} className="flex items-start gap-2 text-sm">
-                        {f.included !== false ? (
-                          <Check size={16} className="text-success mt-0.5 shrink-0" strokeWidth={2} />
-                        ) : (
-                          <X size={16} className="text-slate/50 mt-0.5 shrink-0" strokeWidth={2} />
-                        )}
-                        <span className={f.included === false ? 'text-slate line-through' : 'text-ink'}>
-                          {f.label}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    onClick={() => addToCart(plan)}
-                    variant={plan.isPopular ? 'ultra' : 'primary'}
-                    className="mt-8 w-full"
-                    size="lg"
-                  >
-                    <ShoppingBag size={14} strokeWidth={1.5} />
-                    {plan.ctaLabel || 'Add to cart'}
-                  </Button>
+                  <h3 className="text-display-sm mb-3 group-hover:text-ultra transition-colors duration-300">{b.title}</h3>
+                  <p className="text-slate text-sm leading-relaxed">{b.description}</p>
                 </motion.div>
               ))}
             </div>
           </Container>
         </Section>
+      )}
+
+      {/* Process */}
+      {service.process?.length > 0 && (
+        <ProcessTimeline
+          steps={service.process}
+          eyebrow="04 / How we work"
+          title={<>Our{' '}<span className="text-italic-fraunces text-ultra">process.</span></>}
+        />
       )}
 
       {/* FAQs */}

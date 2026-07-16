@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
-import { Check, ShoppingBag, Star, ArrowUpRight } from 'lucide-react';
+import { Check, ShoppingBag, Star, ArrowUpRight, ShieldCheck, Sparkles, Ban } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
+import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner, FaqAccordion } from '@/components/sections/index.jsx';
@@ -14,6 +15,12 @@ import { addItem } from '@/store/index.js';
 import { formatMoney } from '@/utils/format.js';
 import { SERVICE_CATEGORIES } from '@/utils/constants.js';
 import { cn } from '@/utils/format.js';
+
+const TRUST_POINTS = [
+  { icon: Ban, label: 'No lock-in contracts' },
+  { icon: ShieldCheck, label: 'Transparent, itemized pricing' },
+  { icon: Sparkles, label: 'Senior strategist on every plan' },
+];
 
 export default function PricingPage() {
   const dispatch = useDispatch();
@@ -33,12 +40,46 @@ export default function PricingPage() {
 
   const { data: faqs = [] } = useQuery({
     queryKey: ['faqs', 'pricing'],
-    queryFn: () => contentApi.listFaqs({ category: 'pricing', limit: 6 }),
+    // "pricing" alone is too thin a category to fill out the section nicely —
+    // pull in payment/billing and services questions too, which are the next
+    // most relevant things someone reads this page wondering about.
+    queryFn: () => contentApi.listFaqs({ category: 'pricing,payment,services', limit: 6 }),
   });
 
   return (
     <>
-      <Seo title="Pricing" description="Transparent pricing across all MetlifeDM marketing services. Monthly, quarterly, and annual plans available." />
+      <Seo
+        title="Pricing"
+        description="Transparent pricing across all MetlifeDM marketing services. Monthly, quarterly, and annual plans available."
+        jsonLd={
+          services.length > 0
+            ? {
+                '@context': 'https://schema.org',
+                '@type': 'ItemList',
+                itemListElement: services.map((service, i) => ({
+                  '@type': 'ListItem',
+                  position: i + 1,
+                  item: {
+                    '@type': 'Service',
+                    name: service.title,
+                    description: service.shortDescription,
+                    url: `https://metlifedm.com/services/${service.slug}`,
+                    provider: { '@type': 'Organization', name: 'MetlifeDM LLC' },
+                    offers: (service.pricingPlans?.length > 0 ? service.pricingPlans : [{ price: service.startingPrice }]).map(
+                      (plan) => ({
+                        '@type': 'Offer',
+                        name: plan.name || service.title,
+                        price: plan.price ?? service.startingPrice,
+                        priceCurrency: plan.currency || 'USD',
+                        url: `https://metlifedm.com/services/${service.slug}`,
+                      })
+                    ),
+                  },
+                })),
+              }
+            : undefined
+        }
+      />
 
       {/* Hero */}
       <Section tone="ink" spacing="lg" divider={false} className="relative">
@@ -72,17 +113,27 @@ export default function PricingPage() {
               </button>
             ))}
           </div>
+
+          {/* Trust points */}
+          <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3">
+            {TRUST_POINTS.map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center gap-2 text-ivory/70 text-sm">
+                <Icon size={15} strokeWidth={1.5} className="text-ultra-soft shrink-0" />
+                {label}
+              </div>
+            ))}
+          </div>
         </Container>
       </Section>
 
       {/* Category filter */}
       <div className="sticky top-20 z-30 bg-ivory/90 backdrop-blur-xl border-y border-hairline shadow-[0_1px_0_0_rgba(10,23,48,0.04),0_12px_24px_-16px_rgba(10,23,48,0.1)]">
-        <Container className="py-4 overflow-x-auto">
-          <div className="flex gap-2 min-w-max">
+        <Container>
+          <ScrollTabs trackClassName="py-4">
             <button
               onClick={() => setCategory('')}
               className={cn(
-                'px-5 py-2.5 rounded-full text-mono text-xs uppercase tracking-widest border transition-all duration-300',
+                'px-5 py-2.5 rounded-full text-mono text-xs uppercase tracking-widest border transition-all duration-300 whitespace-nowrap',
                 !category
                   ? 'bg-ink text-ivory border-ink shadow-[0_8px_20px_-8px_rgba(10,23,48,0.5)]'
                   : 'border-hairline hover:border-ink hover:-translate-y-0.5'
@@ -90,12 +141,12 @@ export default function PricingPage() {
             >
               All services
             </button>
-            {SERVICE_CATEGORIES.slice(0, 8).map((c) => (
+            {SERVICE_CATEGORIES.map((c) => (
               <button
                 key={c.value}
                 onClick={() => setCategory(c.value)}
                 className={cn(
-                  'px-5 py-2.5 rounded-full text-mono text-xs uppercase tracking-widest border transition-all duration-300 flex items-center gap-2',
+                  'px-5 py-2.5 rounded-full text-mono text-xs uppercase tracking-widest border transition-all duration-300 flex items-center gap-2 whitespace-nowrap',
                   category === c.value
                     ? 'bg-ultra text-ivory border-ultra shadow-[0_8px_20px_-8px_rgba(21,71,255,0.5)]'
                     : 'border-hairline hover:border-ink hover:-translate-y-0.5'
@@ -105,7 +156,7 @@ export default function PricingPage() {
                 {c.label}
               </button>
             ))}
-          </div>
+          </ScrollTabs>
         </Container>
       </div>
 
@@ -125,12 +176,12 @@ export default function PricingPage() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: '-80px' }}
                   transition={{ duration: 0.6, delay: (si % 4) * 0.06, ease: [0.22, 1, 0.36, 1] }}
-                  className="border border-hairline hover:border-ink transition-colors duration-500 p-6 md:p-10 hover-lift"
+                  className="group border border-hairline hover:border-ink transition-colors duration-500 p-6 md:p-10 hover-lift"
                 >
                   <div className="flex items-start justify-between mb-10 gap-6 flex-wrap">
                     <div className="flex items-start gap-5">
                       {service.icon && (
-                        <div className="w-14 h-14 shrink-0 grid place-items-center bg-ink text-ivory text-2xl">
+                        <div className="w-14 h-14 shrink-0 rounded-full grid place-items-center bg-ink text-ivory text-2xl group-hover:bg-ultra transition-colors duration-500">
                           {service.icon}
                         </div>
                       )}
@@ -151,8 +202,8 @@ export default function PricingPage() {
                   </div>
 
                   {service.pricingPlans?.length > 0 ? (
-                    <div className="grid gap-6 md:grid-cols-3">
-                      {service.pricingPlans.slice(0, 3).map((plan) => {
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                      {service.pricingPlans.map((plan) => {
                         const price = billing === 'yearly' ? plan.price * 12 * 0.85 : plan.price;
                         return (
                           <div
@@ -187,7 +238,7 @@ export default function PricingPage() {
                               </span>
                             </div>
                             <ul className={cn('mt-6 space-y-2 flex-1 text-sm', plan.isPopular ? 'text-ivory/80' : 'text-ink')}>
-                              {(plan.features || []).slice(0, 6).map((f, j) => (
+                              {(plan.features || []).map((f, j) => (
                                 <li key={j} className="flex items-start gap-2">
                                   <Check size={14} className={plan.isPopular ? 'text-ultra-soft mt-0.5 shrink-0' : 'text-success mt-0.5 shrink-0'} strokeWidth={2} />
                                   <span>{f.label}</span>
@@ -208,12 +259,19 @@ export default function PricingPage() {
                       })}
                     </div>
                   ) : (
-                    <div className="border border-hairline p-8 flex items-center justify-between">
-                      <div>
-                        <div className="text-mono text-xs uppercase tracking-widest text-slate mb-2">Custom pricing</div>
-                        <div className="text-display-sm">Starting at {formatMoney(service.startingPrice)}/mo</div>
+                    <div className="border border-hairline bg-ivory-soft hover:border-ink transition-colors duration-500 p-8 flex items-center justify-between gap-6 flex-wrap">
+                      <div className="flex items-center gap-5">
+                        <div className="w-12 h-12 shrink-0 rounded-full grid place-items-center bg-sand text-ink">
+                          <Sparkles size={18} strokeWidth={1.5} />
+                        </div>
+                        <div>
+                          <div className="text-mono text-xs uppercase tracking-widest text-slate mb-2">Custom pricing</div>
+                          <div className="text-display-sm">Starting at {formatMoney(service.startingPrice)}/mo</div>
+                        </div>
                       </div>
-                      <Button to="/consultation" size="md">Get a quote</Button>
+                      <Button to="/consultation" size="md">
+                        Get a quote <ArrowUpRight size={14} strokeWidth={1.5} />
+                      </Button>
                     </div>
                   )}
                 </motion.div>
@@ -264,7 +322,13 @@ export default function PricingPage() {
         </div>
       </div>
 
-      {faqs.length > 0 && <FaqAccordion items={faqs} eyebrow="Pricing FAQ" />}
+      {faqs.length > 0 && (
+        <FaqAccordion
+          items={faqs}
+          eyebrow="Pricing FAQ"
+          image="https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=1200&q=80&auto=format&fit=crop"
+        />
+      )}
 
       <CtaBanner
         title="Custom scope?"

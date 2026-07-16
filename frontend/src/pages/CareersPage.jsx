@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { MapPin, Clock, ArrowUpRight, Briefcase } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner, Badge } from '@/components/ui/index.jsx';
+import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
@@ -96,7 +97,7 @@ export default function CareersPage() {
           </div>
 
           {/* Department filter */}
-          <div className="flex gap-2 mb-10 overflow-x-auto pb-1">
+          <ScrollTabs className="mb-10" trackClassName="pb-1">
             {DEPTS.map((d) => (
               <button
                 key={d}
@@ -109,7 +110,7 @@ export default function CareersPage() {
                 {d}
               </button>
             ))}
-          </div>
+          </ScrollTabs>
 
           {isLoading ? (
             <div className="flex justify-center py-24"><Spinner size={28} className="text-ultra" /></div>

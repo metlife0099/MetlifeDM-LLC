@@ -104,7 +104,10 @@ export const review = {
 export const faq = {
   list: asyncHandler(async (req, res) => {
     const filter = { isPublished: true };
-    if (req.query.category) filter.category = req.query.category;
+    if (req.query.category) {
+      const cats = req.query.category.split(',').map((c) => c.trim()).filter(Boolean);
+      filter.category = cats.length > 1 ? { $in: cats } : cats[0];
+    }
     if (req.query.featured === 'true') filter.isFeatured = true;
     let query = FAQ.find(filter).sort({ order: 1, createdAt: -1 });
     if (req.query.limit) query = query.limit(Number(req.query.limit));
