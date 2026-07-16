@@ -16,7 +16,7 @@ const ORGANIZATION_JSON_LD = {
   name: 'MetlifeDM LLC',
   url: 'https://metlifedm.com',
   logo: 'https://metlifedm.com/logo.png',
-  foundingDate: '2013',
+  foundingDate: '2024',
   address: {
     '@type': 'PostalAddress',
     addressLocality: 'Miami',

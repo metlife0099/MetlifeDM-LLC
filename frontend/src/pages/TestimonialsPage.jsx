@@ -12,7 +12,7 @@ const STATS = [
   { value: '4.9', label: 'Average rating', suffix: '★' },
   { value: '200+', label: 'US clients' },
   { value: '95%', label: 'Retention rate' },
-  { value: '12', label: 'Years in business', suffix: 'yr' },
+  { value: '45', label: 'Team members', suffix: '' },
 ];
 
 export default function TestimonialsPage() {

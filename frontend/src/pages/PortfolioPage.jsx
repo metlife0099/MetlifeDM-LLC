@@ -40,7 +40,7 @@ export default function PortfolioPage() {
             <span className="text-italic-fraunces text-ultra-soft">worth the receipt.</span>
           </h1>
           <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
-            A cross-section of websites, ad creative, and full brand systems we&apos;ve shipped over the past twelve years. Every one has real KPIs attached.
+            A cross-section of websites, ad creative, and full brand systems we&apos;ve shipped since day one. Every one has real KPIs attached.
           </p>
         </Container>
       </Section>

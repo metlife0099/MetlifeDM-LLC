@@ -52,7 +52,7 @@ export default function HomePage() {
             addressCountry: 'US',
           },
           areaServed: 'US',
-          foundingDate: '2013',
+          foundingDate: '2024',
           sameAs: [],
         }}
       />
@@ -66,7 +66,7 @@ export default function HomePage() {
         <Container className="relative z-10">
           <div className="grid gap-16 lg:grid-cols-[1.4fr_1fr] lg:items-end">
             <div>
-              <Eyebrow number="00" light>Digital marketing / Est. 2013</Eyebrow>
+              <Eyebrow number="00" light>Digital marketing / Est. 2024</Eyebrow>
               <motion.h1
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}

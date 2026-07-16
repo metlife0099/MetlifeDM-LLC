@@ -71,7 +71,7 @@ const seedSettings = async () =>
         { label: 'US clients served', value: '200', suffix: '+' },
         { label: 'Avg ROI increase', value: '312', suffix: '%' },
         { label: 'Team members', value: '45', suffix: '' },
-        { label: 'Years of experience', value: '12', suffix: '+' },
+        { label: 'Founded', value: '2024', suffix: '' },
       ],
     },
   });
