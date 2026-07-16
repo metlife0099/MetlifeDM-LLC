@@ -28,14 +28,9 @@ export const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  console.log("Access Token:", accessToken);
-
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
-
-  console.log("Authorization Header:", config.headers.Authorization);
-
   return config;
 });
 
