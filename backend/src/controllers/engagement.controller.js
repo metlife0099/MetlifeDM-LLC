@@ -2,7 +2,7 @@ import asyncHandler from '../utils/asyncHandler.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
 import { Testimonial, Review, FAQ, Order } from '../models/index.js';
-import { getPaginationOptions, paginate } from '../utils/pagination.js';
+import { getPaginationOptions, paginate, buildPaginationMeta } from '../utils/pagination.js';
 
 /* ========== TESTIMONIALS ========== */
 export const testimonial = {
@@ -17,6 +17,8 @@ export const testimonial = {
     const opts = getPaginationOptions(req.query);
     const filter = {};
     if (req.query.featured === 'true') filter.isFeatured = true;
+    if (req.query.status) filter.isPublished = req.query.status === 'published';
+    if (req.query.rating) filter.rating = Number(req.query.rating);
     if (opts.search) filter.name = { $regex: opts.search, $options: 'i' };
     const { items, meta } = await paginate(Testimonial, filter, opts);
     return ApiResponse.ok(res, items, 'Testimonials (admin)', meta);
@@ -110,10 +112,21 @@ export const faq = {
     return ApiResponse.ok(res, items, 'FAQs');
   }),
   listAdmin: asyncHandler(async (req, res) => {
+    const opts = getPaginationOptions(req.query);
     const filter = {};
     if (req.query.category) filter.category = req.query.category;
-    const items = await FAQ.find(filter).sort({ order: 1, createdAt: -1 });
-    return ApiResponse.ok(res, items, 'FAQs (admin)');
+    if (req.query.status) filter.isPublished = req.query.status === 'published';
+    if (req.query.featured === 'true') filter.isFeatured = true;
+    if (opts.search) filter.question = { $regex: opts.search, $options: 'i' };
+    // Keep the manual `order` field as the primary sort (curator-controlled display
+    // order on /faq) — bypass the shared paginate() helper since it always defaults
+    // to createdAt desc, which would silently override that ordering.
+    const [items, total] = await Promise.all([
+      FAQ.find(filter).sort({ order: 1, createdAt: -1 }).skip(opts.skip).limit(opts.limit),
+      FAQ.countDocuments(filter),
+    ]);
+    const meta = buildPaginationMeta({ total, page: opts.page, limit: opts.limit });
+    return ApiResponse.ok(res, items, 'FAQs (admin)', meta);
   }),
   helpful: asyncHandler(async (req, res) => {
     const inc = req.body.helpful ? { helpful: 1 } : { notHelpful: 1 };

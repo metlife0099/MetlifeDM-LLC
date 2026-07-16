@@ -25,12 +25,13 @@ export function CampaignsPage() {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('');
   const [deleteId, setDeleteId] = useState(null);
   const debounced = useDebounce(search, 300);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'campaigns', { page, debounced }],
-    queryFn: () => campaignsApi.list({ page, search: debounced, limit: 20 }),
+    queryKey: ['admin', 'campaigns', { page, debounced, status }],
+    queryFn: () => campaignsApi.list({ page, search: debounced, status: status || undefined, limit: 20 }),
     refetchInterval: (q) => ((q.state.data?.data || []).some((c) => c.status === 'sending') ? 4000 : false),
   });
 
@@ -98,6 +99,19 @@ export function CampaignsPage() {
       />
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search campaigns…" className="w-64" />
+        <Select
+          className="w-36"
+          options={[
+            { value: '', label: 'All statuses' },
+            { value: 'draft', label: 'Draft' },
+            { value: 'sending', label: 'Sending' },
+            { value: 'sent', label: 'Sent' },
+            { value: 'partial', label: 'Partial' },
+            { value: 'failed', label: 'Failed' },
+          ]}
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+        />
       </FilterBar>
       <DataTable
         columns={columns} rows={data?.data || []} loading={isLoading}

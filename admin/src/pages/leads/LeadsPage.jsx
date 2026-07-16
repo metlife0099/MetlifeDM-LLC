@@ -266,13 +266,14 @@ export function SubscribersPage() {
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [active, setActive] = useState('');
   const [deleteId, setDeleteId] = useState(null);
   const [addOpen, setAddOpen] = useState(false);
   const debounced = useDebounce(search, 300);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'subscribers', { page, debounced }],
-    queryFn: () => leadsApi.listSubscribers({ page, search: debounced, limit: 50 }),
+    queryKey: ['admin', 'subscribers', { page, debounced, active }],
+    queryFn: () => leadsApi.listSubscribers({ page, search: debounced, active: active || undefined, limit: 50 }),
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['admin', 'subscribers'] });
@@ -359,6 +360,12 @@ export function SubscribersPage() {
       />
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search subscribers…" className="w-64" />
+        <Select
+          className="w-40"
+          options={[{ value: '', label: 'All' }, { value: 'true', label: 'Active' }, { value: 'false', label: 'Unsubscribed' }]}
+          value={active}
+          onChange={(e) => setActive(e.target.value)}
+        />
       </FilterBar>
       <DataTable
         columns={columns} rows={data?.data || []} loading={isLoading}

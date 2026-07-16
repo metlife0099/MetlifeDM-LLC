@@ -17,14 +17,15 @@ export default function MediaLibraryPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [folder, setFolder] = useState('');
+  const [type, setType] = useState('');
   const [selected, setSelected] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   const debounced = useDebounce(search, 300);
   const [copied, copy] = useCopy();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'media', { page, debounced, folder }],
-    queryFn: () => mediaApi.list({ page, search: debounced, folder, limit: 48 }),
+    queryKey: ['admin', 'media', { page, debounced, folder, type }],
+    queryFn: () => mediaApi.list({ page, search: debounced, folder, type: type || undefined, limit: 48 }),
   });
 
   const { data: folders = [] } = useQuery({
@@ -100,6 +101,19 @@ export default function MediaLibraryPage() {
           ]}
           value={folder}
           onChange={(e) => setFolder(e.target.value)}
+        />
+        <Select
+          className="w-36"
+          options={[
+            { value: '', label: 'All types' },
+            { value: 'image', label: 'Images' },
+            { value: 'video', label: 'Video' },
+            { value: 'audio', label: 'Audio' },
+            { value: 'document', label: 'Documents' },
+            { value: 'other', label: 'Other' },
+          ]}
+          value={type}
+          onChange={(e) => setType(e.target.value)}
         />
       </FilterBar>
 

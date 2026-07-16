@@ -32,6 +32,8 @@ export default function FaqsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('');
+  const [status, setStatus] = useState('');
+  const [featured, setFeatured] = useState('');
   const [editOpen, setEditOpen] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   const debounced = useDebounce(search, 300);
@@ -39,8 +41,16 @@ export default function FaqsPage() {
   const { register, handleSubmit, reset } = useForm();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'faqs', { page, debounced, category }],
-    queryFn: () => faqsApi.list({ page, search: debounced, category, limit: 25 }),
+    queryKey: ['admin', 'faqs', { page, debounced, category, status, featured }],
+    queryFn: () =>
+      faqsApi.list({
+        page,
+        search: debounced,
+        category,
+        status: status || undefined,
+        featured: featured || undefined,
+        limit: 25,
+      }),
   });
 
   const save = useMutation({
@@ -108,6 +118,18 @@ export default function FaqsPage() {
           options={[{ value: '', label: 'All categories' }, ...CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }))]}
           value={category}
           onChange={(e) => setCategory(e.target.value)}
+        />
+        <Select
+          className="w-32"
+          options={[{ value: '', label: 'All statuses' }, { value: 'published', label: 'Published' }, { value: 'draft', label: 'Draft' }]}
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+        />
+        <Select
+          className="w-32"
+          options={[{ value: '', label: 'All' }, { value: 'true', label: 'Featured' }]}
+          value={featured}
+          onChange={(e) => setFeatured(e.target.value)}
         />
       </FilterBar>
       <DataTable

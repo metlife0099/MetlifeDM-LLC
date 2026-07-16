@@ -51,6 +51,7 @@ export const listCoupons = asyncHandler(async (req, res) => {
   const opts = getPaginationOptions(req.query);
   const filter = {};
   if (req.query.active === 'true') filter.isActive = true;
+  else if (req.query.active === 'false') filter.isActive = false;
   if (opts.search) filter.code = { $regex: opts.search, $options: 'i' };
   const { items, meta } = await paginate(Coupon, filter, opts);
   return ApiResponse.ok(res, items, 'Coupons', meta);

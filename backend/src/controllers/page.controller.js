@@ -6,7 +6,7 @@ import { getPaginationOptions, paginate } from '../utils/pagination.js';
 
 export const list = asyncHandler(async (req, res) => {
   const filter = { isPublished: true };
-  const items = await Page.find(filter).select('title slug template publishedAt').sort({ title: 1 });
+  const items = await Page.find(filter).select('title slug template publishedAt').sort({ createdAt: -1 });
   return ApiResponse.ok(res, items, 'Pages');
 });
 
@@ -19,6 +19,7 @@ export const bySlug = asyncHandler(async (req, res) => {
 export const listAdmin = asyncHandler(async (req, res) => {
   const opts = getPaginationOptions(req.query);
   const filter = {};
+  if (req.query.status) filter.isPublished = req.query.status === 'published';
   if (opts.search) filter.title = { $regex: opts.search, $options: 'i' };
   const { items, meta } = await paginate(Page, filter, opts);
   return ApiResponse.ok(res, items, 'Pages', meta);

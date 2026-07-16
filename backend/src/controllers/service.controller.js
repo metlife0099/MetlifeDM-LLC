@@ -80,6 +80,7 @@ export const listAllAdmin = asyncHandler(async (req, res) => {
   const opts = getPaginationOptions(req.query);
   const filter = {};
   if (req.query.category) filter.category = req.query.category;
+  if (req.query.status) filter.isPublished = req.query.status === 'published';
   if (opts.search) filter.title = { $regex: opts.search, $options: 'i' };
   const { items, meta } = await paginate(Service, filter, opts);
   return ApiResponse.ok(res, items, 'Services (admin)', meta);

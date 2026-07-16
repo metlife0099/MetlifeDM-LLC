@@ -80,6 +80,7 @@ export const listAdmin = asyncHandler(async (req, res) => {
   const opts = getPaginationOptions(req.query);
   const filter = {};
   if (req.query.status) filter.status = req.query.status;
+  if (req.query.category) filter.category = req.query.category;
   const { items, meta } = await paginate(Blog, filter, opts, {
     select: 'title slug status coverImage category isFeatured publishedAt readingTime views author',
     populate: [

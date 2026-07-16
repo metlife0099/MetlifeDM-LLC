@@ -95,6 +95,15 @@
     outline: 2px solid var(--color-ultra);
     outline-offset: 2px;
   }
+  button,
+  [role='button'],
+  a,
+  summary {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
   ::selection {
     background: var(--color-ultra);
     color: var(--color-ivory);

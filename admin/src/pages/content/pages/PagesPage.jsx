@@ -4,24 +4,29 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { Plus, File, Edit3, Trash2, ArrowLeft, Save, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { PageHeader, Breadcrumbs } from '@/components/ui/PageHeader.jsx';
+import { PageHeader, Breadcrumbs, FilterBar } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
 import { StatusPill, Card, PageLoader } from '@/components/ui/index.jsx';
-import { Input, Textarea, Switch } from '@/components/form/index.jsx';
+import { Input, Textarea, Select, Switch, SearchInput } from '@/components/form/index.jsx';
 import RichEditor from '@/components/ui/RichEditor.jsx';
 import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import Button from '@/components/ui/Button.jsx';
 import { pagesApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
+import { useDebounce } from '@/hooks/index.js';
 import { formatDate, slugify } from '@/utils/format.js';
 
 export function PagesListPage() {
   const qc = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('');
   const [deleteId, setDeleteId] = useState(null);
+  const debounced = useDebounce(search, 300);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'pages'],
-    queryFn: () => pagesApi.list({ limit: 50 }),
+    queryKey: ['admin', 'pages', { page, debounced, status }],
+    queryFn: () => pagesApi.list({ page, search: debounced || undefined, status: status || undefined, limit: 25 }),
   });
 
   const remove = useMutation({
@@ -66,8 +71,18 @@ export function PagesListPage() {
         subtitle="Privacy, terms, cookies, and any other custom pages."
         actions={<Button to="/content/pages/new" icon={Plus}>New page</Button>}
       />
+      <FilterBar>
+        <SearchInput value={search} onChange={setSearch} placeholder="Search pages…" className="w-64" />
+        <Select
+          className="w-32"
+          options={[{ value: '', label: 'All statuses' }, { value: 'published', label: 'Published' }, { value: 'draft', label: 'Draft' }]}
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+        />
+      </FilterBar>
       <DataTable
         columns={columns} rows={data?.data || []} loading={isLoading}
+        meta={data?.meta} onPageChange={setPage}
         emptyIcon={File} emptyTitle="No custom pages yet" emptySubtitle="Create pages like Privacy, Terms, or Cookies."
         emptyAction={<Button to="/content/pages/new" icon={Plus}>New page</Button>}
       />

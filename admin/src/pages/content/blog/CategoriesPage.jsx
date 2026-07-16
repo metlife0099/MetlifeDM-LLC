@@ -3,10 +3,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { Plus, Edit3, Trash2, Tag } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { PageHeader, Breadcrumbs } from '@/components/ui/PageHeader.jsx';
+import { PageHeader, Breadcrumbs, FilterBar } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
 import { Modal, ConfirmDialog } from '@/components/ui/Modal.jsx';
-import { Input, Textarea } from '@/components/form/index.jsx';
+import { Input, Textarea, SearchInput } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import { blogApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
@@ -16,12 +16,17 @@ export default function CategoriesPage() {
   const qc = useQueryClient();
   const [editOpen, setEditOpen] = useState(null); // null | {} for new | object for edit
   const [deleteId, setDeleteId] = useState(null);
+  const [search, setSearch] = useState('');
   const { register, handleSubmit, reset, watch, setValue } = useForm();
 
   const { data: categories = [], isLoading } = useQuery({
     queryKey: ['admin', 'blog', 'categories'],
     queryFn: () => blogApi.listCategories(),
   });
+
+  const rows = search
+    ? categories.filter((c) => c.name?.toLowerCase().includes(search.toLowerCase()))
+    : categories;
 
   const save = useMutation({
     mutationFn: (data) =>
@@ -80,8 +85,11 @@ export default function CategoriesPage() {
         subtitle="Group posts by topic — shown in the blog category filter."
         actions={<Button onClick={() => openEdit(null)} icon={Plus}>New category</Button>}
       />
+      <FilterBar>
+        <SearchInput value={search} onChange={setSearch} placeholder="Search categories…" className="w-64" />
+      </FilterBar>
       <DataTable
-        columns={columns} rows={categories} loading={isLoading}
+        columns={columns} rows={rows} loading={isLoading}
         emptyIcon={Tag} emptyTitle="No categories yet"
         emptyAction={<Button onClick={() => openEdit(null)} icon={Plus}>New category</Button>}
       />

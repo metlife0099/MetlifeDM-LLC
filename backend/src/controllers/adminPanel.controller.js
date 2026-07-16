@@ -335,7 +335,7 @@ export const subscribersExport = asyncHandler(async (req, res) => {
  * EMAIL TEMPLATES
  * ──────────────────────────────────────────────────────────── */
 export const listEmailTemplates = asyncHandler(async (req, res) => {
-  const list = await EmailTemplate.find({}).sort({ name: 1 }).lean();
+  const list = await EmailTemplate.find({}).sort({ createdAt: -1 }).lean();
   return ApiResponse.ok(res, list, 'Email templates');
 });
 

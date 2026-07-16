@@ -119,6 +119,7 @@ export function CouponsPage() {
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [active, setActive] = useState('');
   const [editOpen, setEditOpen] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   const debounced = useDebounce(search, 300);
@@ -126,8 +127,8 @@ export function CouponsPage() {
   const { register, handleSubmit, reset } = useForm();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'coupons', { page, debounced }],
-    queryFn: () => couponsApi.list({ page, search: debounced, limit: 25 }),
+    queryKey: ['admin', 'coupons', { page, debounced, active }],
+    queryFn: () => couponsApi.list({ page, search: debounced, active: active || undefined, limit: 25 }),
   });
 
   const save = useMutation({
@@ -191,6 +192,12 @@ export function CouponsPage() {
       />
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search codes…" className="w-64" />
+        <Select
+          className="w-36"
+          options={[{ value: '', label: 'All' }, { value: 'true', label: 'Active' }, { value: 'false', label: 'Inactive' }]}
+          value={active}
+          onChange={(e) => setActive(e.target.value)}
+        />
       </FilterBar>
       <DataTable
         columns={columns} rows={data?.data || []} loading={isLoading}

@@ -156,6 +156,7 @@ export const newsletter = {
     const opts = getPaginationOptions(req.query);
     const filter = {};
     if (req.query.active === 'true') filter.isActive = true;
+    else if (req.query.active === 'false') filter.isActive = false;
     if (req.query.featured === 'true') filter.isFeatured = true;
     if (opts.search) filter.email = { $regex: opts.search, $options: 'i' };
     const { items, meta } = await paginate(Newsletter, filter, opts);

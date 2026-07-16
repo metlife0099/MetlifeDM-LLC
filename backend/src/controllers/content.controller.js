@@ -26,6 +26,7 @@ export const industry = {
     const opts = getPaginationOptions(req.query);
     const filter = {};
     if (req.query.featured === 'true') filter.isFeatured = true;
+    if (req.query.status) filter.isPublished = req.query.status === 'published';
     if (opts.search) filter.name = { $regex: opts.search, $options: 'i' };
     const { items, meta } = await paginate(Industry, filter, opts);
     return ApiResponse.ok(res, items, 'Industries (admin)', meta);
@@ -76,6 +77,7 @@ export const portfolio = {
     const filter = {};
     if (req.query.industry) filter.industry = req.query.industry;
     if (req.query.featured === 'true') filter.isFeatured = true;
+    if (req.query.status) filter.isPublished = req.query.status === 'published';
     if (opts.search) filter.$text = { $search: opts.search };
     const { items, meta } = await paginate(Portfolio, filter, opts, {
       populate: [{ path: 'services', select: 'title slug' }],
@@ -127,6 +129,7 @@ export const caseStudy = {
     const filter = {};
     if (req.query.featured === 'true') filter.isFeatured = true;
     if (req.query.industry) filter.industry = req.query.industry;
+    if (req.query.status) filter.isPublished = req.query.status === 'published';
     if (opts.search) filter.title = { $regex: opts.search, $options: 'i' };
     const { items, meta } = await paginate(CaseStudy, filter, opts);
     return ApiResponse.ok(res, items, 'Case studies (admin)', meta);

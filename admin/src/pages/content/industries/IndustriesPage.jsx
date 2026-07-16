@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Breadcrumbs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
 import { StatusPill, Card, PageLoader } from '@/components/ui/index.jsx';
-import { Input, Textarea, Switch, SearchInput, ImageUpload } from '@/components/form/index.jsx';
+import { Input, Textarea, Select, Switch, SearchInput, ImageUpload } from '@/components/form/index.jsx';
 import RichEditor from '@/components/ui/RichEditor.jsx';
 import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import Button from '@/components/ui/Button.jsx';
@@ -23,13 +23,22 @@ export function IndustriesListPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(25);
   const [search, setSearch] = useState('');
-  const [sort, setSort] = useState({ key: 'order', direction: 'asc' });
+  const [status, setStatus] = useState('');
+  const [sort, setSort] = useState({ key: 'createdAt', direction: 'desc' });
   const [deleteId, setDeleteId] = useState(null);
   const debounced = useDebounce(search, 300);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'industries', { page, limit, debounced, sort }],
-    queryFn: () => industriesApi.list({ page, limit, search: debounced, sortBy: sort.key, sortOrder: sort.direction }),
+    queryKey: ['admin', 'industries', { page, limit, debounced, status, sort }],
+    queryFn: () =>
+      industriesApi.list({
+        page,
+        limit,
+        search: debounced,
+        status: status || undefined,
+        sortBy: sort.key,
+        sortOrder: sort.direction,
+      }),
   });
 
   const remove = useMutation({
@@ -75,6 +84,12 @@ export function IndustriesListPage() {
       />
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search industries…" className="w-64" />
+        <Select
+          className="w-32"
+          options={[{ value: '', label: 'All statuses' }, { value: 'published', label: 'Published' }, { value: 'draft', label: 'Draft' }]}
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+        />
       </FilterBar>
       <DataTable
         columns={columns} rows={data?.data || []} loading={isLoading}

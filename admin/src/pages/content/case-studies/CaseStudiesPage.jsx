@@ -12,7 +12,7 @@ import { StatusPill, Card, PageLoader } from '@/components/ui/index.jsx';
 import { Input, Textarea, Select, Switch, SearchInput, ImageUpload, MultiSelect } from '@/components/form/index.jsx';
 import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import Button from '@/components/ui/Button.jsx';
-import { caseStudiesApi, servicesApi } from '@/api/index.js';
+import { caseStudiesApi, servicesApi, industriesApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { useDebounce } from '@/hooks/index.js';
 import { formatDate, slugify } from '@/utils/format.js';
@@ -25,13 +25,29 @@ export function CaseStudiesListPage() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(25);
   const [search, setSearch] = useState('');
+  const [industry, setIndustry] = useState('');
+  const [status, setStatus] = useState('');
   const [sort, setSort] = useState({ key: 'createdAt', direction: 'desc' });
   const [deleteId, setDeleteId] = useState(null);
   const debounced = useDebounce(search, 300);
 
+  const { data: industries = [] } = useQuery({
+    queryKey: ['admin', 'industries', 'all'],
+    queryFn: () => industriesApi.list({ limit: 100 }).then((r) => r.data || []),
+  });
+
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'case-studies', { page, limit, debounced, sort }],
-    queryFn: () => caseStudiesApi.list({ page, limit, search: debounced, sortBy: sort.key, sortOrder: sort.direction }),
+    queryKey: ['admin', 'case-studies', { page, limit, debounced, industry, status, sort }],
+    queryFn: () =>
+      caseStudiesApi.list({
+        page,
+        limit,
+        search: debounced,
+        industry: industry || undefined,
+        status: status || undefined,
+        sortBy: sort.key,
+        sortOrder: sort.direction,
+      }),
   });
 
   const remove = useMutation({
@@ -78,6 +94,18 @@ export function CaseStudiesListPage() {
       />
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search case studies…" className="w-64" />
+        <Select
+          className="w-40"
+          options={[{ value: '', label: 'All industries' }, ...industries.map((i) => ({ value: i.name, label: i.name }))]}
+          value={industry}
+          onChange={(e) => setIndustry(e.target.value)}
+        />
+        <Select
+          className="w-32"
+          options={[{ value: '', label: 'All statuses' }, { value: 'published', label: 'Published' }, { value: 'draft', label: 'Draft' }]}
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+        />
       </FilterBar>
       <DataTable
         columns={columns} rows={data?.data || []} loading={isLoading}

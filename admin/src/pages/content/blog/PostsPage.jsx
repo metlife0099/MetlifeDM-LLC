@@ -28,13 +28,19 @@ export function PostsListPage() {
   const [limit, setLimit] = useState(25);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
+  const [category, setCategory] = useState('');
   const [sort, setSort] = useState({ key: 'publishedAt', direction: 'desc' });
   const [deleteId, setDeleteId] = useState(null);
   const debounced = useDebounce(search, 300);
 
+  const { data: categories = [] } = useQuery({
+    queryKey: ['admin', 'blog', 'categories'],
+    queryFn: () => blogApi.listCategories(),
+  });
+
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'posts', { page, limit, debounced, status, sort }],
-    queryFn: () => blogApi.listPosts({ page, limit, search: debounced, status, sortBy: sort.key, sortOrder: sort.direction }),
+    queryKey: ['admin', 'posts', { page, limit, debounced, status, category, sort }],
+    queryFn: () => blogApi.listPosts({ page, limit, search: debounced, status, category: category || undefined, sortBy: sort.key, sortOrder: sort.direction }),
   });
 
   const remove = useMutation({
@@ -112,6 +118,12 @@ export function PostsListPage() {
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search posts…" className="w-64" />
         <Select className="w-40" options={[{ value: '', label: 'All statuses' }, ...POST_STATUSES]} value={status} onChange={(e) => setStatus(e.target.value)} />
+        <Select
+          className="w-40"
+          options={[{ value: '', label: 'All categories' }, ...categories.map((c) => ({ value: c._id, label: c.name }))]}
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        />
       </FilterBar>
       <DataTable
         columns={columns} rows={data?.data || []} loading={isLoading}

@@ -19,6 +19,7 @@ export default function TestimonialsPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
+  const [rating, setRating] = useState('');
   const [editOpen, setEditOpen] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   const [avatar, setAvatar] = useState(null);
@@ -28,8 +29,8 @@ export default function TestimonialsPage() {
   const { register, handleSubmit, reset } = useForm();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'testimonials', { page, debounced, status }],
-    queryFn: () => testimonialsApi.list({ page, search: debounced, status, limit: 25 }),
+    queryKey: ['admin', 'testimonials', { page, debounced, status, rating }],
+    queryFn: () => testimonialsApi.list({ page, search: debounced, status, rating: rating || undefined, limit: 25 }),
   });
 
   const save = useMutation({
@@ -123,6 +124,12 @@ export default function TestimonialsPage() {
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search testimonials…" className="w-64" />
         <Select className="w-32" options={[{ value: '', label: 'All' }, { value: 'published', label: 'Published' }, { value: 'draft', label: 'Draft' }]} value={status} onChange={(e) => setStatus(e.target.value)} />
+        <Select
+          className="w-32"
+          options={[{ value: '', label: 'All ratings' }, ...[5, 4, 3, 2, 1].map((n) => ({ value: String(n), label: `${n} ★` }))]}
+          value={rating}
+          onChange={(e) => setRating(e.target.value)}
+        />
       </FilterBar>
       <DataTable
         columns={columns} rows={data?.data || []} loading={isLoading}
