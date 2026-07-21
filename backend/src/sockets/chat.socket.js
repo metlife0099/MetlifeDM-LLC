@@ -90,6 +90,7 @@ export const setupChatHandlers = (socket, io) => {
           chat.handoffAt = new Date();
           chat.handoffReason = 'AI confidence below threshold';
           io.to('admins').emit('chat:handoff', { chat, message: botMsg });
+          io.to(`chat:${chatId}`).emit('chat:status', { status: chat.status });
         }
         await chat.save();
 

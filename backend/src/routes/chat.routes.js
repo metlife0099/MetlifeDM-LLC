@@ -12,6 +12,12 @@ router.post('/start', chatLimiter, optionalAuth, c.startChat);
 // Send message — guests or authed users
 router.post('/:id/messages', chatLimiter, optionalAuth, c.sendMessage);
 
+// Customer manually escalates from AI to a human agent
+router.post('/:id/request-human', chatLimiter, optionalAuth, c.requestHuman);
+
+// Customer switches back from Admin to the AI assistant
+router.post('/:id/request-ai', chatLimiter, optionalAuth, c.requestAI);
+
 // Attach file to chat (authed)
 router.post('/:id/attachments', requireAuth, chatAttachmentUpload.single('file'), (req, res) =>
   res.json({ url: req.file.path, publicId: req.file.filename, name: req.file.originalname })
@@ -19,6 +25,9 @@ router.post('/:id/attachments', requireAuth, chatAttachmentUpload.single('file')
 
 // Message history
 router.get('/:id/messages', optionalAuth, c.listMessages);
+
+// Lightweight status check (for resuming a chat across page loads)
+router.get('/:id/status', optionalAuth, c.getChatStatus);
 
 // User's own chats
 router.get('/mine', requireAuth, c.listMyChats);

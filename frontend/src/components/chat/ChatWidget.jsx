@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
+import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send, Sparkles } from 'lucide-react';
+import { MessageSquare, X, Send, Sparkles, Headset } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { chatApi } from '@/api/index.js';
 import { toggleChat } from '@/store/index.js';
-import { getErrorMessage } from '@/api/client.js';
+import { getAccessToken, getErrorMessage } from '@/api/client.js';
+import { getSocketUrl } from '@/utils/socket.js';
 import { cn } from '@/utils/format.js';
 import { Spinner } from '@/components/ui/index.jsx';
 
@@ -18,6 +20,24 @@ const guestId = () => {
   return id;
 };
 
+// Both the REST response and the live socket deliver the same messages
+// (send → REST returns {message, botReply}; the server also emits
+// 'message:new' for each over the socket). Merge through one place so a
+// message can never be appended twice no matter which arrives first, and so
+// the optimistic local echo gets replaced exactly once by the real one.
+const mergeMessages = (prev, incoming) => {
+  const list = (Array.isArray(incoming) ? incoming : [incoming]).filter(Boolean);
+  let next = prev;
+  for (const msg of list) {
+    if (next.some((m) => m._id === msg._id)) continue;
+    if (msg.senderType === 'user' || msg.senderType === 'guest') {
+      next = next.filter((m) => !m._id.toString().startsWith('local-'));
+    }
+    next = [...next, msg];
+  }
+  return next;
+};
+
 export default function ChatWidget() {
   const dispatch = useDispatch();
   const open = useSelector((s) => s.ui.chatOpen);
@@ -28,8 +48,21 @@ export default function ChatWidget() {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [started, setStarted] = useState(false);
+  // Seed from cache so a page reload renders the correct mode instantly,
+  // instead of flashing "AI assistant" while the status fetch is in flight.
+  const [chatStatus, setChatStatusRaw] = useState(() => localStorage.getItem('mdm_chat_status') || 'bot');
+  const [switching, setSwitching] = useState(false);
   const bodyRef = useRef(null);
   const enabled = import.meta.env.VITE_ENABLE_CHAT !== 'false';
+
+  // The customer can freely switch between AI and Admin (and back) at any
+  // time before the conversation is resolved — only ignore a missing/falsy
+  // value (e.g. a failed status fetch), never overwrite with a real one.
+  const applyChatStatus = (next) => {
+    if (!next) return;
+    localStorage.setItem('mdm_chat_status', next);
+    setChatStatusRaw(next);
+  };
 
   /* Start / restore chat on first open */
   useEffect(() => {
@@ -41,8 +74,12 @@ export default function ChatWidget() {
           // chat started before login (or before logout) is still owned by
           // this browser's persisted guest identity, independent of whether
           // the visitor happens to be authenticated on this particular request.
-          const { data } = await chatApi.getMessages(chatId, { guestSessionId: guestId() });
+          const [{ data }, statusRes] = await Promise.all([
+            chatApi.getMessages(chatId, { guestSessionId: guestId() }),
+            chatApi.getStatus(chatId, { guestSessionId: guestId() }).catch(() => null),
+          ]);
           setMessages(data || []);
+          applyChatStatus(statusRes?.status);
         } else {
           const { chat } = await chatApi.start({
             guestSessionId: guestId(),
@@ -50,6 +87,7 @@ export default function ChatWidget() {
           });
           localStorage.setItem('mdm_chat', chat._id);
           setChatId(chat._id);
+          applyChatStatus(chat.status || 'bot');
           setMessages([
             {
               _id: 'welcome',
@@ -65,6 +103,37 @@ export default function ChatWidget() {
       }
     })();
   }, [open, chatId, started, user, enabled]);
+
+  /* Live updates: join this chat's room so admin replies, AI handoffs, and
+     status changes made from the admin panel show up without a reload. */
+  useEffect(() => {
+    if (!chatId || !open || !enabled) return;
+    const socket = io(getSocketUrl(), {
+      path: '/socket.io',
+      auth: { token: getAccessToken() || undefined, guestSessionId: guestId() },
+      transports: ['websocket', 'polling'],
+    });
+
+    socket.emit('chat:join', { chatId });
+    const onMessage = (msg) => {
+      const belongsHere = msg.chat === chatId || msg.chat?.toString?.() === chatId;
+      if (!belongsHere) return;
+      setMessages((prev) => mergeMessages(prev, msg));
+    };
+    const onStatus = ({ status }) => applyChatStatus(status);
+    const onAssigned = () => applyChatStatus('active');
+    socket.on('message:new', onMessage);
+    socket.on('chat:status', onStatus);
+    socket.on('chat:assigned', onAssigned);
+
+    return () => {
+      socket.emit('chat:leave', { chatId });
+      socket.off('message:new', onMessage);
+      socket.off('chat:status', onStatus);
+      socket.off('chat:assigned', onAssigned);
+      socket.disconnect();
+    };
+  }, [chatId, open, enabled]);
 
   /* Auto-scroll on new messages */
   useEffect(() => {
@@ -85,20 +154,54 @@ export default function ChatWidget() {
         content,
         guestSessionId: guestId(),
       });
-      setMessages((m) => {
-        const filtered = m.filter((x) => !x._id.toString().startsWith('local-'));
-        const next = [...filtered, message];
-        if (botReply) next.push(botReply);
-        return next;
-      });
+      // The socket may have already delivered these same messages —
+      // mergeMessages skips anything with an _id we already have.
+      setMessages((m) => mergeMessages(m, [message, botReply]));
     } catch (e) {
       toast.error(getErrorMessage(e));
+      setMessages((m) => m.filter((x) => !x._id.toString().startsWith('local-')));
     } finally {
       setSending(false);
     }
   };
 
+  const askAdmin = async () => {
+    if (!chatId || chatStatus !== 'bot' || switching) return;
+    setSwitching(true);
+    try {
+      await chatApi.requestHuman(chatId, { guestSessionId: guestId() });
+      applyChatStatus('queued');
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    } finally {
+      setSwitching(false);
+    }
+  };
+
+  const askAI = async () => {
+    if (!chatId || chatStatus === 'bot' || chatStatus === 'resolved' || switching) return;
+    setSwitching(true);
+    try {
+      await chatApi.requestAI(chatId, { guestSessionId: guestId() });
+      applyChatStatus('bot');
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    } finally {
+      setSwitching(false);
+    }
+  };
+
   if (!enabled) return null;
+
+  const isResolved = chatStatus === 'resolved';
+  const headerCopy =
+    chatStatus === 'active'
+      ? { label: 'Admin', sub: "You're chatting with our team" }
+      : chatStatus === 'queued'
+        ? { label: 'Waiting for Admin', sub: 'Connecting you with our team…' }
+        : isResolved
+          ? { label: 'Conversation resolved', sub: 'Thanks for chatting with us' }
+          : { label: 'MetlifeDM AI', sub: 'Online · typically replies instantly' };
 
   return (
     <>
@@ -124,18 +227,25 @@ export default function ChatWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            // Scrolling anywhere over the widget (header, toggle bar, composer)
+            // must never leak through to the page behind it. The message
+            // list itself scrolls natively — only block wheel events that
+            // land outside that one scrollable region.
+            onWheel={(e) => {
+              if (!bodyRef.current?.contains(e.target)) e.preventDefault();
+            }}
             className="fixed bottom-6 right-6 z-50 w-[calc(100vw-3rem)] sm:w-[380px] h-[560px] max-h-[calc(100vh-3rem)] bg-ivory-soft border border-hairline shadow-[0_32px_80px_-20px_rgba(10,23,48,0.35)] flex flex-col overflow-hidden"
           >
             {/* Header */}
             <div className="bg-ink text-ivory px-5 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 grid place-items-center bg-ultra rounded-full">
-                  <Sparkles size={16} strokeWidth={1.5} />
+                  {chatStatus === 'bot' ? <Sparkles size={16} strokeWidth={1.5} /> : <Headset size={16} strokeWidth={1.5} />}
                 </div>
                 <div>
-                  <div className="text-sm font-medium">MetlifeDM AI</div>
+                  <div className="text-sm font-medium">{headerCopy.label}</div>
                   <div className="text-mono text-[0.65rem] uppercase tracking-widest text-ivory/50">
-                    Online · typically replies instantly
+                    {headerCopy.sub}
                   </div>
                 </div>
               </div>
@@ -144,30 +254,76 @@ export default function ChatWidget() {
               </button>
             </div>
 
-            {/* Body */}
-            <div ref={bodyRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
-              {messages.map((m) => (
-                <div
-                  key={m._id}
+            {/* AI / Admin switcher — click either pill to switch modes */}
+            {!isResolved && (
+              <div className="flex items-center gap-1.5 px-5 py-2.5 bg-ivory border-b border-hairline">
+                <button
+                  type="button"
+                  onClick={askAI}
+                  disabled={chatStatus === 'bot' || switching}
                   className={cn(
-                    'flex',
-                    m.senderType === 'user' || m.senderType === 'guest' ? 'justify-end' : 'justify-start'
+                    'px-3 py-1.5 text-mono text-[0.65rem] uppercase tracking-widest rounded-full border transition-colors',
+                    chatStatus === 'bot'
+                      ? 'bg-ink text-ivory border-ink cursor-default'
+                      : 'border-hairline text-slate hover:border-ink hover:text-ink cursor-pointer disabled:opacity-50'
                   )}
                 >
-                  <div
-                    className={cn(
-                      'max-w-[85%] px-4 py-2.5 text-sm rounded-2xl leading-relaxed',
-                      m.senderType === 'user' || m.senderType === 'guest'
-                        ? 'bg-ink text-ivory rounded-br-sm'
-                        : m.senderType === 'bot'
-                          ? 'bg-white text-ink border border-hairline rounded-bl-sm'
-                          : 'bg-ultra-tint text-ink rounded-bl-sm'
-                    )}
-                  >
-                    {m.content}
+                  AI assistant
+                </button>
+                <button
+                  type="button"
+                  onClick={askAdmin}
+                  disabled={chatStatus !== 'bot' || switching}
+                  className={cn(
+                    'px-3 py-1.5 text-mono text-[0.65rem] uppercase tracking-widest rounded-full border transition-colors',
+                    chatStatus !== 'bot'
+                      ? 'bg-ink text-ivory border-ink cursor-default'
+                      : 'border-hairline text-slate hover:border-ink hover:text-ink cursor-pointer disabled:opacity-50'
+                  )}
+                >
+                  {switching ? 'Connecting…' : 'Ask Admin'}
+                </button>
+              </div>
+            )}
+
+            {/* Body */}
+            <div ref={bodyRef} className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 space-y-3 scrollbar-thin">
+              {messages.map((m) => {
+                if (m.senderType === 'system') {
+                  return (
+                    <div key={m._id} className="flex justify-center">
+                      <div className="text-mono text-[0.65rem] uppercase tracking-widest text-slate text-center px-3 py-1.5 bg-sand/50 rounded-full">
+                        {m.content}
+                      </div>
+                    </div>
+                  );
+                }
+                const isCustomer = m.senderType === 'user' || m.senderType === 'guest';
+                const isAgent = m.senderType === 'agent';
+                return (
+                  <div key={m._id} className={cn('flex', isCustomer ? 'justify-end' : 'justify-start')}>
+                    <div className="max-w-[85%]">
+                      {!isCustomer && (
+                        <div className="text-mono text-[0.6rem] uppercase tracking-widest text-slate mb-1 px-1">
+                          {isAgent ? (m.senderName || 'Admin') : 'AI'}
+                        </div>
+                      )}
+                      <div
+                        className={cn(
+                          'px-4 py-2.5 text-sm rounded-2xl leading-relaxed',
+                          isCustomer
+                            ? 'bg-ink text-ivory rounded-br-sm'
+                            : isAgent
+                              ? 'bg-ultra-tint text-ink border border-ultra/25 rounded-bl-sm'
+                              : 'bg-white text-ink border border-hairline rounded-bl-sm'
+                        )}
+                      >
+                        {m.content}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               {sending && (
                 <div className="flex justify-start">
                   <div className="px-4 py-2.5 bg-white text-ink border border-hairline rounded-2xl rounded-bl-sm">
@@ -183,14 +339,14 @@ export default function ChatWidget() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && !sending && send()}
-                placeholder="Ask about SEO, pricing, timelines…"
-                className="flex-1 bg-transparent text-sm placeholder:text-slate focus:outline-none"
-                disabled={sending}
+                onKeyDown={(e) => e.key === 'Enter' && !sending && !isResolved && send()}
+                placeholder={isResolved ? 'This conversation has been resolved' : 'Ask about SEO, pricing, timelines…'}
+                className="flex-1 bg-transparent text-sm placeholder:text-slate focus:outline-none disabled:opacity-50"
+                disabled={sending || isResolved}
               />
               <button
                 onClick={send}
-                disabled={sending || !input.trim()}
+                disabled={sending || isResolved || !input.trim()}
                 className="w-9 h-9 grid place-items-center bg-ink text-ivory hover:bg-ultra disabled:opacity-30 transition-colors rounded-full"
                 aria-label="Send"
               >

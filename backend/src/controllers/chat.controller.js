@@ -27,6 +27,77 @@ export const startChat = asyncHandler(async (req, res) => {
   return ApiResponse.created(res, { chat }, 'Chat started');
 });
 
+/* POST /chat/:id/request-human — customer manually escalates out of AI mode */
+export const requestHuman = asyncHandler(async (req, res) => {
+  const chat = await Chat.findById(req.params.id);
+  if (!chat) throw ApiError.notFound('Chat not found');
+
+  const isOwner =
+    (req.user && chat.user?.toString() === req.user._id.toString()) ||
+    (!!chat.guestSessionId && chat.guestSessionId === req.body.guestSessionId);
+  if (!isOwner) throw ApiError.forbidden();
+
+  if (chat.status === CHAT_STATUS.BOT) {
+    chat.status = CHAT_STATUS.QUEUED;
+    chat.handoffAt = new Date();
+    chat.handoffReason = 'Customer requested a human agent';
+    await chat.save();
+
+    const note = await ChatMessage.create({
+      chat: chat._id,
+      senderType: 'system',
+      senderName: 'System',
+      content: "You've requested a human agent. Someone from our team will join shortly.",
+    });
+    emitToChat(chat._id.toString(), 'message:new', note);
+    emitToChat(chat._id.toString(), 'chat:status', { status: chat.status });
+    emitToAdmins('chat:handoff', { chat, message: note });
+    notifyAdmins({
+      type: 'chat',
+      title: 'Chat needs an agent',
+      message: `${chat.guestName || 'A visitor'} asked to speak with a human`,
+      resourceType: 'chat',
+      resourceId: chat._id,
+      actionUrl: `/support/chat/${chat._id}`,
+    }).catch(() => {});
+  }
+
+  return ApiResponse.ok(res, { chat }, 'Connecting you with a human agent');
+});
+
+/* POST /chat/:id/request-ai — customer switches back from Admin to the AI assistant */
+export const requestAI = asyncHandler(async (req, res) => {
+  const chat = await Chat.findById(req.params.id);
+  if (!chat) throw ApiError.notFound('Chat not found');
+
+  const isOwner =
+    (req.user && chat.user?.toString() === req.user._id.toString()) ||
+    (!!chat.guestSessionId && chat.guestSessionId === req.body.guestSessionId);
+  if (!isOwner) throw ApiError.forbidden();
+
+  if (chat.status === CHAT_STATUS.RESOLVED) throw ApiError.badRequest('This conversation has already been resolved');
+
+  if (chat.status !== CHAT_STATUS.BOT) {
+    chat.status = CHAT_STATUS.BOT;
+    chat.assignedAgent = undefined;
+    chat.handoffAt = undefined;
+    chat.handoffReason = undefined;
+    await chat.save();
+
+    const note = await ChatMessage.create({
+      chat: chat._id,
+      senderType: 'system',
+      senderName: 'System',
+      content: "You've switched back to MetlifeDM's AI assistant.",
+    });
+    emitToChat(chat._id.toString(), 'message:new', note);
+    emitToChat(chat._id.toString(), 'chat:status', { status: chat.status });
+    emitToAdmins('chat:new-message', { chat, message: note });
+  }
+
+  return ApiResponse.ok(res, { chat }, 'Switched back to AI assistant');
+});
+
 /* POST /chat/:id/messages — send message (customer) */
 export const sendMessage = asyncHandler(async (req, res) => {
   const chat = await Chat.findById(req.params.id);
@@ -113,6 +184,7 @@ export const sendMessage = asyncHandler(async (req, res) => {
       }
 
       emitToAdmins('chat:handoff', { chat, message: botReply });
+      emitToChat(chat._id.toString(), 'chat:status', { status: chat.status });
       notifyAdmins({
         type: 'chat',
         title: 'Chat needs an agent',
@@ -145,6 +217,19 @@ export const listMessages = asyncHandler(async (req, res) => {
   const opts = getPaginationOptions({ ...req.query, limit: 100, sortBy: 'createdAt', sortOrder: 'asc' });
   const { items, meta } = await paginate(ChatMessage, { chat: req.params.id, isInternalNote: false }, opts);
   return ApiResponse.ok(res, items, 'Messages', meta);
+});
+
+/* GET /chat/:id/status — lightweight status check for the chat's owner (resume flow) */
+export const getChatStatus = asyncHandler(async (req, res) => {
+  const chat = await Chat.findById(req.params.id).select('status user guestSessionId assignedAgent');
+  if (!chat) throw ApiError.notFound('Chat not found');
+
+  const isOwner =
+    (req.user && chat.user?.toString() === req.user._id.toString()) ||
+    (!!chat.guestSessionId && chat.guestSessionId === req.query.guestSessionId);
+  if (!isOwner) throw ApiError.forbidden();
+
+  return ApiResponse.ok(res, { status: chat.status, hasAgent: !!chat.assignedAgent }, 'Chat status');
 });
 
 /* GET /chat/mine — user's own chats */
@@ -188,6 +273,7 @@ export const assignChat = asyncHandler(async (req, res) => {
   );
   if (!chat) throw ApiError.notFound('Chat not found');
   emitToChat(chat._id.toString(), 'chat:assigned', { agent: req.user });
+  emitToChat(chat._id.toString(), 'chat:status', { status: chat.status });
   return ApiResponse.ok(res, { chat }, 'Chat assigned');
 });
 
@@ -199,6 +285,7 @@ export const resolveChat = asyncHandler(async (req, res) => {
     { new: true }
   );
   if (!chat) throw ApiError.notFound('Chat not found');
+  emitToChat(chat._id.toString(), 'chat:status', { status: chat.status });
   return ApiResponse.ok(res, { chat }, 'Chat resolved');
 });
 

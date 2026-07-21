@@ -99,6 +99,9 @@ export const ENDPOINTS = {
   chat: {
     start: '/chat/start',
     messages: (id) => `/chat/${id}/messages`,
+    requestHuman: (id) => `/chat/${id}/request-human`,
+    requestAI: (id) => `/chat/${id}/request-ai`,
+    status: (id) => `/chat/${id}/status`,
     mine: '/chat/mine',
     rate: (id) => `/chat/${id}/rate`,
   },

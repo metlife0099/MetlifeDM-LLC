@@ -329,6 +329,33 @@
     width: 0;
     height: 0;
   }
+
+  /* Thin, on-brand visible scrollbar — opts back in where a scroll affordance
+     is actually useful (e.g. the chat widget), overriding the site-wide
+     hidden-scrollbar default above. */
+  .scrollbar-thin {
+    scrollbar-width: thin; /* Firefox */
+    scrollbar-color: var(--color-slate-light) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    display: block;
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: var(--color-slate-light);
+    border-radius: 9999px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-slate);
+  }
 }
 
 /* ---------------------------------------------------------------

@@ -42,8 +42,11 @@ export function ChatsListPage() {
       key: 'customer', label: 'Conversation',
       render: (r) => (
         <div className="min-w-0">
-          <Link to={`/support/chat/${r._id}`} className="text-sm text-ink hover:text-ultra block truncate">
-            {r.user ? `${r.user.firstName} ${r.user.lastName || ''}` : r.guestName || 'Guest visitor'}
+          <Link to={`/support/chat/${r._id}`} className="text-sm text-ink hover:text-ultra flex items-center gap-2 truncate">
+            <span className="truncate">{r.user ? `${r.user.firstName} ${r.user.lastName || ''}` : r.guestName || 'Guest visitor'}</span>
+            {r.handoffReason?.startsWith('Customer') && (
+              <Badge tone="outline" className="shrink-0">Requested human</Badge>
+            )}
           </Link>
           <div className="text-mono text-xs text-slate mt-0.5 truncate max-w-md">
             {truncate(r.lastMessagePreview || r.subject || 'No messages yet', 70)}
@@ -299,6 +302,20 @@ export function ChatDetailPage() {
                 : 'Unassigned — AI is responding'}
             </div>
           </Card>
+          {chat.handoffReason && (
+            <Card padding={false} className="p-5">
+              <div className="text-eyebrow mb-3">Escalated to human</div>
+              <div className="text-sm">
+                {chat.handoffReason === 'Customer requested a human agent' ||
+                chat.handoffReason === 'Customer chose to chat with a human agent'
+                  ? 'Customer asked to switch from AI to a human agent'
+                  : chat.handoffReason}
+              </div>
+              {chat.handoffAt && (
+                <div className="text-mono text-xs text-slate mt-1">{timeAgo(chat.handoffAt)}</div>
+              )}
+            </Card>
+          )}
           {chat.category && (
             <Card padding={false} className="p-5">
               <div className="text-eyebrow mb-3">Category</div>
