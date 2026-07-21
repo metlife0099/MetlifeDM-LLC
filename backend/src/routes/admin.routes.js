@@ -112,6 +112,8 @@ router.delete('/blog/categories/:id', blogCtrl.category.remove);
 
 router.get('/blog/comments', adminPanel.blogListComments);
 router.post('/blog/comments/:id/approve', adminPanel.blogApproveComment);
+router.post('/blog/comments/:id/spam', adminPanel.blogSpamComment);
+router.patch('/blog/comments/:id', adminPanel.blogUpdateComment);
 router.delete('/blog/comments/:id', adminPanel.blogDeleteComment);
 
 /* ═══════════════════════════════════════════════════════════

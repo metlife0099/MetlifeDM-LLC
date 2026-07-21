@@ -54,6 +54,7 @@ export const contentApi = {
   getBlogCategories: () => apiClient.get(E.blog.categories).then(unwrap),
   likePost: (id) => apiClient.post(E.blog.like(id)).then(unwrap),
   commentOnPost: (id, data) => apiClient.post(E.blog.comment(id), data).then(unwrap),
+  likeComment: (postId, commentId) => apiClient.post(E.blog.likeComment(postId, commentId)).then(unwrap),
 
   // Testimonials, FAQs, Reviews
   listTestimonials: (params) => apiClient.get(E.testimonials, { params }).then(unwrapMeta),

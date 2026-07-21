@@ -6,6 +6,11 @@ const { Schema } = mongoose;
 
 const commentSchema = new Schema(
   {
+    // Only authenticated customers can comment now — the controller always
+    // sets author for new comments. Not `required` at the schema level
+    // because Mongoose re-validates the whole comments array on every save,
+    // and legacy comments predating this change have no author.
+    // guestName/guestEmail kept only for backward compatibility with those.
     author: { type: Schema.Types.ObjectId, ref: 'User' },
     guestName: String,
     guestEmail: String,
@@ -13,7 +18,7 @@ const commentSchema = new Schema(
     isApproved: { type: Boolean, default: false },
     isSpam: { type: Boolean, default: false },
     parent: { type: Schema.Types.ObjectId },
-    likes: { type: Number, default: 0 },
+    likedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
     at: { type: Date, default: Date.now },
   },
   { _id: true }

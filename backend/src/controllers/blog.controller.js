@@ -3,7 +3,8 @@ import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
 import { Blog, BlogCategory } from '../models/index.js';
 import { getPaginationOptions, paginate } from '../utils/pagination.js';
-import { BLOG_STATUS } from '../utils/constants.js';
+import { BLOG_STATUS, NOTIFICATION_TYPES } from '../utils/constants.js';
+import { notifyAdmins } from './notification.controller.js';
 
 /* ========== POSTS ========== */
 
@@ -31,10 +32,25 @@ export const bySlug = asyncHandler(async (req, res) => {
   const post = await Blog.findOne({ slug: req.params.slug, status: BLOG_STATUS.PUBLISHED })
     .populate('author', 'firstName lastName avatar')
     .populate('category', 'name slug color')
-    .populate('relatedPosts', 'title slug excerpt coverImage publishedAt');
+    .populate('relatedPosts', 'title slug excerpt coverImage publishedAt')
+    .populate('comments.author', 'firstName lastName avatar')
+    .lean();
   if (!post) throw ApiError.notFound('Post not found');
 
   Blog.updateOne({ _id: post._id }, { $inc: { views: 1 } }).catch(() => {});
+
+  // Public response: only approved, non-spam comments. Never expose the raw
+  // guestEmail or the full likedBy user-id list — reduce each comment to a
+  // like count plus whether *this* viewer has liked it.
+  const viewerId = req.user?._id?.toString();
+  post.comments = (post.comments || [])
+    .filter((c) => c.isApproved && !c.isSpam)
+    .map(({ guestEmail, likedBy, ...c }) => ({
+      ...c,
+      likesCount: likedBy?.length || 0,
+      likedByMe: viewerId ? (likedBy || []).some((id) => id.toString() === viewerId) : false,
+    }));
+
   return ApiResponse.ok(res, { post }, 'Post');
 });
 
@@ -43,21 +59,51 @@ export const like = asyncHandler(async (req, res) => {
   return ApiResponse.ok(res, null, 'Liked');
 });
 
+export const likeComment = asyncHandler(async (req, res) => {
+  const post = await Blog.findById(req.params.id);
+  if (!post) throw ApiError.notFound('Post not found');
+  const comment = post.comments.id(req.params.commentId);
+  if (!comment) throw ApiError.notFound('Comment not found');
+
+  const userId = req.user._id.toString();
+  const idx = comment.likedBy.findIndex((id) => id.toString() === userId);
+  const liked = idx === -1;
+  if (liked) comment.likedBy.push(req.user._id);
+  else comment.likedBy.splice(idx, 1);
+  await post.save();
+
+  return ApiResponse.ok(res, { liked, likesCount: comment.likedBy.length }, liked ? 'Liked' : 'Unliked');
+});
+
 export const addComment = asyncHandler(async (req, res) => {
   const post = await Blog.findById(req.params.id);
   if (!post) throw ApiError.notFound('Post not found');
   if (!post.commentsEnabled) throw ApiError.forbidden('Comments disabled');
 
+  if (req.body.parent) {
+    const parent = post.comments.id(req.body.parent);
+    if (!parent) throw ApiError.badRequest('The comment you are replying to no longer exists');
+  }
+
   const comment = {
-    author: req.user?._id,
-    guestName: req.user ? undefined : req.body.guestName,
-    guestEmail: req.user ? undefined : req.body.guestEmail,
+    author: req.user._id,
     content: req.body.content,
-    parent: req.body.parent,
+    parent: req.body.parent || undefined,
     isApproved: false, // moderated
   };
   post.comments.push(comment);
   await post.save();
+
+  const created = post.comments[post.comments.length - 1];
+  notifyAdmins({
+    type: NOTIFICATION_TYPES.COMMENT,
+    title: req.body.parent ? 'New reply awaiting review' : 'New comment awaiting review',
+    message: `${req.user.firstName} commented on "${post.title}"`,
+    resourceType: 'comment',
+    resourceId: created._id,
+    actionUrl: '/content/blog/comments',
+  }).catch(() => {});
+
   return ApiResponse.created(res, null, 'Comment submitted for review');
 });
 

@@ -474,12 +474,25 @@ const commentStatusMatch = (status) => {
 export const blogListComments = asyncHandler(async (req, res) => {
   const opts = getPaginationOptions(req.query);
   const match = commentStatusMatch(req.query.status);
-  const rows = await Blog.aggregate([
+  const basePipeline = [
     { $unwind: '$comments' },
     ...(match ? [{ $match: match }] : []),
     { $sort: { 'comments.at': -1 } },
+  ];
+
+  const totalAgg = await Blog.aggregate([...basePipeline, { $count: 'total' }]);
+  const total = totalAgg[0]?.total || 0;
+
+  const rows = await Blog.aggregate([
+    ...basePipeline,
     { $skip: (opts.page - 1) * opts.limit },
     { $limit: opts.limit },
+    // Comments only store `author` as a User ref now — join to get the
+    // real commenter's name/email/avatar. guestName/guestEmail are only
+    // used as a fallback for legacy comments created before login was
+    // required to comment.
+    { $lookup: { from: 'users', localField: 'comments.author', foreignField: '_id', as: 'commentAuthor' } },
+    { $unwind: { path: '$commentAuthor', preserveNullAndEmptyArrays: true } },
     { $project: {
       _id: '$comments._id',
       content: '$comments.content',
@@ -489,17 +502,26 @@ export const blogListComments = asyncHandler(async (req, res) => {
           { $cond: ['$comments.isApproved', 'approved', 'pending'] },
         ],
       },
-      author: { name: '$comments.guestName', email: '$comments.guestEmail' },
+      author: {
+        _id: '$commentAuthor._id',
+        name: {
+          $cond: [
+            { $ifNull: ['$commentAuthor._id', false] },
+            { $trim: { input: { $concat: [
+              { $ifNull: ['$commentAuthor.firstName', ''] }, ' ', { $ifNull: ['$commentAuthor.lastName', ''] },
+            ] } } },
+            { $ifNull: ['$comments.guestName', 'Unknown'] },
+          ],
+        },
+        email: { $ifNull: ['$commentAuthor.email', '$comments.guestEmail'] },
+        avatar: '$commentAuthor.avatar.url',
+      },
+      isReply: { $cond: [{ $ifNull: ['$comments.parent', false] }, true, false] },
+      likesCount: { $size: { $ifNull: ['$comments.likedBy', []] } },
       createdAt: '$comments.at',
       post: { _id: '$_id', title: '$title', slug: '$slug' },
     } },
   ]);
-  const totalAgg = await Blog.aggregate([
-    { $unwind: '$comments' },
-    ...(match ? [{ $match: match }] : []),
-    { $count: 'total' },
-  ]);
-  const total = totalAgg[0]?.total || 0;
   return ApiResponse.ok(res, rows, 'Comments', {
     page: opts.page,
     limit: opts.limit,
@@ -516,6 +538,28 @@ export const blogApproveComment = asyncHandler(async (req, res) => {
   );
   if (!b) throw ApiError.notFound('Comment not found');
   return ApiResponse.ok(res, null, 'Comment approved');
+});
+
+export const blogSpamComment = asyncHandler(async (req, res) => {
+  const b = await Blog.findOneAndUpdate(
+    { 'comments._id': req.params.id },
+    { $set: { 'comments.$.isSpam': true, 'comments.$.isApproved': false } },
+    { new: true }
+  );
+  if (!b) throw ApiError.notFound('Comment not found');
+  return ApiResponse.ok(res, null, 'Comment marked as spam');
+});
+
+export const blogUpdateComment = asyncHandler(async (req, res) => {
+  const content = (req.body.content || '').trim();
+  if (!content) throw ApiError.badRequest('Comment content is required');
+  const b = await Blog.findOneAndUpdate(
+    { 'comments._id': req.params.id },
+    { $set: { 'comments.$.content': content } },
+    { new: true }
+  );
+  if (!b) throw ApiError.notFound('Comment not found');
+  return ApiResponse.ok(res, null, 'Comment updated');
 });
 
 export const blogDeleteComment = asyncHandler(async (req, res) => {

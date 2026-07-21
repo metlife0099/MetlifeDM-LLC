@@ -66,6 +66,8 @@ export const ENDPOINTS = {
     category: (id) => `/admin/blog/categories/${id}`,
     comments: '/admin/blog/comments',
     approveComment: (id) => `/admin/blog/comments/${id}/approve`,
+    spamComment: (id) => `/admin/blog/comments/${id}/spam`,
+    updateComment: (id) => `/admin/blog/comments/${id}`,
     deleteComment: (id) => `/admin/blog/comments/${id}`,
   },
   testimonials: {

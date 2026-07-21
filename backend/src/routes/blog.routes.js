@@ -9,9 +9,10 @@ const router = Router();
 // Public
 router.get('/', c.list);
 router.get('/categories', c.category.list);
-router.get('/slug/:slug', c.bySlug);
+router.get('/slug/:slug', optionalAuth, c.bySlug);
 router.post('/:id/like', c.like);
-router.post('/:id/comment', optionalAuth, validate(v.commentSchema), c.addComment);
+router.post('/:id/comment', requireAuth, validate(v.commentSchema), c.addComment);
+router.post('/:id/comments/:commentId/like', requireAuth, c.likeComment);
 
 // Admin
 router.get('/admin', requireAuth, requireAdmin, c.listAdmin);

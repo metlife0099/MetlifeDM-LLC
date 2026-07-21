@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { motion, useScroll, useSpring } from 'framer-motion';
-import { Heart, MessageCircle, Clock, Share2, ArrowUpRight } from 'lucide-react';
+import { Heart, MessageCircle, Clock, Share2, ArrowUpRight, Reply, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
-import { Spinner, Badge, Textarea, Input } from '@/components/ui/index.jsx';
+import { Spinner, Badge, Textarea } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
@@ -39,14 +39,45 @@ export default function BlogDetailsPage() {
     formState: { errors },
   } = useForm();
 
+  const [replyTo, setReplyTo] = useState(null); // { id, name } | null
+  const formRef = useRef(null);
+
   const comment = useMutation({
     mutationFn: (payload) => contentApi.commentOnPost(data.post._id, payload),
     onSuccess: () => {
       toast.success('Comment submitted for review');
       reset();
+      setReplyTo(null);
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
+
+  const onSubmitComment = (values) => {
+    comment.mutate({ content: values.content, parent: replyTo?.id });
+  };
+
+  const likeComment = useMutation({
+    mutationFn: (commentId) => contentApi.likeComment(data.post._id, commentId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['blog', slug] }),
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+
+  const handleReply = (c, name) => {
+    if (!user) {
+      toast.error('Sign in to reply');
+    } else {
+      setReplyTo({ id: c._id, name });
+    }
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  const handleLikeComment = (c) => {
+    if (!user) {
+      toast.error('Sign in to like comments');
+      return;
+    }
+    likeComment.mutate(c._id);
+  };
 
   // Reading progress bar — tracks whole-page scroll (no target ref needed).
   const { scrollYProgress } = useScroll();
@@ -70,6 +101,8 @@ export default function BlogDetailsPage() {
   const post = data.post;
   const related = data.related || [];
   const comments = data.comments || post.comments || [];
+  const topLevelComments = comments.filter((c) => !c.parent);
+  const getReplies = (id) => comments.filter((c) => c.parent && String(c.parent) === String(id));
 
   const share = async () => {
     try {
@@ -238,52 +271,60 @@ export default function BlogDetailsPage() {
           <h2 className="text-display-md mt-4 mb-10">Join the conversation.</h2>
 
           {/* Form */}
-          <form onSubmit={handleSubmit(comment.mutate)} className="space-y-6 mb-14">
-            {!user && (
-              <>
-                <div className="grid gap-6 md:grid-cols-2">
-                  <Input label="Name *" {...register('name', { required: 'Required' })} error={errors.name?.message} />
-                  <Input label="Email *" type="email" {...register('email', { required: 'Required' })} error={errors.email?.message} />
-                </div>
-              </>
+          <div ref={formRef}>
+            {user ? (
+              <form onSubmit={handleSubmit(onSubmitComment)} className="space-y-6 mb-14">
+                {replyTo && (
+                  <div className="flex items-center justify-between gap-3 bg-sand/60 border border-hairline px-4 py-2.5 text-mono text-xs uppercase tracking-widest text-slate">
+                    <span>Replying to {replyTo.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setReplyTo(null)}
+                      className="cursor-pointer hover:text-ink transition-colors duration-200"
+                    >
+                      <X size={14} strokeWidth={1.5} />
+                    </button>
+                  </div>
+                )}
+                <Textarea
+                  label="Comment *"
+                  rows={4}
+                  placeholder={replyTo ? `Reply to ${replyTo.name}…` : 'What did you think?'}
+                  {...register('content', { required: 'Required', minLength: { value: 3, message: 'Too short' } })}
+                  error={errors.content?.message}
+                />
+                <p className="text-mono text-xs text-slate">Comments are moderated and appear after approval.</p>
+                <Button type="submit" disabled={comment.isPending}>
+                  {comment.isPending ? 'Submitting…' : replyTo ? 'Post reply' : 'Post comment'}
+                  <ArrowUpRight size={14} strokeWidth={1.5} />
+                </Button>
+              </form>
+            ) : (
+              <div className="mb-14 border border-hairline px-6 py-10 text-center">
+                <p className="text-slate">Sign in to join the conversation and leave a comment.</p>
+                <Link
+                  to={`/login?redirect=${encodeURIComponent(`/blog/${slug}`)}`}
+                  className="mt-5 inline-flex items-center gap-2 border border-hairline hover:border-ink hover:bg-ink hover:text-ivory px-5 py-2.5 text-mono text-xs uppercase tracking-widest transition-colors duration-300 cursor-pointer"
+                >
+                  Sign in to comment
+                  <ArrowUpRight size={14} strokeWidth={1.5} />
+                </Link>
+              </div>
             )}
-            <Textarea
-              label="Comment *"
-              rows={4}
-              placeholder="What did you think?"
-              {...register('content', { required: 'Required', minLength: { value: 3, message: 'Too short' } })}
-              error={errors.content?.message}
-            />
-            <p className="text-mono text-xs text-slate">Comments are moderated and appear after approval.</p>
-            <Button type="submit" disabled={comment.isPending}>
-              {comment.isPending ? 'Submitting…' : 'Post comment'}
-              <ArrowUpRight size={14} strokeWidth={1.5} />
-            </Button>
-          </form>
+          </div>
 
           {/* Comment list */}
-          {comments.length > 0 && (
+          {topLevelComments.length > 0 && (
             <div className="divide-editorial border-t border-hairline">
-              {comments.map((c, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 14 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-40px' }}
-                  transition={{ duration: 0.5, delay: (i % 8) * 0.05 }}
-                  className="py-6 flex gap-4"
-                >
-                  <div className="w-9 h-9 rounded-full grid place-items-center bg-ink text-ivory text-mono text-xs shrink-0">
-                    {initials(c.name || c.author?.firstName || 'A')}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">{c.name || c.author?.firstName}</span>
-                      <span className="text-mono text-xs text-slate">· {timeAgo(c.createdAt)}</span>
-                    </div>
-                    <p className="text-slate leading-relaxed mt-2">{c.content}</p>
-                  </div>
-                </motion.div>
+              {topLevelComments.map((c, i) => (
+                <CommentRow
+                  key={c._id}
+                  comment={c}
+                  index={i}
+                  replies={getReplies(c._id)}
+                  onReply={handleReply}
+                  onLike={handleLikeComment}
+                />
               ))}
             </div>
           )}
@@ -330,5 +371,63 @@ export default function BlogDetailsPage() {
 
       <CtaBanner />
     </>
+  );
+}
+
+function CommentRow({ comment: c, index, replies, onReply, onLike, isReply = false }) {
+  const displayName =
+    [c.author?.firstName, c.author?.lastName].filter(Boolean).join(' ') || c.guestName || 'Anonymous';
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.5, delay: (index % 8) * 0.05 }}
+      className={isReply ? 'flex gap-4 mt-6' : 'py-6 flex gap-4'}
+    >
+      <div className="w-9 h-9 rounded-full grid place-items-center bg-ink text-ivory text-mono text-xs shrink-0 overflow-hidden">
+        {c.author?.avatar?.url ? (
+          <img src={c.author.avatar.url} alt="" className="w-full h-full object-cover" />
+        ) : (
+          initials(displayName)
+        )}
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center gap-2">
+          <span className="text-sm">{displayName}</span>
+          <span className="text-mono text-xs text-slate">· {timeAgo(c.at)}</span>
+        </div>
+        <p className="text-slate leading-relaxed mt-2">{c.content}</p>
+        <div className="flex items-center gap-5 mt-3">
+          <button
+            type="button"
+            onClick={() => onLike(c)}
+            className="inline-flex items-center gap-1.5 text-mono text-xs uppercase tracking-widest text-slate hover:text-ink cursor-pointer transition-colors duration-200"
+          >
+            <Heart size={12} strokeWidth={1.5} className={c.likedByMe ? 'fill-current text-ultra' : ''} />
+            {c.likesCount || 0}
+          </button>
+          {!isReply && (
+            <button
+              type="button"
+              onClick={() => onReply(c, displayName)}
+              className="inline-flex items-center gap-1.5 text-mono text-xs uppercase tracking-widest text-slate hover:text-ink cursor-pointer transition-colors duration-200"
+            >
+              <Reply size={12} strokeWidth={1.5} />
+              Reply
+            </button>
+          )}
+        </div>
+
+        {replies?.length > 0 && (
+          <div className="pl-2 border-l border-hairline mt-2">
+            {replies.map((r, j) => (
+              <CommentRow key={r._id} comment={r} index={j} onLike={onLike} isReply />
+            ))}
+          </div>
+        )}
+      </div>
+    </motion.div>
   );
 }

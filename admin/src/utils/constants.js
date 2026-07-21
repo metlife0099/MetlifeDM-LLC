@@ -106,6 +106,7 @@ export const NAV_NOTIFICATION_TYPES = {
   '/support/tickets': 'ticket',
   '/support/chat': 'chat',
   '/users': 'user',
+  '/content/blog': 'comment',
 };
 
 /* ————— Status option sets ————— */

@@ -52,6 +52,7 @@ export const ENDPOINTS = {
     bySlug: (slug) => `/blog/slug/${slug}`,
     like: (id) => `/blog/${id}/like`,
     comment: (id) => `/blog/${id}/comment`,
+    likeComment: (postId, commentId) => `/blog/${postId}/comments/${commentId}/like`,
   },
   testimonials: '/testimonials',
   faqs: '/faqs',

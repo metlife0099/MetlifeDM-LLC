@@ -60,6 +60,8 @@ export const blogApi = {
   deleteCategory: (id) => apiClient.delete(E.blog.category(id)).then(unwrap),
   listComments: (params) => apiClient.get(E.blog.comments, { params }).then(unwrapMeta),
   approveComment: (id) => apiClient.post(E.blog.approveComment(id)).then(unwrap),
+  spamComment: (id) => apiClient.post(E.blog.spamComment(id)).then(unwrap),
+  updateComment: (id, data) => apiClient.patch(E.blog.updateComment(id), data).then(unwrap),
   deleteComment: (id) => apiClient.delete(E.blog.deleteComment(id)).then(unwrap),
 };
 
