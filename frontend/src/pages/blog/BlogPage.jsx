@@ -122,65 +122,84 @@ export default function BlogPage() {
             <>
               {/* Featured */}
               {featured && (
-                <Link to={`/blog/${featured.slug}`} className="block group mb-20">
-                  <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-center">
-                    <div className="aspect-[4/3] bg-sand overflow-hidden order-2 lg:order-1">
-                      {featured.coverImage?.url ? (
-                        <img
-                          src={featured.coverImage.url}
-                          alt={featured.title}
-                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                        />
-                      ) : (
-                        <div className="h-full grid place-items-center text-display-lg text-ink/20">
-                          {featured.title.charAt(0)}
-                        </div>
-                      )}
-                    </div>
-                    <div className="order-1 lg:order-2">
-                      <Badge tone="ultra">Featured</Badge>
-                      <h2 className="text-display-lg mt-6 group-hover:text-ultra transition-colors">
-                        {featured.title}
-                      </h2>
-                      {featured.excerpt && (
-                        <p className="text-slate mt-4 leading-relaxed line-clamp-3">{featured.excerpt}</p>
-                      )}
-                      <div className="mt-6 flex items-center gap-4 text-mono text-xs uppercase tracking-widest text-slate">
-                        <span>{featured.author?.firstName || 'MetlifeDM'}</span>
-                        <span className="opacity-40">·</span>
-                        <span>{formatDate(featured.publishedAt || featured.createdAt, 'medium')}</span>
-                        {featured.readingTime && (
-                          <>
-                            <span className="opacity-40">·</span>
-                            <span className="inline-flex items-center gap-1">
-                              <Clock size={10} strokeWidth={1.5} />
-                              {featured.readingTime} min
-                            </span>
-                          </>
+                <motion.div
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                  className="mb-24"
+                >
+                  <Link to={`/blog/${featured.slug}`} className="block group">
+                    <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+                      <div className="aspect-4/3 bg-sand overflow-hidden order-2 lg:order-1 img-zoom relative">
+                        {featured.coverImage?.url ? (
+                          <img
+                            src={featured.coverImage.url}
+                            alt={featured.title}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full grid place-items-center text-display-lg text-ink/20">
+                            {featured.title.charAt(0)}
+                          </div>
                         )}
+                        <div className="absolute inset-0 bg-linear-to-t from-ink/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      </div>
+                      <div className="order-1 lg:order-2">
+                        <Badge tone="ultra">Featured</Badge>
+                        <h2 className="text-display-lg mt-6 group-hover:text-ultra transition-colors duration-300">
+                          {featured.title}
+                        </h2>
+                        {featured.excerpt && (
+                          <p className="text-slate mt-4 leading-relaxed line-clamp-3">{featured.excerpt}</p>
+                        )}
+                        <div className="mt-6 flex items-center gap-4 text-mono text-xs uppercase tracking-widest text-slate">
+                          <span>{featured.author?.firstName || 'MetlifeDM'}</span>
+                          <span className="opacity-40">·</span>
+                          <span>{formatDate(featured.publishedAt || featured.createdAt, 'medium')}</span>
+                          {featured.readingTime && (
+                            <>
+                              <span className="opacity-40">·</span>
+                              <span className="inline-flex items-center gap-1">
+                                <Clock size={10} strokeWidth={1.5} />
+                                {featured.readingTime} min
+                              </span>
+                            </>
+                          )}
+                        </div>
+                        <div className="mt-6 inline-flex items-center gap-2 text-sm text-ink">
+                          Read the story
+                          <ArrowUpRight
+                            size={15}
+                            strokeWidth={1.5}
+                            className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300"
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
+                  </Link>
+                </motion.div>
               )}
 
               {/* Grid */}
-              <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-x-10 gap-y-16 md:grid-cols-2 lg:grid-cols-3">
                 {rest.map((post, i) => (
                   <motion.article
                     key={post._id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 24 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: (i % 6) * 0.05 }}
-                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: (i % 6) * 0.07, ease: [0.22, 1, 0.36, 1] }}
+                    viewport={{ once: true, margin: '-60px' }}
+                    className="group"
                   >
-                    <Link to={`/blog/${post.slug}`} className="block group">
-                      <div className="aspect-[4/3] bg-sand overflow-hidden">
+                    <Link to={`/blog/${post.slug}`} className="block">
+                      <div className="aspect-4/3 bg-sand overflow-hidden img-zoom">
                         {post.coverImage?.url ? (
                           <img
                             src={post.coverImage.url}
                             alt={post.title}
-                            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            className="h-full w-full object-cover"
+                            loading="lazy"
                           />
                         ) : (
                           <div className="h-full grid place-items-center text-display-md text-ink/20">
@@ -189,11 +208,16 @@ export default function BlogPage() {
                         )}
                       </div>
                       {post.category && (
-                        <div className="text-eyebrow mt-4">{post.category.name || post.category}</div>
+                        <div className="text-eyebrow mt-5 group-hover:text-ultra transition-colors duration-300">
+                          {post.category.name || post.category}
+                        </div>
                       )}
-                      <h3 className="text-display-sm mt-2 group-hover:text-ultra transition-colors">
+                      <h3 className="text-display-sm mt-2 group-hover:text-ultra transition-colors duration-300">
                         {post.title}
                       </h3>
+                      {post.excerpt && (
+                        <p className="text-slate text-sm mt-3 leading-relaxed line-clamp-2">{post.excerpt}</p>
+                      )}
                       <div className="mt-4 flex items-center gap-3 text-mono text-xs uppercase tracking-widest text-slate">
                         <span>{timeAgo(post.publishedAt || post.createdAt)}</span>
                         {post.readingTime && (
@@ -202,6 +226,11 @@ export default function BlogPage() {
                             <span>{post.readingTime} min read</span>
                           </>
                         )}
+                        <ArrowUpRight
+                          size={13}
+                          strokeWidth={1.5}
+                          className="ml-auto text-ink opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300"
+                        />
                       </div>
                     </Link>
                   </motion.article>

@@ -332,6 +332,195 @@
 }
 
 /* ---------------------------------------------------------------
+ * Rich-text content (blog posts, service/portfolio/industry
+ * descriptions — anything rendered via dangerouslySetInnerHTML).
+ * Tailwind's preflight zeroes out <p>/<h2>/<ul> margins site-wide,
+ * and this project doesn't pull in @tailwindcss/typography, so
+ * without these rules every paragraph in rich content collapses
+ * together with no spacing at all.
+ * ------------------------------------------------------------- */
+@layer components {
+  .prose {
+    color: var(--color-ink);
+    font-size: 1.0625rem;
+    line-height: 1.85;
+  }
+
+  .prose > *:first-child {
+    margin-top: 0;
+  }
+
+  .prose > *:last-child {
+    margin-bottom: 0;
+  }
+
+  .prose p {
+    margin: 0 0 1.6em;
+  }
+
+  .prose h1 {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    font-weight: 500;
+    margin: 0 0 0.8em;
+  }
+
+  .prose h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.4vw, 2rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    font-weight: 500;
+    margin: 2.2em 0 0.8em;
+  }
+
+  .prose h3 {
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 1.8vw, 1.5rem);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    font-weight: 500;
+    margin: 1.8em 0 0.7em;
+  }
+
+  .prose h4 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.6em 0 0.6em;
+  }
+
+  .prose strong {
+    font-weight: 600;
+    color: var(--color-ink);
+  }
+
+  .prose em {
+    font-style: italic;
+  }
+
+  .prose a {
+    color: var(--color-ultra);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: color-mix(in srgb, var(--color-ultra) 40%, transparent);
+    transition: text-decoration-color 0.3s var(--ease-editorial);
+  }
+
+  .prose a:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .prose ul,
+  .prose ol {
+    margin: 0 0 1.6em;
+    padding-left: 1.4em;
+  }
+
+  .prose ul {
+    list-style: disc;
+  }
+
+  .prose ol {
+    list-style: decimal;
+  }
+
+  .prose li {
+    margin: 0 0 0.5em;
+  }
+
+  .prose li::marker {
+    color: var(--color-ultra);
+  }
+
+  .prose li > p {
+    margin-bottom: 0.4em;
+  }
+
+  .prose blockquote {
+    margin: 1.8em 0;
+    padding: 0.2em 0 0.2em 1.4em;
+    border-left: 2px solid var(--color-ultra);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.15em;
+    color: var(--color-ink);
+  }
+
+  .prose img {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 1.8em 0;
+    border: 1px solid var(--color-cream-border);
+  }
+
+  .prose figcaption {
+    margin-top: -1.2em;
+    margin-bottom: 1.8em;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-slate);
+    text-align: center;
+  }
+
+  .prose hr {
+    margin: 2.4em 0;
+    border: none;
+    border-top: 1px solid var(--color-cream-border);
+  }
+
+  .prose code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: var(--color-sand);
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+  }
+
+  .prose pre {
+    margin: 1.6em 0;
+    padding: 1.2em;
+    background: var(--color-ink);
+    color: var(--color-ivory);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    line-height: 1.6;
+  }
+
+  .prose pre code {
+    background: none;
+    padding: 0;
+  }
+
+  .prose table {
+    width: 100%;
+    margin: 1.8em 0;
+    border-collapse: collapse;
+    font-size: 0.9em;
+  }
+
+  .prose th,
+  .prose td {
+    padding: 0.6em 0.8em;
+    border: 1px solid var(--color-cream-border);
+    text-align: left;
+  }
+
+  .prose th {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-slate);
+  }
+}
+
+/* ---------------------------------------------------------------
  * Keyframes
  * ------------------------------------------------------------- */
 @keyframes ticker {

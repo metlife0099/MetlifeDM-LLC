@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { useSelector } from 'react-redux';
+import { motion, useScroll, useSpring } from 'framer-motion';
 import { Heart, MessageCircle, Clock, Share2, ArrowUpRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
@@ -46,6 +47,10 @@ export default function BlogDetailsPage() {
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
+
+  // Reading progress bar — tracks whole-page scroll (no target ref needed).
+  const { scrollYProgress } = useScroll();
+  const progressWidth = useSpring(scrollYProgress, { stiffness: 200, damping: 30, restDelta: 0.001 });
 
   if (isLoading) {
     return <div className="grid place-items-center min-h-[60vh]"><Spinner size={32} className="text-ultra" /></div>;
@@ -96,13 +101,24 @@ export default function BlogDetailsPage() {
         }}
       />
 
+      {/* Reading progress */}
+      <motion.div
+        style={{ scaleX: progressWidth }}
+        className="fixed top-0 left-0 right-0 h-0.75 bg-ultra origin-left z-50"
+      />
+
       {/* Hero */}
       <Section tone="ivory" spacing="lg" divider={false}>
         <Container className="max-w-4xl">
           <Link to="/blog" className="text-mono text-xs uppercase tracking-widest text-slate hover:text-ink link-underline">
             ← All posts
           </Link>
-          <div className="mt-8 flex items-center gap-3 flex-wrap">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-8 flex items-center gap-3 flex-wrap"
+          >
             {post.category && (
               <Badge tone="outline">
                 {post.category.name || post.category}
@@ -114,16 +130,35 @@ export default function BlogDetailsPage() {
                 {post.readingTime} min read
               </div>
             )}
-          </div>
-          <h1 className="text-display-hero mt-8">{post.title}</h1>
+          </motion.div>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="text-display-hero mt-8"
+          >
+            {post.title}
+          </motion.h1>
           {post.excerpt && (
-            <p className="text-slate text-lg mt-8 leading-relaxed max-w-3xl">{post.excerpt}</p>
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+              className="text-slate text-lg mt-8 leading-relaxed max-w-3xl"
+            >
+              {post.excerpt}
+            </motion.p>
           )}
 
           {/* Author + date */}
-          <div className="mt-10 pt-8 border-t border-hairline flex items-center justify-between gap-4 flex-wrap">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="mt-10 pt-8 border-t border-hairline flex items-center justify-between gap-4 flex-wrap"
+          >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 grid place-items-center bg-ink text-ivory text-mono text-xs">
+              <div className="w-10 h-10 rounded-full grid place-items-center bg-ink text-ivory text-mono text-xs overflow-hidden shrink-0">
                 {post.author?.avatar?.url ? (
                   <img src={post.author.avatar.url} alt="" className="w-full h-full object-cover" />
                 ) : (
@@ -138,31 +173,38 @@ export default function BlogDetailsPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button
+              <motion.button
+                whileTap={{ scale: 0.9 }}
                 onClick={() => like.mutate(post._id)}
-                className="inline-flex items-center gap-2 border border-hairline hover:border-ink px-4 py-2 text-mono text-xs uppercase tracking-widest transition-colors"
+                className="inline-flex items-center gap-2 border border-hairline hover:border-ink hover:bg-ink hover:text-ivory px-4 py-2 text-mono text-xs uppercase tracking-widest transition-colors duration-300"
               >
-                <Heart size={12} strokeWidth={1.5} />
+                <Heart size={12} strokeWidth={1.5} className={post.likes ? 'fill-current' : ''} />
                 {post.likes || 0}
-              </button>
-              <button
+              </motion.button>
+              <motion.button
+                whileTap={{ scale: 0.9 }}
                 onClick={share}
-                className="inline-flex items-center gap-2 border border-hairline hover:border-ink px-4 py-2 text-mono text-xs uppercase tracking-widest transition-colors"
+                className="inline-flex items-center gap-2 border border-hairline hover:border-ink hover:bg-ink hover:text-ivory px-4 py-2 text-mono text-xs uppercase tracking-widest transition-colors duration-300"
               >
                 <Share2 size={12} strokeWidth={1.5} />
                 Share
-              </button>
+              </motion.button>
             </div>
-          </div>
+          </motion.div>
         </Container>
       </Section>
 
       {/* Cover */}
       {post.coverImage?.url && (
         <Container className="max-w-6xl">
-          <div className="aspect-[16/9] bg-sand overflow-hidden">
+          <motion.div
+            initial={{ opacity: 0, scale: 1.04 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+            className="aspect-video bg-sand overflow-hidden"
+          >
             <img src={post.coverImage.url} alt={post.title} className="h-full w-full object-cover" />
-          </div>
+          </motion.div>
         </Container>
       )}
 
@@ -170,11 +212,7 @@ export default function BlogDetailsPage() {
       <Section tone="ivory" spacing="lg">
         <Container className="max-w-3xl">
           <article
-            className="prose prose-lg max-w-none text-ink"
-            style={{
-              fontFamily: 'var(--font-body)',
-              lineHeight: 1.75,
-            }}
+            className="prose prose-lg max-w-none"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
 
@@ -227,8 +265,15 @@ export default function BlogDetailsPage() {
           {comments.length > 0 && (
             <div className="divide-editorial border-t border-hairline">
               {comments.map((c, i) => (
-                <div key={i} className="py-6 flex gap-4">
-                  <div className="w-9 h-9 grid place-items-center bg-ink text-ivory text-mono text-xs shrink-0">
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 14 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-40px' }}
+                  transition={{ duration: 0.5, delay: (i % 8) * 0.05 }}
+                  className="py-6 flex gap-4"
+                >
+                  <div className="w-9 h-9 rounded-full grid place-items-center bg-ink text-ivory text-mono text-xs shrink-0">
                     {initials(c.name || c.author?.firstName || 'A')}
                   </div>
                   <div className="flex-1">
@@ -238,7 +283,7 @@ export default function BlogDetailsPage() {
                     </div>
                     <p className="text-slate leading-relaxed mt-2">{c.content}</p>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
@@ -252,22 +297,31 @@ export default function BlogDetailsPage() {
             <Eyebrow number="03">Related</Eyebrow>
             <h2 className="text-display-md mt-4 mb-10">Keep reading.</h2>
             <div className="grid gap-10 md:grid-cols-3">
-              {related.slice(0, 3).map((r) => (
-                <Link key={r._id} to={`/blog/${r.slug}`} className="group">
-                  {r.coverImage?.url && (
-                    <div className="aspect-[4/3] bg-sand overflow-hidden">
-                      <img
-                        src={r.coverImage.url}
-                        alt={r.title}
-                        className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+              {related.slice(0, 3).map((r, i) => (
+                <motion.div
+                  key={r._id}
+                  initial={{ opacity: 0, y: 24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-60px' }}
+                  transition={{ duration: 0.6, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <Link to={`/blog/${r.slug}`} className="group block">
+                    {r.coverImage?.url && (
+                      <div className="aspect-4/3 bg-sand overflow-hidden img-zoom">
+                        <img
+                          src={r.coverImage.url}
+                          alt={r.title}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
+                    <h3 className="text-display-sm mt-5 group-hover:text-ultra transition-colors duration-300">{r.title}</h3>
+                    <div className="mt-2 text-mono text-xs uppercase tracking-widest text-slate">
+                      {timeAgo(r.publishedAt || r.createdAt)}
                     </div>
-                  )}
-                  <h3 className="text-display-sm mt-5 group-hover:text-ultra transition-colors">{r.title}</h3>
-                  <div className="mt-2 text-mono text-xs uppercase tracking-widest text-slate">
-                    {timeAgo(r.publishedAt || r.createdAt)}
-                  </div>
-                </Link>
+                  </Link>
+                </motion.div>
               ))}
             </div>
           </Container>
