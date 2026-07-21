@@ -218,7 +218,7 @@ export function CampaignEditorPage() {
     onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['admin', 'campaigns'] });
       toast.success(isNew ? 'Campaign created' : 'Campaign saved');
-      if (isNew) navigate(`/leads/campaigns/${res.campaign._id}`, { replace: true });
+      if (isNew) navigate(`/leads/campaigns/${res._id || res.campaign?._id}`, { replace: true });
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
