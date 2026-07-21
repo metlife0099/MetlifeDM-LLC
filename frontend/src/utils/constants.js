@@ -91,13 +91,4 @@ export const TIMELINE_OPTIONS = [
 ];
 
 /* Ticker copy (design signature) */
-export const TICKER_ITEMS = [
-  '+312% avg ROI',
-  '200+ US clients',
-  '4.9★ average rating',
-  'Founded 2024',
-  '45 team members',
-  'HQ: Miami, FL',
-  'Ranked Top 10 US agency 2024',
-  '$2.4M+ ad spend managed monthly',
-];
+export const TICKER_ITEMS = SERVICE_CATEGORIES.map((s) => s.label);

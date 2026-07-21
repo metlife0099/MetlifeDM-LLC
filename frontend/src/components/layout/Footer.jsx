@@ -12,11 +12,10 @@ import { Container } from '@/components/ui/Layout.jsx';
 const Socials = () => (
   <div className="flex gap-3 text-ivory/60">
     {[
-      { Icon: Twitter, href: 'https://twitter.com/metlifedm', label: 'Twitter' },
-      { Icon: Linkedin, href: 'https://linkedin.com/company/metlifedm', label: 'LinkedIn' },
-      { Icon: Instagram, href: 'https://instagram.com/metlifedm', label: 'Instagram' },
-      { Icon: Facebook, href: 'https://facebook.com/metlifedm', label: 'Facebook' },
-      { Icon: Youtube, href: 'https://youtube.com/@metlifedm', label: 'YouTube' },
+      { Icon: Twitter, href: 'https://x.com/MetlifeDM_LLC', label: 'Twitter' },
+      { Icon: Linkedin, href: 'linkedin.com/company/metlifedm-llc-digital-marketing', label: 'LinkedIn' },
+      { Icon: Instagram, href: 'https://www.instagram.com/metlifedm.llc/', label: 'Instagram' },
+      { Icon: Facebook, href: 'https://www.facebook.com/profile.php?id=61591351247538', label: 'Facebook' },
     ].map(({ Icon, href, label }) => (
       <a
         key={label}
