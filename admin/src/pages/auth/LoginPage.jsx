@@ -56,10 +56,13 @@ export default function LoginPage() {
     <div className="min-h-screen bg-canvas grid lg:grid-cols-[1.1fr_1fr]">
       {/* Left: form */}
       <div className="flex flex-col p-8 md:p-14 lg:p-20">
-        <div className="text-display-sm font-medium">
-          {SITE.name}
-          <span className="text-ultra">.</span>
-          <span className="ml-2 text-eyebrow text-slate">Admin</span>
+        <div className="flex items-center gap-2.5">
+          <img src="/metlifedm-logo.png" alt="" className="h-9 w-auto" />
+          <div className="text-display-sm font-medium">
+            {SITE.name}
+            <span className="text-ultra">.</span>
+            <span className="ml-2 text-eyebrow text-slate">Admin</span>
+          </div>
         </div>
 
         <div className="flex-1 grid place-items-center py-14">

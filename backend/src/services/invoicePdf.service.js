@@ -1,4 +1,9 @@
 import PDFDocument from 'pdfkit';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const LOGO_PATH = path.join(__dirname, '../assets/logo.png');
 
 const COLORS = {
   navy: '#0F172A',
@@ -50,9 +55,16 @@ export const generateInvoicePdf = ({ order, payment, settings }) =>
 
     /* ---------- Header band ---------- */
     doc.rect(0, 0, pageWidth, 96).fill(COLORS.navy);
-    doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(20).text(site.name || 'MetlifeDM LLC', 50, 32, { lineBreak: false });
+    let brandX = 50;
+    try {
+      doc.image(LOGO_PATH, 50, 24, { height: 48 });
+      brandX = 106;
+    } catch {
+      // Missing/unreadable asset — fall back to text-only header.
+    }
+    doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(20).text(site.name || 'MetlifeDM LLC', brandX, 32, { lineBreak: false });
     doc.fillColor(COLORS.cyan).font('Helvetica').fontSize(8)
-      .text((site.tagline || '').toUpperCase(), 50, 56, { characterSpacing: 0.8, lineBreak: false });
+      .text((site.tagline || '').toUpperCase(), brandX, 56, { characterSpacing: 0.8, lineBreak: false });
 
     doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(22).text('INVOICE', 50, 30, { width: contentWidth, align: 'right' });
     doc.fillColor(COLORS.cyan).font('Helvetica').fontSize(10).text(payment.invoiceNumber || '—', 50, 58, { width: contentWidth, align: 'right' });

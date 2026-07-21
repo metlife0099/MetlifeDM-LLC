@@ -1,3 +1,7 @@
+import { config } from '../../config/index.js';
+
+const LOGO_URL = `${config.urls.client}/metlifedm-logo.png`;
+
 /**
  * Reusable branded email layout wrapper.
  * All transactional emails share this shell for consistency.
@@ -15,7 +19,8 @@ export const emailLayout = ({ title, previewText = '', bodyHtml, ctaLabel, ctaUr
   <tr><td align="center">
     <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.08);">
       <tr>
-        <td style="background:linear-gradient(135deg,#0F172A 0%,#1E40AF 60%,#06B6D4 100%);padding:32px 32px;text-align:center;">
+        <td style="background:linear-gradient(135deg,#0F172A 0%,#1E40AF 60%,#06B6D4 100%);padding:28px 32px;text-align:center;">
+          <img src="${LOGO_URL}" alt="MetlifeDM" width="40" height="40" style="display:block;margin:0 auto 8px;height:40px;width:40px;" />
           <h1 style="margin:0;font-size:22px;font-weight:800;letter-spacing:-0.02em;color:#ffffff;">MetlifeDM<span style="color:#67E8F9;">.</span></h1>
           <p style="margin:4px 0 0;font-size:12px;color:#BAE6FD;letter-spacing:0.08em;text-transform:uppercase;">Digital Marketing Excellence</p>
         </td>

@@ -50,10 +50,13 @@ export default function Sidebar({ mobile = false, onNavigate }) {
       {/* Wordmark */}
       <div className="px-5 py-6 border-b border-ivory/10">
         <Link to="/dashboard" className="flex items-center gap-2" onClick={onNavigate}>
-          <span className="text-display-sm font-medium text-ivory">
-            {collapsed && !mobile ? 'M' : SITE.name}
-            <span className="text-ultra">.</span>
-          </span>
+          <img src="/metlifedm-logo.png" alt="" className="h-8 w-auto shrink-0" />
+          {(!collapsed || mobile) && (
+            <span className="text-display-sm font-medium text-ivory">
+              {SITE.name}
+              <span className="text-ultra">.</span>
+            </span>
+          )}
         </Link>
         {!collapsed && (
           <div className="text-eyebrow text-ivory/40 mt-1">Admin console</div>

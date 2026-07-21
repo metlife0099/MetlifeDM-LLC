@@ -93,9 +93,12 @@ export default function Footer() {
       <Container className="py-16 md:py-20">
         <div className="grid gap-12 lg:grid-cols-6">
           <div className="lg:col-span-2">
-            <div className="text-display-md text-ivory mb-4">
-              {SITE.name}
-              <span className="text-ultra-soft">.</span>
+            <div className="flex items-center gap-3 mb-4">
+              <img src="/metlifedm-logo.png" alt="" className="h-11 w-auto" />
+              <div className="text-display-md text-ivory">
+                {SITE.name}
+                <span className="text-ultra-soft">.</span>
+              </div>
             </div>
             <p className="text-ivory/60 text-sm max-w-sm mb-8 leading-relaxed">
               A US-based digital marketing agency helping 200+ businesses grow through SEO, PPC, content, and AI-powered marketing.

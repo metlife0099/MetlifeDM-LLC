@@ -69,7 +69,8 @@ export default function Navbar() {
       <div className="mx-auto max-w-[88rem] px-6 md:px-10 lg:px-14">
         <div className="flex h-20 items-center justify-between gap-8">
           {/* Wordmark */}
-          <Link to="/" className="flex items-center gap-2 group" aria-label="Home">
+          <Link to="/" className="flex items-center gap-2.5 group shrink-0" aria-label="Home">
+            <img src="/metlifedm-logo.png" alt="" className="h-9 w-auto" />
             <span className={cn('text-display-sm font-medium transition-colors duration-500', floating ? 'text-ivory' : 'text-ink')}>
               {SITE.name}
               <span className={floating ? 'text-ultra-soft' : 'text-ultra'}>.</span>
