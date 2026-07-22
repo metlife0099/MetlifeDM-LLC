@@ -8,10 +8,13 @@ import { getPaginationOptions, paginate } from '../utils/pagination.js';
 export const industry = {
   list: asyncHandler(async (req, res) => {
     const opts = getPaginationOptions(req.query);
+    // Default to manual `order` (ascending), same convention as Services —
+    // admins control display sequence via the "Display order" field.
+    if (!req.query.sortBy) opts.sort = { order: 1, createdAt: -1 };
     const filter = { isPublished: true };
     if (req.query.featured === 'true') filter.isFeatured = true;
     const { items, meta } = await paginate(Industry, filter, opts, {
-      select: 'name slug shortDescription icon heroImage',
+      select: 'name slug shortDescription icon heroImage order',
     });
     return ApiResponse.ok(res, items, 'Industries', meta);
   }),

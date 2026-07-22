@@ -272,7 +272,7 @@ export function IndustryEditPage() {
 
           <Card>
             <div className="text-eyebrow mb-4">04 / Challenges & solutions</div>
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-6 xl:grid-cols-2">
               {arrayField(challengesArr, 'challenges', 'Challenges')}
               {arrayField(solutionsArr, 'solutions', 'Solutions', { withIcon: true })}
             </div>
