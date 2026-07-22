@@ -106,6 +106,7 @@ export function IndustriesListPage() {
 const industrySchema = z.object({
   name: z.string().min(1, 'Required'),
   slug: z.string().min(1, 'Required'),
+  shortDescription: z.string().min(1, 'Required').max(400, 'Max 400 characters'),
   icon: z.string().optional(),
   isPublished: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
@@ -131,7 +132,7 @@ export function IndustryEditPage() {
 
   const { register, handleSubmit, control, reset, setValue, watch, formState: { errors } } = useForm({
     resolver: zodResolver(industrySchema),
-    defaultValues: { name: '', slug: '', isPublished: true, isFeatured: false, challenges: [], solutions: [], seo: {} },
+    defaultValues: { name: '', slug: '', shortDescription: '', isPublished: true, isFeatured: false, challenges: [], solutions: [], seo: {} },
   });
 
   const challengesArr = useFieldArray({ control, name: 'challenges' });
@@ -248,6 +249,14 @@ export function IndustryEditPage() {
                 <Input label="Slug" required prefix="/industries/" {...register('slug')} error={errors.slug?.message} />
                 <Input label="Icon (emoji)" placeholder="🏥" {...register('icon')} />
               </div>
+              <Textarea
+                label="Short description"
+                required
+                rows={3}
+                placeholder="One or two sentences shown on industry cards and listings…"
+                {...register('shortDescription')}
+                error={errors.shortDescription?.message}
+              />
             </div>
           </Card>
 
