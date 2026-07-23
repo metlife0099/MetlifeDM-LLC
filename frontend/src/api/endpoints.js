@@ -47,6 +47,7 @@ export const ENDPOINTS = {
     list: '/case-studies',
     bySlug: (slug) => `/case-studies/slug/${slug}`,
     categories: '/case-studies/categories',
+    pdf: (slug) => `/case-studies/slug/${slug}/pdf`,
   },
   blog: {
     list: '/blog',

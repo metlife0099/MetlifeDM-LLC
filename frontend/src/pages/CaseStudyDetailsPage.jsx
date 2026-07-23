@@ -1,13 +1,17 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { AlertCircle, Compass, Lightbulb, TrendingUp, TrendingDown, ArrowUpRight, Quote } from 'lucide-react';
+import { AlertCircle, Compass, Lightbulb, TrendingUp, TrendingDown, ArrowUpRight, Quote, Download } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner, Badge } from '@/components/ui/index.jsx';
+import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
 import { contentApi } from '@/api/index.js';
-import { cn, initials } from '@/utils/format.js';
+import { getErrorMessage } from '@/api/client.js';
+import { cn, initials, downloadBlob } from '@/utils/format.js';
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -25,11 +29,24 @@ const STORY_STEPS = [
 
 export default function CaseStudyDetailsPage() {
   const { slug } = useParams();
+  const [downloading, setDownloading] = useState(false);
   const { data, isLoading, error } = useQuery({
     queryKey: ['case-study', slug],
     queryFn: () => contentApi.getCaseStudyBySlug(slug),
     enabled: !!slug,
   });
+
+  const handleDownloadPdf = async () => {
+    setDownloading(true);
+    try {
+      const res = await contentApi.downloadCaseStudyPdf(slug);
+      downloadBlob(res.data, `${slug}-case-study.pdf`);
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   if (isLoading) {
     return <div className="grid place-items-center min-h-[60vh]"><Spinner size={32} className="text-ultra" /></div>;
@@ -76,9 +93,32 @@ export default function CaseStudyDetailsPage() {
             </div>
             <h1 className="text-display-hero mt-8 max-w-4xl text-ivory">{cs.title}</h1>
             {cs.tagline && <p className="mt-8 max-w-2xl text-lg text-ivory/75 leading-relaxed">{cs.tagline}</p>}
+            <div className="mt-10">
+              <Button variant="inverse" onClick={handleDownloadPdf} disabled={downloading}>
+                <Download size={14} strokeWidth={1.5} />
+                {downloading ? 'Preparing PDF…' : 'Download case study PDF'}
+              </Button>
+            </div>
           </motion.div>
         </Container>
       </Section>
+
+      {/* Full cover shot */}
+      {cs.heroImage?.url && (
+        <Section tone="ivory" spacing="md" divider={false}>
+          <Container>
+            <motion.div
+              initial={{ opacity: 0, scale: 1.03 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+              className="aspect-video bg-sand overflow-hidden border border-hairline"
+            >
+              <img src={cs.heroImage.url} alt={cs.title} className="h-full w-full object-cover" />
+            </motion.div>
+          </Container>
+        </Section>
+      )}
 
       {/* Key results grid — the money shot */}
       {cs.kpis?.length > 0 && (

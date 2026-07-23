@@ -49,6 +49,7 @@ export const contentApi = {
   listCaseStudies: (params) => apiClient.get(E.caseStudies.list, { params }).then(unwrapMeta),
   getCaseStudyBySlug: (slug) => apiClient.get(E.caseStudies.bySlug(slug)).then(unwrap),
   getCaseStudyCategories: () => apiClient.get(E.caseStudies.categories).then(unwrap),
+  downloadCaseStudyPdf: (slug) => apiClient.get(E.caseStudies.pdf(slug), { responseType: 'blob' }),
 
   // Blog
   listPosts: (params) => apiClient.get(E.blog.list, { params }).then(unwrapMeta),

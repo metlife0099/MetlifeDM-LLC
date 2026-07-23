@@ -1,8 +1,9 @@
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
-import { Industry, Portfolio, PortfolioCategory, CaseStudy, CaseStudyCategory } from '../models/index.js';
+import { Industry, Portfolio, PortfolioCategory, CaseStudy, CaseStudyCategory, Settings } from '../models/index.js';
 import { getPaginationOptions, paginate } from '../utils/pagination.js';
+import { generateCaseStudyPdf } from '../services/caseStudyPdf.service.js';
 
 const buildCategoryCrud = (Model, label) => ({
   list: asyncHandler(async (req, res) => {
@@ -161,6 +162,15 @@ export const caseStudy = {
       .populate('category', 'name slug color');
     if (!cs) throw ApiError.notFound('Case study not found');
     return ApiResponse.ok(res, { caseStudy: cs }, 'Case study');
+  }),
+  downloadPdf: asyncHandler(async (req, res) => {
+    const cs = await CaseStudy.findOne({ slug: req.params.slug, isPublished: true }).populate('category', 'name');
+    if (!cs) throw ApiError.notFound('Case study not found');
+    const settings = await Settings.getGlobal();
+    const pdf = await generateCaseStudyPdf({ caseStudy: cs, settings });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${cs.slug}-case-study.pdf"`);
+    res.send(pdf);
   }),
   listAdmin: asyncHandler(async (req, res) => {
     const opts = getPaginationOptions(req.query);

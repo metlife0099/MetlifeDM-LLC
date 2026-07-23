@@ -24,3 +24,7 @@ const build = (ctrl, categoryCtrl) => {
 export const industryRoutes = build(industry);
 export const portfolioRoutes = build(portfolio, portfolioCategory);
 export const caseStudyRoutes = build(caseStudy, caseStudyCategory);
+
+// Customer-facing PDF download — distinct segment from `/slug/:slug` so it
+// can't be shadowed by (or shadow) the generic bySlug route.
+caseStudyRoutes.get('/slug/:slug/pdf', caseStudy.downloadPdf);
