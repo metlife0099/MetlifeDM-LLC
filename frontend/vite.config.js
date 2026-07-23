@@ -32,6 +32,11 @@ export default defineConfig(({ mode }) => {
       proxy: {
         '/api': { target: apiTarget, changeOrigin: true, secure: false },
         '/socket.io': { target: apiTarget, changeOrigin: true, ws: true },
+        // Mirrors the production rewrite documented in public/sitemap.xml —
+        // without this, the dev server just serves that static placeholder
+        // file instead of the backend's real, DB-driven sitemap/robots.
+        '/sitemap.xml': { target: apiTarget, changeOrigin: true, secure: false, rewrite: () => '/api/v1/seo/sitemap.xml' },
+        '/robots.txt': { target: apiTarget, changeOrigin: true, secure: false, rewrite: () => '/api/v1/seo/robots.txt' },
       },
     },
     build: {
