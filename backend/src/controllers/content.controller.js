@@ -28,6 +28,11 @@ const buildCategoryCrud = (Model, label) => ({
 export const portfolioCategory = buildCategoryCrud(PortfolioCategory, 'Portfolio');
 export const caseStudyCategory = buildCategoryCrud(CaseStudyCategory, 'Case study');
 
+// Admin forms submit '' for an unset "No category" <select> — Mongoose can't
+// cast an empty string to ObjectId, so treat it the same as "not provided".
+const withOptionalRef = (body, field) =>
+  body[field] === '' ? { ...body, [field]: undefined } : body;
+
 /* --------------- INDUSTRIES --------------- */
 export const industry = {
   list: asyncHandler(async (req, res) => {
@@ -115,11 +120,11 @@ export const portfolio = {
     return ApiResponse.ok(res, items, 'Portfolio (admin)', meta);
   }),
   create: asyncHandler(async (req, res) => {
-    const p = await Portfolio.create(req.body);
+    const p = await Portfolio.create(withOptionalRef(req.body, 'category'));
     return ApiResponse.created(res, { portfolio: p }, 'Project created');
   }),
   update: asyncHandler(async (req, res) => {
-    const p = await Portfolio.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const p = await Portfolio.findByIdAndUpdate(req.params.id, withOptionalRef(req.body, 'category'), { new: true });
     if (!p) throw ApiError.notFound('Project not found');
     return ApiResponse.ok(res, { portfolio: p }, 'Updated');
   }),
@@ -171,11 +176,11 @@ export const caseStudy = {
     return ApiResponse.ok(res, items, 'Case studies (admin)', meta);
   }),
   create: asyncHandler(async (req, res) => {
-    const cs = await CaseStudy.create(req.body);
+    const cs = await CaseStudy.create(withOptionalRef(req.body, 'category'));
     return ApiResponse.created(res, { caseStudy: cs }, 'Case study created');
   }),
   update: asyncHandler(async (req, res) => {
-    const cs = await CaseStudy.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const cs = await CaseStudy.findByIdAndUpdate(req.params.id, withOptionalRef(req.body, 'category'), { new: true });
     if (!cs) throw ApiError.notFound('Case study not found');
     return ApiResponse.ok(res, { caseStudy: cs }, 'Updated');
   }),
