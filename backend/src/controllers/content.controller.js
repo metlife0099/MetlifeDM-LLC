@@ -1,8 +1,32 @@
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
-import { Industry, Portfolio, CaseStudy } from '../models/index.js';
+import { Industry, Portfolio, PortfolioCategory, CaseStudy, CaseStudyCategory } from '../models/index.js';
 import { getPaginationOptions, paginate } from '../utils/pagination.js';
+
+const buildCategoryCrud = (Model, label) => ({
+  list: asyncHandler(async (req, res) => {
+    const items = await Model.find().sort({ order: 1, name: 1 });
+    return ApiResponse.ok(res, items, `${label} categories`);
+  }),
+  create: asyncHandler(async (req, res) => {
+    const c = await Model.create(req.body);
+    return ApiResponse.created(res, { category: c }, 'Category created');
+  }),
+  update: asyncHandler(async (req, res) => {
+    const c = await Model.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!c) throw ApiError.notFound('Category not found');
+    return ApiResponse.ok(res, { category: c }, 'Updated');
+  }),
+  remove: asyncHandler(async (req, res) => {
+    const c = await Model.findByIdAndDelete(req.params.id);
+    if (!c) throw ApiError.notFound('Category not found');
+    return ApiResponse.ok(res, null, 'Deleted');
+  }),
+});
+
+export const portfolioCategory = buildCategoryCrud(PortfolioCategory, 'Portfolio');
+export const caseStudyCategory = buildCategoryCrud(CaseStudyCategory, 'Case study');
 
 /* --------------- INDUSTRIES --------------- */
 export const industry = {
@@ -61,17 +85,19 @@ export const portfolio = {
     const opts = getPaginationOptions(req.query);
     const filter = { isPublished: true };
     if (req.query.industry) filter.industry = req.query.industry;
+    if (req.query.category) filter.category = req.query.category;
     if (req.query.featured === 'true') filter.isFeatured = true;
     if (opts.search) filter.$text = { $search: opts.search };
     const { items, meta } = await paginate(Portfolio, filter, opts, {
-      populate: [{ path: 'services', select: 'title slug' }],
+      populate: [{ path: 'services', select: 'title slug' }, { path: 'category', select: 'name slug color' }],
     });
     return ApiResponse.ok(res, items, 'Portfolio', meta);
   }),
   bySlug: asyncHandler(async (req, res) => {
     const p = await Portfolio.findOne({ slug: req.params.slug, isPublished: true })
       .populate('services', 'title slug icon')
-      .populate('caseStudy', 'title slug');
+      .populate('caseStudy', 'title slug')
+      .populate('category', 'name slug color');
     if (!p) throw ApiError.notFound('Project not found');
     return ApiResponse.ok(res, { portfolio: p }, 'Project');
   }),
@@ -79,11 +105,12 @@ export const portfolio = {
     const opts = getPaginationOptions(req.query);
     const filter = {};
     if (req.query.industry) filter.industry = req.query.industry;
+    if (req.query.category) filter.category = req.query.category;
     if (req.query.featured === 'true') filter.isFeatured = true;
     if (req.query.status) filter.isPublished = req.query.status === 'published';
     if (opts.search) filter.$text = { $search: opts.search };
     const { items, meta } = await paginate(Portfolio, filter, opts, {
-      populate: [{ path: 'services', select: 'title slug' }],
+      populate: [{ path: 'services', select: 'title slug' }, { path: 'category', select: 'name slug color' }],
     });
     return ApiResponse.ok(res, items, 'Portfolio (admin)', meta);
   }),
@@ -115,15 +142,18 @@ export const caseStudy = {
     const filter = { isPublished: true };
     if (req.query.featured === 'true') filter.isFeatured = true;
     if (req.query.industry) filter.industry = req.query.industry;
+    if (req.query.category) filter.category = req.query.category;
     const { items, meta } = await paginate(CaseStudy, filter, opts, {
-      select: 'title slug tagline heroImage industry kpis year',
+      select: 'title slug tagline heroImage industry category kpis year',
+      populate: [{ path: 'category', select: 'name slug color' }],
     });
     return ApiResponse.ok(res, items, 'Case studies', meta);
   }),
   bySlug: asyncHandler(async (req, res) => {
     const cs = await CaseStudy.findOne({ slug: req.params.slug, isPublished: true })
       .populate('services', 'title slug')
-      .populate('portfolio', 'title slug coverImage');
+      .populate('portfolio', 'title slug coverImage')
+      .populate('category', 'name slug color');
     if (!cs) throw ApiError.notFound('Case study not found');
     return ApiResponse.ok(res, { caseStudy: cs }, 'Case study');
   }),
@@ -132,9 +162,12 @@ export const caseStudy = {
     const filter = {};
     if (req.query.featured === 'true') filter.isFeatured = true;
     if (req.query.industry) filter.industry = req.query.industry;
+    if (req.query.category) filter.category = req.query.category;
     if (req.query.status) filter.isPublished = req.query.status === 'published';
     if (opts.search) filter.title = { $regex: opts.search, $options: 'i' };
-    const { items, meta } = await paginate(CaseStudy, filter, opts);
+    const { items, meta } = await paginate(CaseStudy, filter, opts, {
+      populate: [{ path: 'category', select: 'name slug color' }],
+    });
     return ApiResponse.ok(res, items, 'Case studies (admin)', meta);
   }),
   create: asyncHandler(async (req, res) => {

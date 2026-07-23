@@ -18,17 +18,17 @@ function ItemSkeleton() {
 }
 
 export default function PortfolioPage() {
-  const [industry, setIndustry] = useState('');
+  const [category, setCategory] = useState('');
 
   const { data: items = [], isLoading } = useQuery({
-    queryKey: ['portfolio', 'list', industry],
+    queryKey: ['portfolio', 'list', category],
     queryFn: () =>
-      contentApi.listPortfolio({ industry: industry || undefined, limit: 24 }).then((r) => r.data),
+      contentApi.listPortfolio({ category: category || undefined, limit: 24 }).then((r) => r.data),
   });
 
-  const { data: industries = [] } = useQuery({
-    queryKey: ['industries', 'list'],
-    queryFn: () => contentApi.listIndustries({ limit: 20 }).then((r) => r.data),
+  const { data: categories = [] } = useQuery({
+    queryKey: ['portfolio', 'categories'],
+    queryFn: () => contentApi.getPortfolioCategories(),
   });
 
   return (
@@ -52,30 +52,30 @@ export default function PortfolioPage() {
         </Container>
       </Section>
 
-      {/* Industry filter */}
-      {industries.length > 0 && (
+      {/* Category filter */}
+      {categories.length > 0 && (
         <div className="sticky top-20 z-30 bg-ivory/90 backdrop-blur-md border-b border-hairline">
           <Container>
             <ScrollTabs trackClassName="py-4">
               <button
-                onClick={() => setIndustry('')}
+                onClick={() => setCategory('')}
                 className={cn(
                   'px-4 py-2 rounded-full text-mono text-xs uppercase tracking-widest border transition-colors whitespace-nowrap cursor-pointer',
-                  !industry ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
+                  !category ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
                 )}
               >
-                All industries
+                All categories
               </button>
-              {industries.map((i) => (
+              {categories.map((c) => (
                 <button
-                  key={i._id}
-                  onClick={() => setIndustry(i._id)}
+                  key={c._id}
+                  onClick={() => setCategory(c._id)}
                   className={cn(
                     'px-4 py-2 rounded-full text-mono text-xs uppercase tracking-widest border transition-colors whitespace-nowrap cursor-pointer',
-                    industry === i._id ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
+                    category === c._id ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
                   )}
                 >
-                  {i.name}
+                  {c.name}
                 </button>
               ))}
             </ScrollTabs>
@@ -95,7 +95,7 @@ export default function PortfolioPage() {
                 <ImageOff size={22} strokeWidth={1.5} />
               </div>
               <p className="text-slate mt-6">No portfolio items in this filter.</p>
-              <button className="mt-4 inline-flex items-center gap-2 text-sm text-ink link-underline cursor-pointer" onClick={() => setIndustry('')}>
+              <button className="mt-4 inline-flex items-center gap-2 text-sm text-ink link-underline cursor-pointer" onClick={() => setCategory('')}>
                 Reset filter
               </button>
             </div>

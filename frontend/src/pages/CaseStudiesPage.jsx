@@ -12,17 +12,17 @@ import { contentApi } from '@/api/index.js';
 import { cn } from '@/utils/format.js';
 
 export default function CaseStudiesPage() {
-  const [industry, setIndustry] = useState('');
+  const [category, setCategory] = useState('');
 
   const { data: items = [], isLoading } = useQuery({
-    queryKey: ['case-studies', 'list', industry],
+    queryKey: ['case-studies', 'list', category],
     queryFn: () =>
-      contentApi.listCaseStudies({ industry: industry || undefined, limit: 24 }).then((r) => r.data),
+      contentApi.listCaseStudies({ category: category || undefined, limit: 24 }).then((r) => r.data),
   });
 
-  const { data: industries = [] } = useQuery({
-    queryKey: ['industries', 'list'],
-    queryFn: () => contentApi.listIndustries({ limit: 20 }).then((r) => r.data),
+  const { data: categories = [] } = useQuery({
+    queryKey: ['case-studies', 'categories'],
+    queryFn: () => contentApi.getCaseStudyCategories(),
   });
 
   return (
@@ -46,29 +46,29 @@ export default function CaseStudiesPage() {
         </Container>
       </Section>
 
-      {industries.length > 0 && (
+      {categories.length > 0 && (
         <div className="sticky top-20 z-30 bg-ivory border-y border-hairline">
           <Container>
             <ScrollTabs trackClassName="py-4">
               <button
-                onClick={() => setIndustry('')}
+                onClick={() => setCategory('')}
                 className={cn(
                   'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors whitespace-nowrap',
-                  !industry ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
+                  !category ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
                 )}
               >
-                All industries
+                All categories
               </button>
-              {industries.map((i) => (
+              {categories.map((c) => (
                 <button
-                  key={i._id}
-                  onClick={() => setIndustry(i._id)}
+                  key={c._id}
+                  onClick={() => setCategory(c._id)}
                   className={cn(
                     'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors whitespace-nowrap',
-                    industry === i._id ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
+                    category === c._id ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
                   )}
                 >
-                  {i.name}
+                  {c.name}
                 </button>
               ))}
             </ScrollTabs>
@@ -83,7 +83,7 @@ export default function CaseStudiesPage() {
           ) : items.length === 0 ? (
             <div className="text-center py-24 text-slate">
               No case studies in this filter.{' '}
-              <button className="link-underline text-ink" onClick={() => setIndustry('')}>Reset</button>.
+              <button className="link-underline text-ink" onClick={() => setCategory('')}>Reset</button>.
             </div>
           ) : (
             <div className="divide-editorial border-t border-hairline">

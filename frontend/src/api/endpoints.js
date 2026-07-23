@@ -41,10 +41,12 @@ export const ENDPOINTS = {
   portfolio: {
     list: '/portfolio',
     bySlug: (slug) => `/portfolio/slug/${slug}`,
+    categories: '/portfolio/categories',
   },
   caseStudies: {
     list: '/case-studies',
     bySlug: (slug) => `/case-studies/slug/${slug}`,
+    categories: '/case-studies/categories',
   },
   blog: {
     list: '/blog',

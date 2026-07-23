@@ -38,8 +38,20 @@ export const servicesApi = {
   reorder: (ids) => apiClient.post(E.services.reorder, { ids }).then(unwrap),
 };
 
-export const portfolioApi = crud(E.portfolio);
-export const caseStudiesApi = crud(E.caseStudies);
+export const portfolioApi = {
+  ...crud(E.portfolio),
+  listCategories: () => apiClient.get(E.portfolio.categories).then(unwrap),
+  createCategory: (data) => apiClient.post(E.portfolio.categories, data).then(unwrap),
+  updateCategory: (id, data) => apiClient.put(E.portfolio.category(id), data).then(unwrap),
+  deleteCategory: (id) => apiClient.delete(E.portfolio.category(id)).then(unwrap),
+};
+export const caseStudiesApi = {
+  ...crud(E.caseStudies),
+  listCategories: () => apiClient.get(E.caseStudies.categories).then(unwrap),
+  createCategory: (data) => apiClient.post(E.caseStudies.categories, data).then(unwrap),
+  updateCategory: (id, data) => apiClient.put(E.caseStudies.category(id), data).then(unwrap),
+  deleteCategory: (id) => apiClient.delete(E.caseStudies.category(id)).then(unwrap),
+};
 export const industriesApi = crud(E.industries);
 export const testimonialsApi = crud(E.testimonials);
 export const faqsApi = crud(E.faqs);

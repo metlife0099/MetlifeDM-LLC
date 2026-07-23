@@ -15,7 +15,13 @@ import { Router } from 'express';
 // ————— existing controllers —————
 import * as legacyAdmin from '../controllers/admin.controller.js';
 import * as serviceCtrl from '../controllers/service.controller.js';
-import { industry as industryCtrl, portfolio as portfolioCtrl, caseStudy as caseStudyCtrl } from '../controllers/content.controller.js';
+import {
+  industry as industryCtrl,
+  portfolio as portfolioCtrl,
+  portfolioCategory as portfolioCategoryCtrl,
+  caseStudy as caseStudyCtrl,
+  caseStudyCategory as caseStudyCategoryCtrl,
+} from '../controllers/content.controller.js';
 import * as blogCtrl from '../controllers/blog.controller.js';
 import { testimonial as testimonialCtrl, faq as faqCtrl } from '../controllers/engagement.controller.js';
 import { contact as contactCtrl, consultation as consultationCtrl, newsletter as newsletterCtrl, career as careerCtrl } from '../controllers/leadCapture.controller.js';
@@ -92,6 +98,18 @@ const mountContent = (path, ctrl) => {
 mountContent('/portfolio', portfolioCtrl);
 mountContent('/case-studies', caseStudyCtrl);
 mountContent('/industries', industryCtrl);
+
+router.get('/portfolio-categories', portfolioCategoryCtrl.list);
+router.post('/portfolio-categories', portfolioCategoryCtrl.create);
+router.put('/portfolio-categories/:id', portfolioCategoryCtrl.update);
+router.patch('/portfolio-categories/:id', portfolioCategoryCtrl.update);
+router.delete('/portfolio-categories/:id', portfolioCategoryCtrl.remove);
+
+router.get('/case-study-categories', caseStudyCategoryCtrl.list);
+router.post('/case-study-categories', caseStudyCategoryCtrl.create);
+router.put('/case-study-categories/:id', caseStudyCategoryCtrl.update);
+router.patch('/case-study-categories/:id', caseStudyCategoryCtrl.update);
+router.delete('/case-study-categories/:id', caseStudyCategoryCtrl.remove);
 
 /* ═══════════════════════════════════════════════════════════
  * BLOG · posts / categories / comments

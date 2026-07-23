@@ -20,21 +20,28 @@ export default function PortfolioListPage() {
   const [limit, setLimit] = useState(25);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
+  const [category, setCategory] = useState('');
   const [sort, setSort] = useState({ key: 'createdAt', direction: 'desc' });
   const [deleteId, setDeleteId] = useState(null);
   const debounced = useDebounce(search, 300);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'portfolio', { page, limit, debounced, status, sort }],
+    queryKey: ['admin', 'portfolio', { page, limit, debounced, status, category, sort }],
     queryFn: () =>
       portfolioApi.list({
         page,
         limit,
         search: debounced || undefined,
         status: status || undefined,
+        category: category || undefined,
         sortBy: sort.key,
         sortOrder: sort.direction,
       }),
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ['admin', 'portfolio', 'categories'],
+    queryFn: () => portfolioApi.listCategories(),
   });
 
   const remove = useMutation({
@@ -71,7 +78,7 @@ export default function PortfolioListPage() {
         </div>
       ),
     },
-    { key: 'category', label: 'Category', render: (r) => <Badge tone="outline">{r.category || '—'}</Badge> },
+    { key: 'category', label: 'Category', render: (r) => <Badge tone="outline">{r.category?.name || '—'}</Badge> },
     { key: 'year', label: 'Year', render: (r) => <span className="text-mono text-xs">{r.year || '—'}</span> },
     { key: 'isPublished', label: 'Status', render: (r) => <StatusPill status={r.isPublished ? 'published' : 'draft'} /> },
     { key: 'updatedAt', label: 'Updated', render: (r) => <span className="text-mono text-xs text-slate">{formatDate(r.updatedAt, 'short')}</span> },
@@ -96,7 +103,12 @@ export default function PortfolioListPage() {
         eyebrow="Content / Portfolio"
         title={<>Client <span className="text-italic-fraunces text-ultra">work</span></>}
         subtitle="Case briefs, hero images, and results — everything shown in /portfolio."
-        actions={<Button to="/content/portfolio/new" icon={Plus}>New project</Button>}
+        actions={
+          <>
+            <Button variant="ghost" to="/content/portfolio/categories">Categories</Button>
+            <Button to="/content/portfolio/new" icon={Plus}>New project</Button>
+          </>
+        }
       />
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search projects…" className="w-64" />
@@ -109,6 +121,12 @@ export default function PortfolioListPage() {
           ]}
           value={status}
           onChange={(e) => setStatus(e.target.value)}
+        />
+        <Select
+          className="w-44"
+          options={[{ value: '', label: 'All categories' }, ...categories.map((c) => ({ value: c._id, label: c.name }))]}
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
         />
       </FilterBar>
       <DataTable

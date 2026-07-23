@@ -8,7 +8,7 @@ import { ArrowLeft, Save, Plus, Trash2, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader, Breadcrumbs } from '@/components/ui/PageHeader.jsx';
 import { Card, PageLoader } from '@/components/ui/index.jsx';
-import { Input, Textarea, Switch, ImageUpload, MultiSelect } from '@/components/form/index.jsx';
+import { Input, Textarea, Switch, ImageUpload, MultiSelect, Select } from '@/components/form/index.jsx';
 import RichEditor from '@/components/ui/RichEditor.jsx';
 import Button from '@/components/ui/Button.jsx';
 import { portfolioApi, servicesApi } from '@/api/index.js';
@@ -57,6 +57,11 @@ export default function PortfolioEditPage() {
     queryFn: () => servicesApi.list({ limit: 100 }),
   });
   const services = servicesData?.data || [];
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ['admin', 'portfolio', 'categories'],
+    queryFn: () => portfolioApi.listCategories(),
+  });
 
   const { register, handleSubmit, control, reset, setValue, watch, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
@@ -135,7 +140,11 @@ export default function PortfolioEditPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <Input label="Slug" required prefix="/portfolio/" {...register('slug')} error={errors.slug?.message} />
                 <Input label="Client" {...register('client')} />
-                <Input label="Category" placeholder="e.g. SaaS · Fintech" {...register('category')} />
+                <Select
+                  label="Category"
+                  options={[{ value: '', label: 'No category' }, ...categories.map((c) => ({ value: c._id, label: c.name }))]}
+                  {...register('category')}
+                />
                 <Input label="Industry" placeholder="e.g. Healthcare" {...register('industry')} />
                 <Input label="Year" type="number" {...register('year')} />
               </div>

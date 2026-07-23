@@ -43,10 +43,12 @@ export const contentApi = {
   // Portfolio
   listPortfolio: (params) => apiClient.get(E.portfolio.list, { params }).then(unwrapMeta),
   getPortfolioBySlug: (slug) => apiClient.get(E.portfolio.bySlug(slug)).then(unwrap),
+  getPortfolioCategories: () => apiClient.get(E.portfolio.categories).then(unwrap),
 
   // Case studies
   listCaseStudies: (params) => apiClient.get(E.caseStudies.list, { params }).then(unwrapMeta),
   getCaseStudyBySlug: (slug) => apiClient.get(E.caseStudies.bySlug(slug)).then(unwrap),
+  getCaseStudyCategories: () => apiClient.get(E.caseStudies.categories).then(unwrap),
 
   // Blog
   listPosts: (params) => apiClient.get(E.blog.list, { params }).then(unwrapMeta),

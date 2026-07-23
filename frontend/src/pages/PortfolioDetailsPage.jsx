@@ -61,7 +61,7 @@ export default function PortfolioDetailsPage() {
               <div className="flex items-center gap-3 mb-6 flex-wrap">
                 {p.client && <Badge>{p.client}</Badge>}
                 {p.year && <Badge tone="outline">{p.year}</Badge>}
-                {p.category && <Badge tone="ultra">{p.category}</Badge>}
+                {p.category?.name && <Badge tone="ultra">{p.category.name}</Badge>}
               </div>
               <h1 className="text-display-hero max-w-3xl">{p.title}</h1>
               {p.tagline && <p className="mt-8 max-w-2xl text-lg text-slate leading-relaxed">{p.tagline}</p>}

@@ -8,7 +8,7 @@ import { Plus, BookOpen, ExternalLink, Edit3, Trash2, ArrowLeft, Save } from 'lu
 import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Breadcrumbs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
-import { StatusPill, Card, PageLoader } from '@/components/ui/index.jsx';
+import { StatusPill, Card, PageLoader, Badge } from '@/components/ui/index.jsx';
 import { Input, Textarea, Select, Switch, SearchInput, ImageUpload, MultiSelect } from '@/components/form/index.jsx';
 import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import Button from '@/components/ui/Button.jsx';
@@ -26,6 +26,7 @@ export function CaseStudiesListPage() {
   const [limit, setLimit] = useState(25);
   const [search, setSearch] = useState('');
   const [industry, setIndustry] = useState('');
+  const [category, setCategory] = useState('');
   const [status, setStatus] = useState('');
   const [sort, setSort] = useState({ key: 'createdAt', direction: 'desc' });
   const [deleteId, setDeleteId] = useState(null);
@@ -36,14 +37,20 @@ export function CaseStudiesListPage() {
     queryFn: () => industriesApi.list({ limit: 100 }).then((r) => r.data || []),
   });
 
+  const { data: categories = [] } = useQuery({
+    queryKey: ['admin', 'case-studies', 'categories'],
+    queryFn: () => caseStudiesApi.listCategories(),
+  });
+
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'case-studies', { page, limit, debounced, industry, status, sort }],
+    queryKey: ['admin', 'case-studies', { page, limit, debounced, industry, category, status, sort }],
     queryFn: () =>
       caseStudiesApi.list({
         page,
         limit,
         search: debounced,
         industry: industry || undefined,
+        category: category || undefined,
         status: status || undefined,
         sortBy: sort.key,
         sortOrder: sort.direction,
@@ -71,6 +78,7 @@ export function CaseStudiesListPage() {
       ),
     },
     { key: 'industry', label: 'Industry', render: (r) => <span className="text-xs text-slate">{r.industry || '—'}</span> },
+    { key: 'category', label: 'Category', render: (r) => <Badge tone="outline">{r.category?.name || '—'}</Badge> },
     { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.isPublished ? 'published' : 'draft'} /> },
     { key: 'updatedAt', label: 'Updated', render: (r) => <span className="text-mono text-xs text-slate">{formatDate(r.updatedAt, 'short')}</span> },
     {
@@ -90,7 +98,12 @@ export function CaseStudiesListPage() {
         eyebrow="Content / Case studies"
         title={<>Client <span className="text-italic-fraunces text-ultra">case studies</span></>}
         subtitle="Long-form breakdowns of the work — challenge, approach, result."
-        actions={<Button to="/content/case-studies/new" icon={Plus}>New case study</Button>}
+        actions={
+          <>
+            <Button variant="ghost" to="/content/case-studies/categories">Categories</Button>
+            <Button to="/content/case-studies/new" icon={Plus}>New case study</Button>
+          </>
+        }
       />
       <FilterBar>
         <SearchInput value={search} onChange={setSearch} placeholder="Search case studies…" className="w-64" />
@@ -99,6 +112,12 @@ export function CaseStudiesListPage() {
           options={[{ value: '', label: 'All industries' }, ...industries.map((i) => ({ value: i.name, label: i.name }))]}
           value={industry}
           onChange={(e) => setIndustry(e.target.value)}
+        />
+        <Select
+          className="w-44"
+          options={[{ value: '', label: 'All categories' }, ...categories.map((c) => ({ value: c._id, label: c.name }))]}
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
         />
         <Select
           className="w-32"
@@ -131,6 +150,7 @@ const editSchema = z.object({
   slug: z.string().min(1, 'Required'),
   client: z.string().min(1, 'Required'),
   industry: z.string().optional(),
+  category: z.string().optional(),
   tagline: z.string().optional(),
   duration: z.string().optional(),
   year: z.coerce.number().optional(),
@@ -164,6 +184,11 @@ export function CaseStudyEditPage() {
     queryFn: () => servicesApi.list({ limit: 100 }),
   });
   const services = servicesData?.data || [];
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ['admin', 'case-studies', 'categories'],
+    queryFn: () => caseStudiesApi.listCategories(),
+  });
 
   const { register, handleSubmit, control, reset, setValue, watch, formState: { errors } } = useForm({
     resolver: zodResolver(editSchema),
@@ -235,6 +260,11 @@ export function CaseStudyEditPage() {
                 <Input label="Slug" required prefix="/case-studies/" {...register('slug')} error={errors.slug?.message} />
                 <Input label="Client" required {...register('client')} error={errors.client?.message} />
                 <Input label="Industry" {...register('industry')} />
+                <Select
+                  label="Category"
+                  options={[{ value: '', label: 'No category' }, ...categories.map((c) => ({ value: c._id, label: c.name }))]}
+                  {...register('category')}
+                />
                 <Input label="Duration" placeholder="e.g. 6 months" {...register('duration')} />
                 <Input label="Year" type="number" {...register('year')} />
               </div>

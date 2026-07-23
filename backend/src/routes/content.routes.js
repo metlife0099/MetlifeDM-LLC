@@ -1,9 +1,17 @@
 import { Router } from 'express';
-import { industry, portfolio, caseStudy } from '../controllers/content.controller.js';
+import { industry, portfolio, portfolioCategory, caseStudy, caseStudyCategory } from '../controllers/content.controller.js';
 import { requireAuth, requireAdmin } from '../middleware/auth.middleware.js';
 
-const build = (ctrl) => {
+const build = (ctrl, categoryCtrl) => {
   const r = Router();
+  // Category routes are registered before the generic `/:id` ones below so
+  // "categories" is never swallowed as an `:id` param value.
+  if (categoryCtrl) {
+    r.get('/categories', categoryCtrl.list);
+    r.post('/categories', requireAuth, requireAdmin, categoryCtrl.create);
+    r.patch('/categories/:id', requireAuth, requireAdmin, categoryCtrl.update);
+    r.delete('/categories/:id', requireAuth, requireAdmin, categoryCtrl.remove);
+  }
   r.get('/', ctrl.list);
   r.get('/slug/:slug', ctrl.bySlug);
   r.get('/admin/:id', requireAuth, requireAdmin, ctrl.getById);
@@ -14,5 +22,5 @@ const build = (ctrl) => {
 };
 
 export const industryRoutes = build(industry);
-export const portfolioRoutes = build(portfolio);
-export const caseStudyRoutes = build(caseStudy);
+export const portfolioRoutes = build(portfolio, portfolioCategory);
+export const caseStudyRoutes = build(caseStudy, caseStudyCategory);

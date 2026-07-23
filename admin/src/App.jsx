@@ -13,6 +13,7 @@ const ServicesListPage = lazy(() => import('@/pages/content/services/ServicesLis
 const ServiceEditPage = lazy(() => import('@/pages/content/services/ServiceEditPage.jsx'));
 const PortfolioListPage = lazy(() => import('@/pages/content/portfolio/PortfolioListPage.jsx'));
 const PortfolioEditPage = lazy(() => import('@/pages/content/portfolio/PortfolioEditPage.jsx'));
+const PortfolioCategoriesPage = lazy(() => import('@/pages/content/portfolio/PortfolioCategoriesPage.jsx'));
 
 const CaseStudiesModule = lazy(() =>
   import('@/pages/content/case-studies/CaseStudiesPage.jsx').then((m) => ({ default: m.CaseStudiesListPage }))
@@ -20,6 +21,7 @@ const CaseStudiesModule = lazy(() =>
 const CaseStudyEditModule = lazy(() =>
   import('@/pages/content/case-studies/CaseStudiesPage.jsx').then((m) => ({ default: m.CaseStudyEditPage }))
 );
+const CaseStudyCategoriesPage = lazy(() => import('@/pages/content/case-studies/CaseStudyCategoriesPage.jsx'));
 
 const IndustriesListModule = lazy(() =>
   import('@/pages/content/industries/IndustriesPage.jsx').then((m) => ({ default: m.IndustriesListPage }))
@@ -148,10 +150,12 @@ export default function App() {
 
           {/* Content · Portfolio */}
           <Route path="/content/portfolio" element={withSuspense(PortfolioListPage, 'Loading portfolio')} />
+          <Route path="/content/portfolio/categories" element={withSuspense(PortfolioCategoriesPage, 'Loading categories')} />
           <Route path="/content/portfolio/:id" element={withSuspense(PortfolioEditPage, 'Loading project')} />
 
           {/* Content · Case studies */}
           <Route path="/content/case-studies" element={withSuspense(CaseStudiesModule, 'Loading case studies')} />
+          <Route path="/content/case-studies/categories" element={withSuspense(CaseStudyCategoriesPage, 'Loading categories')} />
           <Route path="/content/case-studies/:id" element={withSuspense(CaseStudyEditModule, 'Loading case study')} />
 
           {/* Content · Industries */}

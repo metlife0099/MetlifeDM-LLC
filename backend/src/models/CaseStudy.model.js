@@ -10,6 +10,7 @@ const caseStudySchema = new Schema(
     portfolio: { type: Schema.Types.ObjectId, ref: 'Portfolio' },
     client: { type: String, required: true },
     industry: String,
+    category: { type: Schema.Types.ObjectId, ref: 'CaseStudyCategory', index: true },
 
     heroImage: { url: String, publicId: String, alt: String },
     tagline: String,

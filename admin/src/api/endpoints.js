@@ -40,6 +40,8 @@ export const ENDPOINTS = {
     create: '/admin/portfolio',
     update: (id) => `/admin/portfolio/${id}`,
     delete: (id) => `/admin/portfolio/${id}`,
+    categories: '/admin/portfolio-categories',
+    category: (id) => `/admin/portfolio-categories/${id}`,
   },
   caseStudies: {
     list: '/admin/case-studies',
@@ -47,6 +49,8 @@ export const ENDPOINTS = {
     create: '/admin/case-studies',
     update: (id) => `/admin/case-studies/${id}`,
     delete: (id) => `/admin/case-studies/${id}`,
+    categories: '/admin/case-study-categories',
+    category: (id) => `/admin/case-study-categories/${id}`,
   },
   industries: {
     list: '/admin/industries',

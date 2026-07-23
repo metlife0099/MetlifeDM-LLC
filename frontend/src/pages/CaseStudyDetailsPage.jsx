@@ -44,6 +44,7 @@ export default function CaseStudyDetailsPage() {
           <div className="mt-8 flex items-center gap-3 flex-wrap">
             {cs.client && <Badge>{cs.client}</Badge>}
             {cs.industry?.name && <Badge tone="outline">{cs.industry.name}</Badge>}
+            {cs.category?.name && <Badge tone="ultra">{cs.category.name}</Badge>}
             {cs.year && <Badge tone="ultra">{cs.year}</Badge>}
           </div>
           <h1 className="text-display-hero mt-8 max-w-4xl">{cs.title}</h1>

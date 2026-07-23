@@ -11,7 +11,7 @@ const portfolioSchema = new Schema(
     client: { type: String, required: true },
     clientLogo: { url: String, publicId: String },
     industry: { type: String, index: true },
-    category: { type: String, index: true },
+    category: { type: Schema.Types.ObjectId, ref: 'PortfolioCategory', index: true },
     services: [{ type: Schema.Types.ObjectId, ref: 'Service' }],
 
     shortDescription: { type: String, required: true, maxlength: 400 },
