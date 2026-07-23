@@ -190,6 +190,11 @@ export function CaseStudyEditPage() {
     queryFn: () => caseStudiesApi.listCategories(),
   });
 
+  const { data: industries = [] } = useQuery({
+    queryKey: ['admin', 'industries', 'all'],
+    queryFn: () => industriesApi.list({ limit: 100 }).then((r) => r.data || []),
+  });
+
   const { register, handleSubmit, control, reset, setValue, watch, formState: { errors } } = useForm({
     resolver: zodResolver(editSchema),
     defaultValues: { title: '', slug: '', isPublished: false, services: [], kpis: [], testimonial: {}, seo: {} },
@@ -259,7 +264,11 @@ export function CaseStudyEditPage() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <Input label="Slug" required prefix="/case-studies/" {...register('slug')} error={errors.slug?.message} />
                 <Input label="Client" required {...register('client')} error={errors.client?.message} />
-                <Input label="Industry" {...register('industry')} />
+                <Select
+                  label="Industry"
+                  options={[{ value: '', label: 'No industry' }, ...industries.map((i) => ({ value: i.name, label: i.name }))]}
+                  {...register('industry')}
+                />
                 <Select
                   label="Category"
                   options={[{ value: '', label: 'No category' }, ...categories.map((c) => ({ value: c._id, label: c.name }))]}
@@ -300,13 +309,17 @@ export function CaseStudyEditPage() {
             {kpisArr.fields.length === 0 ? (
               <div className="text-slate text-sm">Add the measurable outcomes.</div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {kpisArr.fields.map((f, i) => (
-                  <div key={f.id} className="grid gap-2 grid-cols-[1.2fr_1fr_1fr_1fr_auto] items-center">
-                    <input className="px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none" placeholder="Label" {...register(`kpis.${i}.label`)} />
-                    <input className="px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none num-plate" placeholder="Before" {...register(`kpis.${i}.before`)} />
-                    <input className="px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none num-plate" placeholder="After" {...register(`kpis.${i}.after`)} />
-                    <input className="px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none" placeholder="Change (optional)" {...register(`kpis.${i}.change`)} />
+                  <div key={f.id} className="flex gap-2 items-start p-3 border border-hairline-strong">
+                    <div className="flex-1 space-y-2">
+                      <input className="w-full px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none" placeholder="Label (e.g. Organic traffic)" {...register(`kpis.${i}.label`)} />
+                      <div className="grid grid-cols-2 gap-2">
+                        <input className="w-full px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none num-plate" placeholder="Before" {...register(`kpis.${i}.before`)} />
+                        <input className="w-full px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none num-plate" placeholder="After" {...register(`kpis.${i}.after`)} />
+                      </div>
+                      <input className="w-full px-3 py-2 text-sm bg-surface border border-hairline-strong focus:border-ultra focus:outline-none" placeholder="Change (optional, e.g. +240%)" {...register(`kpis.${i}.change`)} />
+                    </div>
                     <button type="button" onClick={() => kpisArr.remove(i)} className="text-slate hover:text-danger p-2"><Trash2 size={13} /></button>
                   </div>
                 ))}

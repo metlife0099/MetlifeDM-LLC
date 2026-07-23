@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
 import { contentApi } from '@/api/index.js';
+import { cn } from '@/utils/format.js';
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -286,31 +287,32 @@ export default function PortfolioDetailsPage() {
             <h2 className="text-display-lg text-ivory mb-14">
               The <span className="text-italic-fraunces text-ultra-soft">numbers.</span>
             </h2>
-            <div className="grid gap-px bg-ivory/10 border border-ivory/10 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-3">
               {p.metrics.map((r, i) => {
                 const isNegative = String(r.delta).trim().startsWith('-');
                 return (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 24 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, margin: '-60px' }}
-                    transition={{ duration: 0.5, delay: (i % 3) * 0.1 }}
-                    className="bg-ink p-8 min-w-0"
+                    transition={{ duration: 0.6, delay: (i % 3) * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                    className="group relative min-w-0 border border-ivory/15 hover:border-ivory/40 bg-ivory/5 hover:bg-ivory/8 hover:-translate-y-1 transition-all duration-500 p-8 overflow-hidden"
                   >
-                    <div className="flex items-center justify-between mb-3 gap-3">
-                      <div className="text-mono text-xs uppercase tracking-widest text-ivory/50 shrink-0">
-                        {r.icon ? <span className="text-base mr-1">{r.icon}</span> : String(i + 1).padStart(2, '0')}
+                    <div className="absolute -top-16 -right-16 w-32 h-32 bg-ultra/20 rounded-full blur-3xl group-hover:bg-ultra/30 transition-colors duration-500 pointer-events-none" />
+                    <div className="relative flex items-center justify-between mb-6 gap-3">
+                      <div className="w-10 h-10 shrink-0 rounded-full bg-ivory/10 grid place-items-center text-ivory/80 text-lg">
+                        {r.icon || <span className="text-mono text-xs text-ivory/50">{String(i + 1).padStart(2, '0')}</span>}
                       </div>
                       {r.delta && (
-                        <div className={`inline-flex items-center gap-1 text-mono text-xs shrink-0 ${isNegative ? 'text-danger' : 'text-success'}`}>
-                          {isNegative ? <TrendingDown size={12} strokeWidth={1.5} /> : <TrendingUp size={12} strokeWidth={1.5} />}
+                        <div className={cn('inline-flex items-center gap-1 text-mono text-xs px-2.5 py-1 rounded-full border shrink-0', isNegative ? 'text-danger border-danger/30 bg-danger/10' : 'text-success border-success/30 bg-success/10')}>
+                          {isNegative ? <TrendingDown size={11} strokeWidth={2} /> : <TrendingUp size={11} strokeWidth={2} />}
                           {r.delta}
                         </div>
                       )}
                     </div>
-                    <div className="text-display-md num-plate text-ivory break-words">{r.value}</div>
-                    <div className="text-sm text-ivory/70 mt-3 break-words">{r.label}</div>
+                    <div className="relative text-display-sm text-ivory leading-snug wrap-break-word">{r.value}</div>
+                    <div className="relative text-sm text-ivory/60 mt-5 pt-5 border-t border-ivory/10 wrap-break-word">{r.label}</div>
                   </motion.div>
                 );
               })}

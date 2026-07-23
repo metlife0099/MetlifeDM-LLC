@@ -2,14 +2,32 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, TrendingUp, TrendingDown, FileSearch } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
-import { Spinner } from '@/components/ui/index.jsx';
+import { Badge } from '@/components/ui/index.jsx';
 import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
 import { contentApi } from '@/api/index.js';
 import { cn } from '@/utils/format.js';
+
+const cardShell =
+  'bg-white border border-hairline transition-all duration-500 ease-editorial hover:border-ink hover:-translate-y-1 hover:shadow-[0_32px_70px_-24px_rgba(10,23,48,0.28)]';
+
+function CaseStudySkeleton() {
+  return (
+    <div className={cn(cardShell, 'grid md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] overflow-hidden animate-pulse')}>
+      <div className="aspect-4/3 md:aspect-auto bg-sand" />
+      <div className="p-8 md:p-10 space-y-4">
+        <div className="h-3 w-32 bg-sand" />
+        <div className="h-7 w-full bg-sand" />
+        <div className="h-3 w-full bg-sand" />
+        <div className="h-3 w-2/3 bg-sand" />
+        <div className="h-16 w-40 bg-sand mt-6" />
+      </div>
+    </div>
+  );
+}
 
 export default function CaseStudiesPage() {
   const [category, setCategory] = useState('');
@@ -47,13 +65,13 @@ export default function CaseStudiesPage() {
       </Section>
 
       {categories.length > 0 && (
-        <div className="sticky top-20 z-30 bg-ivory border-y border-hairline">
+        <div className="sticky top-20 z-30 bg-ivory/90 backdrop-blur-md border-b border-hairline">
           <Container>
             <ScrollTabs trackClassName="py-4">
               <button
                 onClick={() => setCategory('')}
                 className={cn(
-                  'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors whitespace-nowrap',
+                  'px-4 py-2 rounded-full text-mono text-xs uppercase tracking-widest border transition-colors whitespace-nowrap cursor-pointer',
                   !category ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
                 )}
               >
@@ -64,7 +82,7 @@ export default function CaseStudiesPage() {
                   key={c._id}
                   onClick={() => setCategory(c._id)}
                   className={cn(
-                    'px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors whitespace-nowrap',
+                    'px-4 py-2 rounded-full text-mono text-xs uppercase tracking-widest border transition-colors whitespace-nowrap cursor-pointer',
                     category === c._id ? 'bg-ink text-ivory border-ink' : 'border-hairline hover:border-ink'
                   )}
                 >
@@ -79,57 +97,91 @@ export default function CaseStudiesPage() {
       <Section tone="ivory" spacing="lg" divider={false}>
         <Container>
           {isLoading ? (
-            <div className="flex justify-center py-24"><Spinner size={28} className="text-ultra" /></div>
+            <div className="space-y-8">
+              {Array.from({ length: 3 }).map((_, i) => <CaseStudySkeleton key={i} />)}
+            </div>
           ) : items.length === 0 ? (
-            <div className="text-center py-24 text-slate">
-              No case studies in this filter.{' '}
-              <button className="link-underline text-ink" onClick={() => setCategory('')}>Reset</button>.
+            <div className="max-w-md mx-auto text-center py-20 border border-hairline bg-white px-8">
+              <div className="w-14 h-14 mx-auto grid place-items-center bg-sand text-slate">
+                <FileSearch size={22} strokeWidth={1.5} />
+              </div>
+              <p className="text-slate mt-6">No case studies in this filter.</p>
+              <button className="mt-4 inline-flex items-center gap-2 text-sm text-ink link-underline cursor-pointer" onClick={() => setCategory('')}>
+                Reset filter
+              </button>
             </div>
           ) : (
-            <div className="divide-editorial border-t border-hairline">
-              {items.map((c, i) => (
-                <motion.article
-                  key={c._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 }}
-                  viewport={{ once: true, margin: '-80px' }}
-                  className="py-10 md:py-14 grid gap-8 md:grid-cols-[auto_1fr_1fr] md:items-center"
-                >
-                  <div className="num-plate text-slate text-sm">
-                    {String(i + 1).padStart(2, '0')}
-                  </div>
-                  <div>
-                    <div className="text-eyebrow mb-3">
-                      {c.industry?.name || c.industry} · {c.year || 'Recent'}
-                    </div>
+            <div className="space-y-8">
+              {items.map((c, i) => {
+                const kpi = c.kpis?.[0];
+                const isNegative = String(kpi?.change).trim().startsWith('-');
+                return (
+                  <motion.div
+                    key={c._id}
+                    initial={{ opacity: 0, y: 28 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: (i % 4) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                    viewport={{ once: true, margin: '-80px' }}
+                  >
                     <Link
                       to={`/case-studies/${c.slug}`}
-                      className="text-display-md hover:text-ultra transition-colors block max-w-2xl"
+                      className={cn(cardShell, 'group grid md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] overflow-hidden')}
                     >
-                      {c.title}
-                    </Link>
-                    {c.tagline && <p className="mt-4 text-slate text-sm max-w-xl leading-relaxed">{c.tagline}</p>}
-                  </div>
-                  <div>
-                    {c.kpis?.[0] && (
-                      <div className="border border-hairline p-6 flex items-center justify-between gap-4">
-                        <div>
-                          <div className="text-mono text-xs uppercase tracking-widest text-slate">
-                            {c.kpis[0].label || 'Key result'}
+                      <div className="relative aspect-4/3 md:aspect-auto bg-sand overflow-hidden order-2 md:order-1">
+                        {c.heroImage?.url ? (
+                          <img
+                            src={c.heroImage.url}
+                            alt={c.title}
+                            loading="lazy"
+                            className="h-full w-full object-cover transition-transform duration-700 ease-editorial group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="h-full grid place-items-center text-display-lg text-ink/20">
+                            {c.title.charAt(0)}
                           </div>
-                          <div className="text-display-md num-plate text-ink mt-2">
-                            {c.kpis[0].after}
+                        )}
+                        <div className="absolute top-5 left-5 flex items-center gap-2">
+                          <span className="num-plate text-xs bg-ink text-ivory px-2.5 py-1">{String(i + 1).padStart(2, '0')}</span>
+                        </div>
+                      </div>
+
+                      <div className="p-8 md:p-10 flex flex-col justify-center order-1 md:order-2">
+                        <div className="flex items-center gap-2 flex-wrap mb-4">
+                          {(c.industry?.name || c.industry) && <Badge tone="outline">{c.industry?.name || c.industry}</Badge>}
+                          {c.category?.name && <Badge tone="ultra">{c.category.name}</Badge>}
+                          <span className="text-mono text-xs text-slate">{c.year || 'Recent'}</span>
+                        </div>
+                        <h2 className="text-display-md group-hover:text-ultra transition-colors duration-300">
+                          {c.title}
+                        </h2>
+                        {c.tagline && <p className="mt-4 text-slate leading-relaxed max-w-xl">{c.tagline}</p>}
+
+                        <div className="mt-8 flex items-end justify-between gap-4 flex-wrap">
+                          {kpi && (
+                            <div className="min-w-0">
+                              <div className="text-mono text-xs uppercase tracking-widest text-slate">
+                                {kpi.label || 'Key result'}
+                              </div>
+                              <div className="flex items-center gap-3 mt-2 flex-wrap">
+                                <div className="text-lg font-medium text-ink leading-snug wrap-break-word">{kpi.after}</div>
+                                {kpi.change && (
+                                  <div className={cn('inline-flex items-center gap-1 text-mono text-xs px-2 py-0.5 rounded-full border shrink-0', isNegative ? 'text-danger border-danger/30 bg-danger/10' : 'text-success border-success/30 bg-success/10')}>
+                                    {isNegative ? <TrendingDown size={12} strokeWidth={1.5} /> : <TrendingUp size={12} strokeWidth={1.5} />}
+                                    {kpi.change}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          <div className="w-10 h-10 shrink-0 rounded-full border border-hairline group-hover:border-ink group-hover:bg-ink grid place-items-center transition-colors duration-300">
+                            <ArrowUpRight size={16} strokeWidth={1.5} className="text-ink group-hover:text-ivory group-hover:rotate-45 transition-all duration-300" />
                           </div>
                         </div>
-                        <Link to={`/case-studies/${c.slug}`} aria-label="Read case study">
-                          <ArrowUpRight size={24} strokeWidth={1.25} className="text-ink hover:rotate-45 transition-transform duration-300" />
-                        </Link>
                       </div>
-                    )}
-                  </div>
-                </motion.article>
-              ))}
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </div>
           )}
         </Container>
