@@ -35,9 +35,17 @@ const BUILDERS = {
     '@type': 'Organization',
     name: d.name || 'MetlifeDM LLC',
     url: d.url || SITE_URL,
-    logo: d.logo || `${SITE_URL}/logo.png`,
+    logo: d.logo || `${SITE_URL}/icons/icon-512.png`,
+    image: d.image || `${SITE_URL}/og/default.jpg`,
     ...(d.description && { description: d.description }),
     ...(d.foundingDate && { foundingDate: d.foundingDate }),
+    ...(d.numberOfEmployees && {
+      numberOfEmployees: {
+        '@type': 'QuantitativeValue',
+        minValue: d.numberOfEmployees.min,
+        maxValue: d.numberOfEmployees.max,
+      },
+    }),
     ...(d.contactPoint && {
       contactPoint: {
         '@type': 'ContactPoint',
@@ -65,10 +73,18 @@ const BUILDERS = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     name: d.name || 'MetlifeDM LLC',
-    image: d.image || `${SITE_URL}/logo.png`,
+    logo: d.logo || `${SITE_URL}/icons/icon-512.png`,
+    image: d.image || `${SITE_URL}/og/default.jpg`,
     url: d.url || SITE_URL,
     telephone: d.telephone,
     priceRange: d.priceRange || '$$',
+    ...(d.numberOfEmployees && {
+      numberOfEmployees: {
+        '@type': 'QuantitativeValue',
+        minValue: d.numberOfEmployees.min,
+        maxValue: d.numberOfEmployees.max,
+      },
+    }),
     ...(d.address && {
       address: {
         '@type': 'PostalAddress',
@@ -120,7 +136,7 @@ const BUILDERS = {
       name: 'MetlifeDM',
       logo: {
         '@type': 'ImageObject',
-        url: `${SITE_URL}/logo.png`,
+        url: `${SITE_URL}/icons/icon-512.png`,
       },
     },
     ...(d.mainEntityOfPage && {

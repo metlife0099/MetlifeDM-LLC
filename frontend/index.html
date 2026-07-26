@@ -2,7 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/metlifedm-logo.png" />
+
+    <!-- Favicon / app icons — a square icon is required for Google to show a
+         brand icon next to search results (non-square or missing icons fall
+         back to a generic globe/blank icon). See site.webmanifest for the
+         192/512 + maskable variants used for PWA installs. -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0A1730" />
 
@@ -13,18 +24,29 @@
       content="MetlifeDM LLC is a US-based digital marketing agency helping 200+ businesses grow through SEO, PPC, content, and AI-powered marketing. Measurable ROI, guaranteed."
     />
     <meta name="author" content="MetlifeDM LLC" />
+    <link rel="canonical" href="https://metlifedm.com/" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="MetlifeDM LLC" />
+    <meta property="og:url" content="https://metlifedm.com/" />
     <meta property="og:title" content="MetlifeDM — Digital Marketing Excellence" />
     <meta
       property="og:description"
       content="Enterprise SEO, PPC, content & AI marketing for US businesses. Trusted by 200+ brands."
     />
+    <meta property="og:image" content="https://metlifedm.com/og/default.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MetlifeDM — Digital Marketing Excellence" />
+    <meta
+      name="twitter:description"
+      content="Enterprise SEO, PPC, content & AI marketing for US businesses. Trusted by 200+ brands."
+    />
+    <meta name="twitter:image" content="https://metlifedm.com/og/default.jpg" />
 
     <!-- Fonts: Fraunces (display serif), Inter (body), JetBrains Mono (data) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -35,6 +57,26 @@
     />
 
     <link rel="preconnect" href="https://res.cloudinary.com" />
+
+    <!-- Baseline Organization schema — a safety net for crawlers/scrapers
+         that read the raw HTML without executing JS. Pages themselves render
+         a richer, per-page version via <Seo jsonLd={...}> after React mounts
+         (Googlebot executes JS and sees that one too). -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "@id": "https://metlifedm.com/#organization",
+        "name": "MetlifeDM LLC",
+        "url": "https://metlifedm.com",
+        "logo": "https://metlifedm.com/icons/icon-512.png",
+        "image": "https://metlifedm.com/og/default.jpg",
+        "description": "MetlifeDM LLC is a US-based digital marketing agency helping 200+ businesses grow through SEO, PPC, content, and AI-powered marketing.",
+        "foundingDate": "2024",
+        "numberOfEmployees": { "@type": "QuantitativeValue", "minValue": 2, "maxValue": 10 },
+        "areaServed": "US"
+      }
+    </script>
   </head>
   <body class="antialiased">
     <div id="root"></div>

@@ -44,7 +44,10 @@ export default function HomePage() {
           '@type': 'LocalBusiness',
           '@id': 'https://metlifedm.com/#organization',
           name: 'MetlifeDM LLC',
-          image: 'https://images.unsplash.com/photo-1506966953602-c20cc11f75e3?w=1200&q=80&auto=format&fit=crop',
+          // Google surfaces this as the brand icon in search results and
+          // knowledge panels — it must be the actual logo, not a stock photo.
+          logo: 'https://metlifedm.com/icons/icon-512.png',
+          image: 'https://metlifedm.com/og/default.jpg',
           description:
             'MetlifeDM is a Miami, FL-based digital marketing agency helping 200+ US businesses grow through SEO, PPC, content, and AI-powered marketing.',
           url: 'https://metlifedm.com',
@@ -58,6 +61,7 @@ export default function HomePage() {
           },
           areaServed: 'US',
           foundingDate: '2024',
+          numberOfEmployees: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 10 },
           sameAs: [],
         }}
       />

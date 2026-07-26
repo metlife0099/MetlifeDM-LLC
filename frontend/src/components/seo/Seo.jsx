@@ -38,6 +38,10 @@ const DEFAULTS = {
   locale: 'en_US',
   themeColor: '#0A1730',
   keywords: 'digital marketing, SEO agency, PPC, content marketing, USA',
+  verification: {
+    google: import.meta.env.VITE_GOOGLE_SITE_VERIFICATION || undefined,
+    bing: import.meta.env.VITE_BING_SITE_VERIFICATION || undefined,
+  },
 };
 
 export default function SEO({
@@ -54,9 +58,10 @@ export default function SEO({
   modifiedTime,
   article,       // { section, tag[], author }
   jsonLd,        // JSON object or array — one or more schema.org entries
-  verification,  // { google, bing, yandex, pinterest } — set once site-wide
+  verification,  // { google, bing, yandex, pinterest } — overrides the env-driven site defaults below
   children,
 }) {
+  const finalVerification = { ...DEFAULTS.verification, ...verification };
   const location = useLocation();
   const path = location.pathname + location.search;
   const canonicalUrl = `${DEFAULTS.siteUrl}${canonical || location.pathname}`;
@@ -133,17 +138,17 @@ export default function SEO({
       <meta name="twitter:image:alt" content={title || DEFAULTS.defaultTitle} />
 
       {/* ————— Search engine verification ————— */}
-      {verification?.google && (
-        <meta name="google-site-verification" content={verification.google} />
+      {finalVerification.google && (
+        <meta name="google-site-verification" content={finalVerification.google} />
       )}
-      {verification?.bing && (
-        <meta name="msvalidate.01" content={verification.bing} />
+      {finalVerification.bing && (
+        <meta name="msvalidate.01" content={finalVerification.bing} />
       )}
-      {verification?.yandex && (
-        <meta name="yandex-verification" content={verification.yandex} />
+      {finalVerification.yandex && (
+        <meta name="yandex-verification" content={finalVerification.yandex} />
       )}
-      {verification?.pinterest && (
-        <meta name="p:domain_verify" content={verification.pinterest} />
+      {finalVerification.pinterest && (
+        <meta name="p:domain_verify" content={finalVerification.pinterest} />
       )}
 
       {/* ————— JSON-LD (optional) ————— */}
