@@ -15,8 +15,9 @@ const ORGANIZATION_JSON_LD = {
   '@id': 'https://metlifedm.com/#organization',
   name: 'MetlifeDM LLC',
   url: 'https://metlifedm.com',
-  logo: 'https://metlifedm.com/metlifedm-logo.png',
+  logo: 'https://metlifedm.com/icons/icon-512.png',
   foundingDate: '2024',
+  numberOfEmployees: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 10 },
   address: {
     '@type': 'PostalAddress',
     addressLocality: 'Miami',
@@ -25,9 +26,8 @@ const ORGANIZATION_JSON_LD = {
   },
   contactPoint: {
     '@type': 'ContactPoint',
-    telephone: '+1-800-555-0199',
     contactType: 'customer service',
-    email: 'hello@metlifedm.com',
+    email: 'metlifedm4u@gmail.com',
     areaServed: 'US',
   },
   sameAs: [

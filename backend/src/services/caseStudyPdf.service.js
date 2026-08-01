@@ -146,7 +146,7 @@ const drawFooterBar = (doc, settings) => {
 
   const items = [
     { icon: 'globe', text: config.urls.client?.replace(/^https?:\/\//, '') || 'metlifedm.com' },
-    { icon: 'mail', text: contact.email || 'hello@metlifedm.com' },
+    { icon: 'mail', text: contact.email || 'metlifedm4u@gmail.com' },
     contact.phone ? { icon: 'phone', text: contact.phone } : null,
     cityLine ? { icon: 'pin', text: cityLine } : null,
   ].filter(Boolean);
@@ -479,7 +479,7 @@ export const generateCaseStudyPdf = async ({ caseStudy: cs, settings }) => {
     const contactY = 560;
     const contactItems = [
       { icon: 'globe', text: config.urls.client?.replace(/^https?:\/\//, '') || 'metlifedm.com' },
-      { icon: 'mail', text: contact.email || 'hello@metlifedm.com' },
+      { icon: 'mail', text: contact.email || 'metlifedm4u@gmail.com' },
       contact.phone ? { icon: 'phone', text: contact.phone } : null,
     ].filter(Boolean);
     const itemWidth = (PAGE.width - MARGIN * 2) / contactItems.length;

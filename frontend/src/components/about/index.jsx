@@ -4,7 +4,7 @@ import {
   BarChart3,
   Sparkles,
   Rocket,
-  PhoneCall,
+  Mail,
   ArrowUpRight,
   ArrowRight,
   TriangleAlert,
@@ -189,8 +189,8 @@ export const AboutIntroBand = () => (
             that hit hard — that&apos;s our specialty.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
-            <Button href="tel:+18005550199" size="lg">
-              <PhoneCall size={16} strokeWidth={1.5} /> Call now
+            <Button href="mailto:metlifedm4u@gmail.com" size="lg">
+              <Mail size={16} strokeWidth={1.5} /> Email us
             </Button>
             <Button to="/consultation" variant="ghost" size="lg">
               Get free quote <ArrowUpRight size={14} strokeWidth={1.5} />

@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, ArrowUpRight } from 'lucide-react';
+import { Mail, MapPin, ArrowUpRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Input, Textarea, Select, Checkbox } from '@/components/ui/index.jsx';
@@ -115,18 +115,11 @@ export default function ContactPage() {
                 <div>
                   <Eyebrow number="01">Direct</Eyebrow>
                   <div className="mt-6 space-y-6">
-                    <a href="mailto:hello@metlifedm.com" className="flex items-start gap-4 group">
+                    <a href="mailto:metlifedm4u@gmail.com" className="flex items-start gap-4 group">
                       <Mail size={20} strokeWidth={1.25} className="text-ultra mt-0.5 shrink-0" />
                       <div>
                         <div className="text-mono text-xs uppercase tracking-widest text-slate">Email</div>
-                        <div className="text-sm mt-1 group-hover:text-ultra transition-colors">hello@metlifedm.com</div>
-                      </div>
-                    </a>
-                    <a href="tel:+18005550199" className="flex items-start gap-4 group">
-                      <Phone size={20} strokeWidth={1.25} className="text-ultra mt-0.5 shrink-0" />
-                      <div>
-                        <div className="text-mono text-xs uppercase tracking-widest text-slate">Phone</div>
-                        <div className="text-sm mt-1 group-hover:text-ultra transition-colors">+1 (800) 555-0199</div>
+                        <div className="text-sm mt-1 group-hover:text-ultra transition-colors">metlifedm4u@gmail.com</div>
                       </div>
                     </a>
                     <div className="flex items-start gap-4">

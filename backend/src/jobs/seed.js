@@ -53,24 +53,24 @@ const seedSettings = async () =>
       description: 'Full-service digital marketing agency helping US brands scale through SEO, PPC, content, and AI.',
     },
     contact: {
-      email: 'hello@metlifedm.com',
-      supportEmail: 'support@metlifedm.com',
-      salesEmail: 'sales@metlifedm.com',
-      phone: '+1 (800) 555-0199',
+      // No phone line — every contact channel is this one inbox.
+      email: 'metlifedm4u@gmail.com',
+      supportEmail: 'metlifedm4u@gmail.com',
+      salesEmail: 'metlifedm4u@gmail.com',
       officeHours: 'Mon-Fri 9AM-6PM EST',
     },
     homepage: {
       hero: {
         eyebrow: 'Digital Marketing Excellence',
         title: 'Scale Your Business with Data-Driven Growth',
-        subtitle: 'Trusted by 200+ USA businesses to deliver measurable ROI through SEO, paid media, and AI-powered marketing.',
+        subtitle: 'A lean, senior-only team delivering measurable ROI across a range of industries through SEO, paid media, and AI-powered marketing.',
         ctaPrimary: { label: 'Get Free Audit', url: '/consultation' },
         ctaSecondary: { label: 'View Case Studies', url: '/case-studies' },
       },
       stats: [
-        { label: 'US clients served', value: '200', suffix: '+' },
+        { label: 'Real projects completed', value: '10', suffix: '+' },
         { label: 'Avg ROI increase', value: '312', suffix: '%' },
-        { label: 'Team members', value: '45', suffix: '' },
+        { label: 'Team members', value: '2-10', suffix: '' },
         { label: 'Founded', value: '2024', suffix: '' },
       ],
     },

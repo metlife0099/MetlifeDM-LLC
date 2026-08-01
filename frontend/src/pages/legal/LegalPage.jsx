@@ -19,9 +19,9 @@ const FALLBACKS = {
       { heading: 'What we collect', body: 'Contact details (name, email, company, phone) when you fill out a form or create an account; usage data (pages visited, clicks) via analytics; payment details are handled by Stripe — we never store card numbers.' },
       { heading: 'How we use it', body: 'To respond to your inquiries, deliver services, send transactional emails, and — if you opt in — send our newsletter. We never sell or rent your data.' },
       { heading: 'Data retention', body: 'Account data is kept for the life of your account plus 24 months. Marketing data ceases when you unsubscribe. Financial records are retained for 7 years to comply with US tax law.' },
-      { heading: 'Your rights', body: 'You can request access, correction, export, or deletion of your data at any time by emailing privacy@metlifedm.com. We respond within 30 days.' },
+      { heading: 'Your rights', body: 'You can request access, correction, export, or deletion of your data at any time by emailing metlifedm4u@gmail.com. We respond within 30 days.' },
       { heading: 'Third parties', body: 'We use Stripe (payments), Cloudinary (image hosting), Brevo (email), and standard analytics tools. Each has its own privacy policy which we vet annually.' },
-      { heading: 'Contact', body: 'Email privacy@metlifedm.com for any privacy-related question.' },
+      { heading: 'Contact', body: 'Email metlifedm4u@gmail.com for any privacy-related question.' },
     ],
   },
   terms: {
@@ -119,8 +119,8 @@ export default function LegalPage({ slug: slugProp }) {
 
           <div className="mt-16 pt-10 border-t border-hairline text-mono text-xs uppercase tracking-widest text-slate">
             Questions?{' '}
-            <a href="mailto:legal@metlifedm.com" className="link-underline text-ink">
-              legal@metlifedm.com
+            <a href="mailto:metlifedm4u@gmail.com" className="link-underline text-ink">
+              metlifedm4u@gmail.com
             </a>{' '}
             · Related:{' '}
             <Link to="/privacy" className="link-underline text-ink">Privacy</Link>{' · '}

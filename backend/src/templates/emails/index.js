@@ -9,7 +9,7 @@ export const welcomeEmail = ({ firstName }) =>
     previewText: 'Your account is ready — grow smarter with MetlifeDM.',
     bodyHtml: `
       <p>Hi <strong>${firstName}</strong>,</p>
-      <p>Welcome aboard! You've just joined 200+ USA businesses trusting MetlifeDM to accelerate their growth through SEO, paid media, content, and AI-powered marketing.</p>
+      <p>Welcome aboard! You've joined a growing list of USA businesses across a range of industries trusting MetlifeDM to accelerate their growth through SEO, paid media, content, and AI-powered marketing.</p>
       <p>From your dashboard you can:</p>
       <ul style="padding-left:20px;color:#334155;">
         <li>Browse and purchase services</li>

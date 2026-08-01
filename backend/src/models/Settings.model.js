@@ -20,9 +20,12 @@ const settingsSchema = new Schema(
 
     // Contact / office
     contact: {
-      email: { type: String, default: 'hello@metlifedm.com' },
-      supportEmail: { type: String, default: 'support@metlifedm.com' },
-      salesEmail: { type: String, default: 'sales@metlifedm.com' },
+      // The company has no phone line — every contact channel routes
+      // through this one inbox. Keep email/supportEmail/salesEmail in sync
+      // if this ever changes.
+      email: { type: String, default: 'metlifedm4u@gmail.com' },
+      supportEmail: { type: String, default: 'metlifedm4u@gmail.com' },
+      salesEmail: { type: String, default: 'metlifedm4u@gmail.com' },
       phone: String,
       whatsapp: String,
       officeHours: String,
@@ -122,7 +125,7 @@ const settingsSchema = new Schema(
         lottieUrl: String,
       },
       trustedBy: {
-        title: { type: String, default: 'Trusted by 200+ US brands' },
+        title: { type: String, default: 'Trusted across a range of industries' },
         logos: [{ name: String, url: String, publicId: String, link: String }],
       },
       stats: [{ label: String, value: String, suffix: String, icon: String }],

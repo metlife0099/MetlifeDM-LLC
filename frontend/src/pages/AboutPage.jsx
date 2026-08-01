@@ -9,11 +9,11 @@ import { useQuery } from '@tanstack/react-query';
 import { contentApi } from '@/api/index.js';
 
 const TIMELINE = [
-  { year: '2024', event: 'Founded in Miami with 3 SEO strategists' },
+  { year: '2024', event: 'Founded in Miami as a lean, senior-only strategist team' },
   { year: '2024', event: 'Expanded into paid media and content marketing' },
-  { year: '2025', event: 'Reached 50 US clients; opened branding practice' },
+  { year: '2025', event: 'Opened branding practice; delivered real results across a range of industries' },
   { year: '2025', event: 'Launched AI-marketing solutions' },
-  { year: '2026', event: '200+ clients milestone; 45-person team across the US' },
+  { year: '2026', event: '10+ real projects completed, from hungry startups to established brands' },
 ];
 
 export default function AboutPage() {

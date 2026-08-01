@@ -120,7 +120,7 @@ export default function CareersPage() {
               <div className="text-display-sm mb-2">No open roles right now.</div>
               <p className="text-slate max-w-md mx-auto">
                 We&apos;re always looking. Send an intro to{' '}
-                <a href="mailto:careers@metlifedm.com" className="link-underline text-ink">careers@metlifedm.com</a>.
+                <a href="mailto:metlifedm4u@gmail.com" className="link-underline text-ink">metlifedm4u@gmail.com</a>.
               </p>
             </div>
           ) : (
@@ -176,7 +176,7 @@ export default function CareersPage() {
 
       <CtaBanner
         title="Don't see your role?"
-        subtitle={<>Send a note to <a href="mailto:careers@metlifedm.com" className="link-underline">careers@metlifedm.com</a>. We keep every intro on file.</>}
+        subtitle={<>Send a note to <a href="mailto:metlifedm4u@gmail.com" className="link-underline">metlifedm4u@gmail.com</a>. We keep every intro on file.</>}
       />
     </>
   );

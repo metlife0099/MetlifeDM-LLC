@@ -10,9 +10,9 @@ import { cn } from '@/utils/format.js';
 
 const STATS = [
   { value: '4.9', label: 'Average rating', suffix: '★' },
-  { value: '200+', label: 'US clients' },
+  { value: '10+', label: 'Real projects completed' },
   { value: '95%', label: 'Retention rate' },
-  { value: '45', label: 'Team members', suffix: '' },
+  { value: '2-10', label: 'Team members', suffix: '' },
 ];
 
 export default function TestimonialsPage() {

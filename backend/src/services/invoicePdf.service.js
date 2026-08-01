@@ -199,7 +199,7 @@ export const generateInvoicePdf = ({ order, payment, settings }) =>
     const footerY = doc.page.height - 70;
     doc.moveTo(leftX, footerY).lineTo(tableRight, footerY).strokeColor(COLORS.line).stroke();
     doc.fillColor(COLORS.muted).font('Helvetica').fontSize(9).text(
-      `Thank you for your business. Questions about this invoice? Contact ${contact.supportEmail || contact.email || 'support@metlifedm.com'}.`,
+      `Thank you for your business. Questions about this invoice? Contact ${contact.supportEmail || contact.email || 'metlifedm4u@gmail.com'}.`,
       leftX,
       footerY + 14,
       { width: contentWidth, align: 'center' }

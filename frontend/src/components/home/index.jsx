@@ -104,7 +104,7 @@ const PLATFORMS = [
 ];
 
 const PLATFORM_STATS = [
-  { value: '20+', label: 'Projects' },
+  { value: '10+', label: 'Projects delivered' },
   { value: '98%', label: 'Satisfaction' },
   { value: '24/7', label: 'Support' },
 ];

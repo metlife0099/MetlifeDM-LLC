@@ -38,7 +38,7 @@ export default function HomePage() {
     <>
       <Seo
         title="Digital marketing excellence for USA businesses"
-        description="MetlifeDM helps 200+ US businesses grow through SEO, PPC, content, and AI-powered marketing. Measurable ROI, transparent pricing, senior strategists."
+        description="MetlifeDM helps US businesses across a range of industries grow through SEO, PPC, content, and AI-powered marketing. Measurable ROI, transparent pricing, senior strategists."
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'LocalBusiness',
@@ -49,9 +49,9 @@ export default function HomePage() {
           logo: 'https://metlifedm.com/icons/icon-512.png',
           image: 'https://metlifedm.com/og/default.jpg',
           description:
-            'MetlifeDM is a Miami, FL-based digital marketing agency helping 200+ US businesses grow through SEO, PPC, content, and AI-powered marketing.',
+            'MetlifeDM is a Miami, FL-based digital marketing agency helping US businesses across a range of industries grow through SEO, PPC, content, and AI-powered marketing.',
           url: 'https://metlifedm.com',
-          telephone: '+1-800-555-0199',
+          email: 'metlifedm4u@gmail.com',
           priceRange: '$$',
           address: {
             '@type': 'PostalAddress',
@@ -93,9 +93,9 @@ export default function HomePage() {
                 transition={{ duration: 1, delay: 0.3 }}
                 className="mt-8 max-w-xl text-lg text-ivory/75 leading-relaxed"
               >
-                We&apos;re a US-based agency of senior strategists helping <strong className="text-ivory">200+
-                brands</strong> compound revenue through SEO, paid media, content, and AI-powered marketing —
-                with measurable results in the first 90 days.
+                We&apos;re a lean US-based agency of senior strategists helping <strong className="text-ivory">brands
+                across a range of industries</strong> compound revenue through SEO, paid media, content, and
+                AI-powered marketing — with measurable results in the first 90 days.
               </motion.p>
               <motion.div
                 initial={{ opacity: 0 }}

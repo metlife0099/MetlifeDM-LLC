@@ -101,7 +101,7 @@ export default function Footer() {
               </div>
             </div>
             <p className="text-ivory/60 text-sm max-w-sm mb-8 leading-relaxed">
-              A US-based digital marketing agency helping 200+ businesses grow through SEO, PPC, content, and AI-powered marketing.
+              A US-based digital marketing agency helping businesses across a range of industries grow through SEO, PPC, content, and AI-powered marketing.
             </p>
             <Socials />
           </div>

@@ -7,7 +7,7 @@ const swaggerDefinition = {
     title: 'MetlifeDM LLC API',
     version: '1.0.0',
     description: 'Enterprise digital marketing agency backend — MetlifeDM LLC.',
-    contact: { name: 'MetlifeDM Engineering', email: 'engineering@metlifedm.com' },
+    contact: { name: 'MetlifeDM Engineering', email: 'metlifedm4u@gmail.com' },
     license: { name: 'Proprietary' },
   },
   servers: [
