@@ -16,7 +16,7 @@ export default function IndustriesPage() {
 
   return (
     <>
-      <Seo title="Industries" description="Specialized digital marketing for e-commerce, SaaS, healthcare, real estate, legal, and financial services." />
+      <Seo title="Industries" description="Specialized digital marketing for construction, real estate, healthcare, law firms, education, hospitality, and ecommerce — outcome-focused, not one-size-fits-all." />
 
       <Section tone="ink" spacing="lg" divider={false} className="relative">
         <HeroImage
@@ -30,7 +30,8 @@ export default function IndustriesPage() {
             <span className="text-italic-fraunces text-ultra-soft">your industry.</span>
           </h1>
           <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
-            Every industry has its own buyers, compliance, and competitive dynamics. We&apos;ve built dedicated playbooks for the ones we know best.
+            We don&apos;t sell generic services — we solve the specific problem costing your industry leads, bookings,
+            or enquiries. Every playbook below starts with the outcome, not the service menu.
           </p>
         </Container>
       </Section>

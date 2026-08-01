@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import {
   ArrowUpRight,
@@ -15,10 +16,91 @@ import {
   ServerCog,
   Wand2,
   Check,
+  AlertTriangle,
+  Stethoscope,
+  BarChart3,
+  Compass,
+  TrendingUp,
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import Button from '@/components/ui/Button.jsx';
+import { contentApi } from '@/api/index.js';
 import { cn } from '@/utils/format.js';
+
+/* ================== 1b. SOLUTIONS, NOT SERVICES ==================
+ * "We build websites" describes what we do. It doesn't say why a business
+ * should care. Every industry card below leads with the outcome a client
+ * in that vertical actually hires us for — pulled from the same Industry
+ * content the /industries pages use, so it can't drift out of sync. */
+const FALLBACK_OUTCOMES = [
+  { name: 'Construction', slug: 'construction', outcome: 'We help construction companies generate more project enquiries.' },
+  { name: 'Legal Services', slug: 'legal-services', outcome: 'We help law firms book more consultations.' },
+  { name: 'Healthcare', slug: 'healthcare', outcome: 'We help healthcare clinics increase appointment bookings.' },
+  { name: 'Real Estate', slug: 'real-estate', outcome: 'We help real estate companies generate qualified property leads.' },
+  { name: 'Education', slug: 'education', outcome: 'We help schools and institutes generate more enrollment enquiries.' },
+  { name: 'Hospitality & Tourism', slug: 'hospitality-tourism', outcome: 'We help hotels and resorts generate more direct bookings.' },
+  { name: 'Ecommerce', slug: 'ecommerce', outcome: 'We help ecommerce brands turn more visitors into paying customers.' },
+];
+
+const firstSentence = (text) => {
+  if (!text) return '';
+  const i = text.indexOf('. ');
+  return i === -1 ? text : text.slice(0, i + 1);
+};
+
+export const SolutionsNotServices = () => {
+  const { data: industries = [] } = useQuery({
+    queryKey: ['industries', 'home-outcomes'],
+    queryFn: () => contentApi.listIndustries({ limit: 8, sortBy: 'order', sortOrder: 'asc' }).then((r) => r.data),
+  });
+
+  const cards = industries.length > 0
+    ? industries.map((i) => ({ name: i.name, slug: i.slug, outcome: firstSentence(i.shortDescription) }))
+    : FALLBACK_OUTCOMES;
+
+  return (
+    <Section tone="ink" spacing="lg" divider={false}>
+      <Container>
+        <div className="max-w-2xl">
+          <Eyebrow number="01" light>Not services. Outcomes.</Eyebrow>
+          <h2 className="text-display-lg mt-4 text-ivory">
+            We don&apos;t sell websites.<br />
+            We sell <span className="text-italic-fraunces text-ultra-soft">outcomes.</span>
+          </h2>
+          <p className="text-ivory/70 text-lg mt-6 leading-relaxed">
+            Businesses don&apos;t hire an agency for SEO or a website — they hire us to fix a specific problem:
+            not enough enquiries, not enough bookings, not enough qualified leads. Our outreach and strategy start
+            with your industry, not a generic service menu.
+          </p>
+        </div>
+        <div className="mt-14 grid gap-px bg-ivory/10 border border-ivory/10 sm:grid-cols-2 lg:grid-cols-4">
+          {cards.slice(0, 7).map((c, i) => (
+            <motion.div
+              key={c.slug}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.6, delay: (i % 4) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              className="bg-ink p-8 flex flex-col justify-between min-h-52"
+            >
+              <div className="num-plate text-ivory/40 text-xs">{String(i + 1).padStart(2, '0')}</div>
+              <div>
+                <p className="text-ivory text-lg leading-snug mt-6">{c.outcome}</p>
+                <Link
+                  to={`/industries/${c.slug}`}
+                  className="mt-6 inline-flex items-center gap-2 text-mono text-xs uppercase tracking-widest text-ivory/60 hover:text-ivory transition-colors"
+                >
+                  {c.name} <ArrowUpRight size={12} strokeWidth={1.5} />
+                </Link>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </Container>
+    </Section>
+  );
+};
 
 /* ================== 1. BRAND STORY ================== */
 export const BrandStory = () => (
@@ -46,7 +128,7 @@ export const BrandStory = () => (
         </motion.div>
 
         <div>
-          <Eyebrow number="01">Our story</Eyebrow>
+          <Eyebrow number="02">Our story</Eyebrow>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -81,9 +163,9 @@ export const BrandStory = () => (
               digital marketing agency rewriting the rules of online growth.
             </p>
             <p>
-              What began as a single call evolved into a revolution — not just for one business, but for hundreds
-              across Miami and beyond. Today, MetlifeDM is considered the top digital marketing agency in Miami, FL,
-              built on strategy, storytelling, and data-driven execution.
+              What began as a single call became the way we work with every client since — across real estate,
+              construction, healthcare, law, education, hospitality, and ecommerce. A lean, senior-only team built
+              on strategy, evidence, and data-driven execution.
             </p>
           </div>
 
@@ -91,6 +173,88 @@ export const BrandStory = () => (
             Read our full story <ArrowUpRight size={16} strokeWidth={1.5} />
           </Button>
         </div>
+      </div>
+    </Container>
+  </Section>
+);
+
+/* ================== 1c. HOW WE WORK ==================
+ * The methodology behind every engagement, made explicit: we don't open
+ * with a service pitch, we open with your problem. */
+const PROCESS_STEPS = [
+  {
+    icon: AlertTriangle,
+    stage: 'Problem',
+    title: 'What’s actually costing you leads',
+    desc: 'We start with the business problem, not a service — too few enquiries, too few bookings, too few qualified leads.',
+  },
+  {
+    icon: Stethoscope,
+    stage: 'Diagnosis',
+    title: 'Why it’s happening',
+    desc: 'A real audit of your site, rankings, and funnel to find the specific, fixable reasons demand isn’t converting.',
+  },
+  {
+    icon: BarChart3,
+    stage: 'Evidence',
+    title: 'What the data says',
+    desc: 'We back the diagnosis with real numbers — traffic, rankings, conversion points — not guesses or generic benchmarks.',
+  },
+  {
+    icon: Compass,
+    stage: 'Strategy',
+    title: 'The plan to fix it',
+    desc: 'A prioritized plan built around your industry and your funnel, not a one-size-fits-all package.',
+  },
+  {
+    icon: Wand2,
+    stage: 'Solution',
+    title: 'What we actually build',
+    desc: 'Websites, campaigns, and content built to execute the strategy — not deliverables for their own sake.',
+  },
+  {
+    icon: TrendingUp,
+    stage: 'Outcome',
+    title: 'The result you hired us for',
+    desc: 'More enquiries, more bookings, more qualified leads — measured against the problem we started with.',
+  },
+];
+
+export const HowWeWork = () => (
+  <Section tone="ivory" spacing="lg">
+    <Container>
+      <div className="max-w-2xl mx-auto text-center mb-16 lg:mb-20">
+        <Eyebrow number="03" className="justify-center">How we work</Eyebrow>
+        <h2 className="text-display-lg mt-4">
+          Every engagement follows<br />
+          the <span className="text-italic-fraunces text-ultra">same six steps.</span>
+        </h2>
+        <p className="text-slate text-lg mt-6 leading-relaxed">
+          Business problem → diagnosis → evidence → strategy → solution → outcome. No step gets skipped, and
+          nothing gets built before we know exactly what it needs to achieve.
+        </p>
+      </div>
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {PROCESS_STEPS.map((s, i) => (
+          <motion.div
+            key={s.stage}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, delay: (i % 3) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+            className="group border border-hairline hover:border-ink hover-lift transition-colors duration-500 p-8"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-11 h-11 grid place-items-center bg-ink text-ivory group-hover:bg-ultra transition-colors duration-500">
+                <s.icon size={18} strokeWidth={1.5} />
+              </div>
+              <div className="num-plate text-slate text-xs">{String(i + 1).padStart(2, '0')} / 06</div>
+            </div>
+            <div className="text-mono text-xs uppercase tracking-widest text-ultra mb-2">{s.stage}</div>
+            <h3 className="text-display-sm mb-3">{s.title}</h3>
+            <p className="text-slate text-sm leading-relaxed">{s.desc}</p>
+          </motion.div>
+        ))}
       </div>
     </Container>
   </Section>
@@ -118,7 +282,7 @@ export const PlatformShowcase = () => (
     />
     <Container className="relative z-10">
       <div className="max-w-2xl">
-        <Eyebrow number="03" light>Web platforms / Built to scale</Eyebrow>
+        <Eyebrow number="05" light>Web platforms / Built to scale</Eyebrow>
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -207,7 +371,7 @@ export const BuilderFeatures = () => (
   <Section tone="ivory" spacing="lg">
     <Container>
       <div className="max-w-2xl mb-14">
-        <Eyebrow number="04">Website builder</Eyebrow>
+        <Eyebrow number="06">Website builder</Eyebrow>
         <h2 className="text-display-lg mt-4">
           Unleash a jaw-dropping<br />
           website <span className="text-italic-fraunces text-ultra">with ease.</span>
@@ -376,7 +540,7 @@ export const WhyUsTimeline = () => {
     <Section tone="ivory" spacing="lg">
       <Container>
         <div className="max-w-2xl mx-auto text-center mb-16 lg:mb-20">
-          <Eyebrow number="05" className="justify-center">
+          <Eyebrow number="07" className="justify-center">
             Why MetlifeDM
           </Eyebrow>
           <h2 className="text-display-lg mt-4">

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, ArrowRight } from 'lucide-react';
@@ -10,7 +11,7 @@ import {
   FaqAccordion,
   ServicesGrid,
 } from '@/components/sections/index.jsx';
-import { BrandStory, PlatformShowcase, BuilderFeatures, WhyUsTimeline } from '@/components/home/index.jsx';
+import { BrandStory, HowWeWork, SolutionsNotServices, PlatformShowcase, BuilderFeatures, WhyUsTimeline } from '@/components/home/index.jsx';
 import { contentApi } from '@/api/index.js';
 
 export default function HomePage() {
@@ -112,7 +113,7 @@ export default function HomePage() {
               </motion.div>
             </div>
 
-            {/* Right: metric card — the signature moment */}
+            {/* Right: evidence card — a real client, not a fabricated benchmark */}
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
@@ -120,42 +121,51 @@ export default function HomePage() {
               className="relative"
             >
               <div className="border border-hairline p-8 md:p-10 bg-ivory-soft shadow-[0_32px_64px_-24px_rgba(0,0,0,0.5)]">
-                <div className="text-eyebrow mb-4">Live · Q3 2025 client benchmark</div>
-                <div className="text-mono text-xs text-slate mb-2">Organic revenue, YoY</div>
-                <div className="text-display-hero num-plate leading-none text-ink">
-                  +487<span className="text-ultra">%</span>
+                <div className="text-eyebrow mb-4">Real client · Construction</div>
+                <div className="text-display-sm leading-snug text-ink">
+                  Buildcare Interiors
                 </div>
+                <p className="text-slate text-sm mt-2">From manual referrals to a real digital lead pipeline.</p>
                 <div className="mt-8 space-y-3">
                   {[
-                    ['Impressions', '+1,240%'],
-                    ['Ranked keywords', '3 → 218'],
-                    ['Cost per lead', '−62%'],
-                    ['ROAS', '2.1x → 6.4x'],
+                    ['Website', 'No presence → Modern business site'],
+                    ['Leads', 'Manual referrals → Online inquiry system'],
+                    ['Visibility', 'Local referrals → Strong online presence'],
+                    ['Mobile', 'Not optimized → Fully responsive'],
                   ].map(([k, v]) => (
-                    <div key={k} className="flex justify-between text-mono text-sm border-b border-hairline pb-2">
-                      <span className="text-slate">{k}</span>
-                      <span className="text-ink">{v}</span>
+                    <div key={k} className="flex justify-between gap-4 text-mono text-xs border-b border-hairline pb-2">
+                      <span className="text-slate shrink-0">{k}</span>
+                      <span className="text-ink text-right">{v}</span>
                     </div>
                   ))}
                 </div>
-                <div className="mt-8 pt-6 border-t border-hairline text-xs text-slate">
-                  Wellness D2C brand · Q1–Q3 2025
-                </div>
+                <Link
+                  to="/case-studies/building-a-digital-presence-that-generates-qualified-construction-leads"
+                  className="mt-8 pt-6 border-t border-hairline text-xs text-ultra hover:text-ink transition-colors flex items-center gap-2 link-underline w-fit"
+                >
+                  Read the full case study <ArrowUpRight size={12} strokeWidth={1.5} />
+                </Link>
               </div>
             </motion.div>
           </div>
         </Container>
       </Section>
 
+      {/* Solutions, not services — outcome-led, industry-specific positioning */}
+      <SolutionsNotServices />
+
       {/* Brand story */}
       <BrandStory />
+
+      {/* How we work — Problem → Diagnosis → Evidence → Strategy → Solution → Outcome */}
+      <HowWeWork />
 
       {/* Services */}
       <Section tone="ivory" spacing="lg">
         <Container>
           <div className="flex items-end justify-between mb-14 gap-8 flex-wrap">
             <div>
-              <Eyebrow number="02">Services</Eyebrow>
+              <Eyebrow number="04">Services</Eyebrow>
               <h2 className="text-display-lg mt-4 max-w-3xl">
                 Full-stack marketing<br />
                 built for <span className="text-italic-fraunces text-ultra">compounding.</span>

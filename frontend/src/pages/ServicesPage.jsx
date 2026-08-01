@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
@@ -32,7 +32,7 @@ export default function ServicesPage() {
     <>
       <Seo
         title="Services"
-        description="SEO, PPC, content, social, web development, and AI marketing services for USA businesses."
+        description="SEO, PPC, content, social, web development, and AI marketing services — each one exists to solve a specific business problem, not fill a menu."
       />
 
       <Section tone="ink" spacing="lg" divider={false} className="relative">
@@ -41,13 +41,15 @@ export default function ServicesPage() {
           alt="Live campaign analytics dashboard"
         />
         <Container className="relative z-10">
-          <Eyebrow number="00" light>Services / All disciplines</Eyebrow>
+          <Eyebrow number="00" light>Services / Not a menu</Eyebrow>
           <h1 className="text-display-hero mt-8 max-w-4xl text-ivory">
-            Marketing services,<br />
-            <span className="text-italic-fraunces text-ultra-soft">built to compound.</span>
+            Every service exists<br />
+            <span className="text-italic-fraunces text-ultra-soft">to fix one problem.</span>
           </h1>
           <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
-            Every service ships with quantified KPIs, a senior strategist, and monthly ROI reporting. Explore what fits your growth stage.
+            We don&apos;t start with &ldquo;what service do you want?&rdquo; — we start with what&apos;s costing you
+            leads. These are the tools we reach for once we know. Prefer to start with your industry instead?{' '}
+            <Link to="/industries" className="link-underline text-ivory">See industry playbooks</Link>.
           </p>
         </Container>
       </Section>

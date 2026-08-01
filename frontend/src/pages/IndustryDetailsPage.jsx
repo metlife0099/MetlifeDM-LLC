@@ -168,11 +168,15 @@ export default function IndustryDetailsPage() {
         <Section tone="ivory" spacing="lg">
           <Container>
             <motion.div {...fadeUp} className="max-w-2xl mx-auto text-center mb-16 lg:mb-20">
-              <Eyebrow number="02" className="justify-center">Challenges</Eyebrow>
+              <Eyebrow number="02" className="justify-center">The business problem</Eyebrow>
               <h2 className="text-display-lg mt-4">
-                What we hear<br />
-                <span className="text-italic-fraunces text-ultra">most often.</span>
+                What&apos;s actually<br />
+                <span className="text-italic-fraunces text-ultra">costing you leads.</span>
               </h2>
+              <p className="text-slate text-lg mt-6 leading-relaxed">
+                Before any strategy, we diagnose the specific, fixable reasons demand isn&apos;t converting for
+                businesses like yours.
+              </p>
             </motion.div>
 
             <div className="relative">
@@ -203,7 +207,7 @@ export default function IndustryDetailsPage() {
         <Section tone="ink" spacing="lg" divider={false}>
           <Container>
             <motion.div {...fadeUp}>
-              <div className="text-eyebrow text-ivory/50 mb-4">03 / Our approach</div>
+              <div className="text-eyebrow text-ivory/50 mb-4">03 / Strategy & solution</div>
               <h2 className="text-display-lg text-ivory mb-14">
                 How we <span className="text-italic-fraunces text-ultra-soft">solve them.</span>
               </h2>
@@ -238,9 +242,9 @@ export default function IndustryDetailsPage() {
           <Container>
             <motion.div {...fadeUp} className="flex items-end justify-between mb-10 gap-6 flex-wrap">
               <div>
-                <Eyebrow number="04">Recommended services</Eyebrow>
+                <Eyebrow number="04">Where the solution starts</Eyebrow>
                 <h2 className="text-display-lg mt-4">
-                  Where we start.
+                  Recommended services.
                 </h2>
               </div>
               <Link to="/services" className="text-mono text-xs uppercase tracking-widest link-underline text-ink">
@@ -258,8 +262,8 @@ export default function IndustryDetailsPage() {
           <Container>
             <motion.div {...fadeUp} className="flex items-end justify-between mb-10 gap-6 flex-wrap">
               <div>
-                <Eyebrow number="05">Case studies</Eyebrow>
-                <h2 className="text-display-lg mt-4">Related work.</h2>
+                <Eyebrow number="05">Evidence</Eyebrow>
+                <h2 className="text-display-lg mt-4">Proof it works.</h2>
               </div>
               <Link to="/case-studies" className="text-mono text-xs uppercase tracking-widest link-underline text-ink">
                 All case studies →
