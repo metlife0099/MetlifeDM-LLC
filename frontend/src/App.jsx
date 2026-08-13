@@ -20,6 +20,7 @@ const CaseStudiesPage = lazy(() => import('@/pages/CaseStudiesPage.jsx'));
 const CaseStudyDetailsPage = lazy(() => import('@/pages/CaseStudyDetailsPage.jsx'));
 const IndustriesPage = lazy(() => import('@/pages/IndustriesPage.jsx'));
 const IndustryDetailsPage = lazy(() => import('@/pages/IndustryDetailsPage.jsx'));
+const PartnersPage = lazy(() => import('@/pages/PartnersPage.jsx'));
 const ContactPage = lazy(() => import('@/pages/ContactPage.jsx'));
 const ConsultationPage = lazy(() => import('@/pages/ConsultationPage.jsx'));
 
@@ -111,6 +112,7 @@ export default function App() {
         <Route path="case-studies/:slug" element={withSuspense(CaseStudyDetailsPage, 'Case study')} />
         <Route path="industries" element={withSuspense(IndustriesPage, 'Industries')} />
         <Route path="industries/:slug" element={withSuspense(IndustryDetailsPage, 'Industry')} />
+        <Route path="partners" element={withSuspense(PartnersPage, 'Partners')} />
 
         {/* Content */}
         <Route path="blog" element={withSuspense(BlogPage, 'Blog')} />

@@ -25,6 +25,7 @@ export const sitemap = asyncHandler(async (req, res) => {
     { path: '/industries', priority: 0.7 },
     { path: '/portfolio', priority: 0.7 },
     { path: '/case-studies', priority: 0.8 },
+    { path: '/partners', priority: 0.8 },
     { path: '/blog', priority: 0.9, changefreq: 'daily' },
     { path: '/pricing', priority: 0.8 },
     { path: '/contact', priority: 0.7 },

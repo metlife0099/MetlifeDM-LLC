@@ -12,6 +12,7 @@ export const NAV_MAIN = [
   { label: 'Case Studies', href: '/case-studies' },
   { label: 'Portfolio', href: '/portfolio' },
   { label: 'Pricing', href: '/pricing' },
+  { label: 'Partners', href: '/partners' },
   { label: 'Blog', href: '/blog' },
   { label: 'About', href: '/about' },
 ];
@@ -33,6 +34,7 @@ export const NAV_FOOTER = [
     links: [
       { label: 'About', href: '/about' },
       { label: 'Case Studies', href: '/case-studies' },
+      { label: 'White-Label Partners', href: '/partners' },
       { label: 'Careers', href: '/careers' },
       { label: 'Contact', href: '/contact' },
       { label: 'Book a Call', href: '/consultation' },
