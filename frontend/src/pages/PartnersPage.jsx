@@ -41,14 +41,15 @@ const PHONE_US = /^\+?1?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
 
 /* ============================================================
  * Brand palette for this page only — a deliberately more corporate,
- * enterprise-facing navy/gold system, distinct from the site's default
- * editorial blue accent. Used as literal hex values (not the shared design
- * tokens) because this section's audience (agency owners evaluating a
- * fulfillment partner) and tone call for a different visual register.
+ * enterprise-facing navy/blue system, distinct from the site's default
+ * editorial ink/ultra tokens. Used as literal hex values because this
+ * section's audience (agency owners evaluating a fulfillment partner)
+ * and tone call for a slightly different visual register — ACCENT matches
+ * the site's own --color-ultra so it still reads as "on-brand".
  * ============================================================ */
 const NAVY = '#0A2342';
 const NAVY_SOFT = '#123059';
-const GOLD = '#D4AF37';
+const ACCENT = '#1547FF';
 
 const fadeUp = {
   initial: { opacity: 0, y: 28 },
@@ -266,24 +267,52 @@ export default function PartnersPage() {
       {/* ============================================================ */}
       {/* HERO / COVER                                                  */}
       {/* ============================================================ */}
-      <section className="relative overflow-hidden" style={{ backgroundColor: NAVY }}>
-        {/* Ambient glow accents — the glassmorphism backdrop */}
-        <div className="pointer-events-none absolute -top-40 -right-40 w-[36rem] h-[36rem] rounded-full opacity-20 blur-3xl" style={{ background: GOLD }} />
-        <div className="pointer-events-none absolute -bottom-52 -left-40 w-[30rem] h-[30rem] rounded-full opacity-10 blur-3xl" style={{ background: '#FFFFFF' }} />
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)',
-            backgroundSize: '64px 64px',
-          }}
-        />
+      <section className="relative" style={{ backgroundColor: NAVY }}>
+        {/* Background photo — bleeds up behind the floating header (same
+            -top-20 technique the shared HeroImage component uses elsewhere),
+            dimmed and tinted navy so text stays legible. */}
+        <div className="absolute -top-20 inset-x-0 bottom-0 overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?w=1920&q=80&auto=format&fit=crop"
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover "
+          />
+          <div className="absolute inset-0" style={{ background: `linear-gradient(115deg, ${NAVY} 40%, ${NAVY}cc 65%, ${NAVY}66 100%)` }} />
+        </div>
 
-        <Container className="relative z-10 pt-36 pb-24 md:pt-44 md:pb-28">
+        {/* IN-PAGE SUB-NAV — lives inside the hero (so it never has to sit as
+            a solid block directly under the transparent floating header),
+            sticky so it's visible immediately and then pins in place once
+            scrolled past. Solid navy always, so it reads equally well once
+            it's stuck over the lighter sections further down the page. */}
+        <div className="sticky top-20 z-40" style={{ background: NAVY, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <Container>
+            <nav className="flex items-center gap-1 overflow-x-auto py-3 no-scrollbar">
+              {SUB_NAV.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => scrollToSection(s.id)}
+                  className="relative shrink-0 px-4 py-2 text-xs font-medium uppercase tracking-widest rounded-full transition-colors duration-300 whitespace-nowrap"
+                  style={
+                    activeSection === s.id
+                      ? { background: 'rgba(21,71,255,0.15)', color: ACCENT }
+                      : { color: 'rgba(255,255,255,0.55)' }
+                  }
+                >
+                  {s.label}
+                </button>
+              ))}
+            </nav>
+          </Container>
+        </div>
+
+        <Container className="relative z-10 pt-14 pb-24 md:pt-16 md:pb-28">
           <div className="grid gap-16 lg:grid-cols-[1.3fr_1fr] lg:items-center">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
               <div
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs uppercase tracking-widest font-medium backdrop-blur-md"
-                style={{ background: 'rgba(212,175,55,0.1)', border: `1px solid ${GOLD}55`, color: GOLD }}
+                style={{ background: 'rgba(21,71,255,0.1)', border: `1px solid ${ACCENT}55`, color: ACCENT }}
               >
                 For agencies · White-label delivery partner
               </div>
@@ -291,7 +320,7 @@ export default function PartnersPage() {
               <h1 className="mt-8 text-[2.75rem] leading-[1.05] sm:text-6xl lg:text-[4.5rem] font-semibold tracking-tight text-white">
                 Scale your agency.
                 <br />
-                <span style={{ color: GOLD }}>Not your payroll.</span>
+                <span style={{ color: ACCENT }}>Not your payroll.</span>
               </h1>
 
               <p className="mt-8 text-lg md:text-xl text-white/70 max-w-xl leading-relaxed">
@@ -299,7 +328,7 @@ export default function PartnersPage() {
                 — so you can say yes to more clients without hiring, training, or managing an in-house production team.
               </p>
 
-              <div className="mt-6 text-sm uppercase tracking-[0.2em] font-medium" style={{ color: GOLD }}>
+              <div className="mt-6 text-sm uppercase tracking-[0.2em] font-medium" style={{ color: ACCENT }}>
                 Evidence. Strategy. Sustainable Growth.
               </div>
 
@@ -307,8 +336,8 @@ export default function PartnersPage() {
                 <Button
                   to="/consultation"
                   size="lg"
-                  className="text-[#0A2342]! hover:-translate-y-0.5!"
-                  style={{ background: GOLD }}
+                  className="text-white! hover:-translate-y-0.5!"
+                  style={{ background: ACCENT }}
                 >
                   Become a delivery partner <ArrowUpRight size={16} strokeWidth={1.5} />
                 </Button>
@@ -321,9 +350,9 @@ export default function PartnersPage() {
               </div>
 
               <div className="mt-16 flex flex-wrap items-center gap-x-10 gap-y-4 pt-8 border-t border-white/10 text-white/60 text-xs uppercase tracking-widest">
-                <span className="flex items-center gap-2"><Lock size={14} strokeWidth={1.5} style={{ color: GOLD }} /> NDA-protected</span>
-                <span className="flex items-center gap-2"><Landmark size={14} strokeWidth={1.5} style={{ color: GOLD }} /> US-registered company</span>
-                <span className="flex items-center gap-2"><Tags size={14} strokeWidth={1.5} style={{ color: GOLD }} /> Always white-label</span>
+                <span className="flex items-center gap-2"><Lock size={14} strokeWidth={1.5} style={{ color: ACCENT }} /> NDA-protected</span>
+                <span className="flex items-center gap-2"><Landmark size={14} strokeWidth={1.5} style={{ color: ACCENT }} /> US-registered company</span>
+                <span className="flex items-center gap-2"><Tags size={14} strokeWidth={1.5} style={{ color: ACCENT }} /> Always white-label</span>
               </div>
             </motion.div>
 
@@ -336,13 +365,13 @@ export default function PartnersPage() {
               className="relative hidden lg:block"
             >
               <div
-                className="rounded-lg p-8 backdrop-blur-xl"
+                className="rounded-lg p-8"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}
               >
                 <div className="flex items-center justify-between mb-8">
                   <span className="text-xs uppercase tracking-widest text-white/50">Your delivery pipeline</span>
-                  <span className="flex items-center gap-1.5 text-xs" style={{ color: GOLD }}>
-                    <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: GOLD }} /> Live
+                  <span className="flex items-center gap-1.5 text-xs" style={{ color: ACCENT }}>
+                    <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: ACCENT }} /> Live
                   </span>
                 </div>
                 <div className="space-y-0">
@@ -351,8 +380,8 @@ export default function PartnersPage() {
                       {i < WORKFLOW.length - 1 && (
                         <div className="absolute left-[1.375rem] top-11 bottom-0 w-px bg-white/15" />
                       )}
-                      <div className="relative z-10 w-11 h-11 shrink-0 rounded-full grid place-items-center" style={{ background: 'rgba(212,175,55,0.15)', border: `1px solid ${GOLD}44` }}>
-                        <w.icon size={18} strokeWidth={1.5} style={{ color: GOLD }} />
+                      <div className="relative z-10 w-11 h-11 shrink-0 rounded-full grid place-items-center" style={{ background: 'rgba(21,71,255,0.15)', border: `1px solid ${ACCENT}44` }}>
+                        <w.icon size={18} strokeWidth={1.5} style={{ color: ACCENT }} />
                       </div>
                       <div className="pt-1.5">
                         <div className="text-white text-sm font-medium">{w.title}</div>
@@ -374,31 +403,6 @@ export default function PartnersPage() {
           </div>
         </Container>
       </section>
-
-      {/* ============================================================ */}
-      {/* IN-PAGE SUB-NAV — sticky beneath the main header, click to jump */}
-      {/* ============================================================ */}
-      <div className="sticky top-20 z-40 bg-white/90 backdrop-blur-md border-b border-black/5 shadow-[0_4px_20px_-8px_rgba(10,35,66,0.15)]">
-        <Container>
-          <nav className="flex items-center gap-1 overflow-x-auto py-3 no-scrollbar">
-            {SUB_NAV.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => scrollToSection(s.id)}
-                className="relative shrink-0 px-4 py-2 text-xs font-medium uppercase tracking-widest rounded-full transition-colors duration-300 whitespace-nowrap"
-                style={
-                  activeSection === s.id
-                    ? { background: NAVY, color: GOLD }
-                    : { color: NAVY, opacity: 0.6 }
-                }
-              >
-                {s.label}
-              </button>
-            ))}
-          </nav>
-        </Container>
-      </div>
 
       {/* ============================================================ */}
       {/* COVER STATEMENT — the reframed question                      */}
@@ -443,7 +447,7 @@ export default function PartnersPage() {
                 className="border border-hairline hover:border-ink hover-lift transition-colors duration-500 p-8"
               >
                 <div className="w-12 h-12 grid place-items-center mb-6" style={{ background: NAVY }}>
-                  <p.icon size={20} strokeWidth={1.5} style={{ color: GOLD }} />
+                  <p.icon size={20} strokeWidth={1.5} style={{ color: ACCENT }} />
                 </div>
                 <h3 className="text-display-sm mb-3">{p.title}</h3>
                 <p className="text-slate text-sm leading-relaxed">{p.desc}</p>
@@ -479,7 +483,7 @@ export default function PartnersPage() {
               className="border p-8 md:p-10"
               style={{ borderColor: `${NAVY}22`, background: `${NAVY}05` }}
             >
-              <Quote size={28} style={{ color: GOLD }} />
+              <Quote size={28} style={{ color: ACCENT }} />
               <p className="text-xl mt-6 text-italic-fraunces leading-snug text-ink">
                 We built MetlifeDM to be the delivery layer agencies don&apos;t have to build themselves.
               </p>
@@ -526,7 +530,7 @@ export default function PartnersPage() {
                   className="relative z-10 mx-auto w-18 h-18 rounded-full grid place-items-center shadow-[0_16px_32px_-12px_rgba(10,35,66,0.35)]"
                   style={{ background: NAVY }}
                 >
-                  <w.icon size={26} strokeWidth={1.5} style={{ color: GOLD }} />
+                  <w.icon size={26} strokeWidth={1.5} style={{ color: ACCENT }} />
                 </div>
                 <div className="num-plate text-slate text-xs mt-6">{w.step}</div>
                 <h3 className="text-display-sm mt-2">{w.title}</h3>
@@ -536,7 +540,7 @@ export default function PartnersPage() {
                     size={18}
                     strokeWidth={1.5}
                     className="hidden md:block absolute top-7 -right-4 rotate-45"
-                    style={{ color: GOLD }}
+                    style={{ color: ACCENT }}
                   />
                 )}
               </motion.div>
@@ -567,7 +571,7 @@ export default function PartnersPage() {
                 transition={{ duration: 0.5, delay: (i % 4) * 0.06, ease: [0.22, 1, 0.36, 1] }}
                 className="group bg-ivory hover:bg-[#0A2342] p-8 transition-colors duration-500"
               >
-                <t.icon size={22} strokeWidth={1.5} className="text-ink group-hover:text-[#D4AF37] transition-colors duration-500" />
+                <t.icon size={22} strokeWidth={1.5} className="text-ink group-hover:text-[#1547FF] transition-colors duration-500" />
                 <h3 className="text-base font-medium mt-5 text-ink group-hover:text-white transition-colors duration-500">{t.title}</h3>
                 <p className="text-slate text-sm mt-2 leading-relaxed group-hover:text-white/70 transition-colors duration-500">{t.desc}</p>
               </motion.div>
@@ -580,18 +584,18 @@ export default function PartnersPage() {
       {/* SYSTOLAB INTELLIGENCE ENGINE                                  */}
       {/* ============================================================ */}
       <section id="systolab" className="relative overflow-hidden" style={{ backgroundColor: NAVY }}>
-        <div className="pointer-events-none absolute top-1/3 left-1/2 -translate-x-1/2 w-200 h-200 rounded-full opacity-[0.08] blur-3xl" style={{ background: GOLD }} />
+        <div className="pointer-events-none absolute top-1/3 left-1/2 -translate-x-1/2 w-200 h-200 rounded-full opacity-[0.08] blur-3xl" style={{ background: ACCENT }} />
         <Section tone="ink" spacing="lg" divider={false} className="bg-transparent! relative z-10">
           <Container>
             <motion.div {...fadeUp} className="max-w-2xl mx-auto text-center mb-16">
               <div
                 className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs uppercase tracking-widest font-medium backdrop-blur-md mx-auto"
-                style={{ background: 'rgba(212,175,55,0.1)', border: `1px solid ${GOLD}55`, color: GOLD }}
+                style={{ background: 'rgba(21,71,255,0.1)', border: `1px solid ${ACCENT}55`, color: ACCENT }}
               >
                 Proprietary quality engine
               </div>
               <h2 className="text-display-lg mt-6 text-white">
-                Every project passes through <span style={{ color: GOLD }}>SYSTOLAB™</span> before it reaches your client.
+                Every project passes through <span style={{ color: ACCENT }}>SYSTOLAB™</span> before it reaches your client.
               </h2>
               <p className="text-white/70 text-lg mt-6 leading-relaxed">
                 SYSTOLAB is our internal quality assurance engine — a fixed checklist every deliverable is measured
@@ -610,8 +614,8 @@ export default function PartnersPage() {
                   className="p-6 backdrop-blur-md rounded-lg"
                   style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}
                 >
-                  <div className="w-10 h-10 rounded-full grid place-items-center" style={{ background: 'rgba(212,175,55,0.15)' }}>
-                    <c.icon size={18} strokeWidth={1.5} style={{ color: GOLD }} />
+                  <div className="w-10 h-10 rounded-full grid place-items-center" style={{ background: 'rgba(21,71,255,0.15)' }}>
+                    <c.icon size={18} strokeWidth={1.5} style={{ color: ACCENT }} />
                   </div>
                   <h3 className="text-white text-sm font-medium mt-5">{c.title}</h3>
                   <p className="text-white/60 text-xs mt-2 leading-relaxed">{c.desc}</p>
@@ -625,7 +629,7 @@ export default function PartnersPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.3 }}
               className="mt-14 flex items-center justify-center gap-3 text-sm"
-              style={{ color: GOLD }}
+              style={{ color: ACCENT }}
             >
               <CheckCircle2 size={16} strokeWidth={1.5} />
               Nothing ships to your client without a passing SYSTOLAB review.
@@ -638,7 +642,7 @@ export default function PartnersPage() {
       {/* OUTCOME — final CTA + application form                        */}
       {/* ============================================================ */}
       <section id="apply" className="relative overflow-hidden py-20 md:py-32" style={{ backgroundColor: NAVY_SOFT }}>
-        <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full opacity-20 blur-3xl" style={{ background: GOLD }} />
+        <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full opacity-20 blur-3xl" style={{ background: ACCENT }} />
         <div className="pointer-events-none absolute -bottom-32 -right-24 w-96 h-96 rounded-full opacity-10 blur-3xl" style={{ background: '#FFFFFF' }} />
         <Container className="relative z-10">
           <div className="grid gap-16 lg:grid-cols-2 lg:items-start">
@@ -647,7 +651,7 @@ export default function PartnersPage() {
               <Eyebrow number="05" light>The outcome</Eyebrow>
               <h2 className="text-display-hero mt-6 text-white">
                 Stop outsourcing.<br />
-                <span style={{ color: GOLD }}>Start partnering.</span>
+                <span style={{ color: ACCENT }}>Start partnering.</span>
               </h2>
               <p className="text-white/70 text-lg mt-8 max-w-lg leading-relaxed">
                 A vendor delivers a project and disappears. A partner grows with you — same team, same standards,
@@ -656,7 +660,7 @@ export default function PartnersPage() {
               <div className="mt-10 space-y-4">
                 {['No cost to apply — we review every request personally', 'NDA sent before any details are shared', 'Reply within 1-2 business days'].map((t) => (
                   <div key={t} className="flex items-center gap-3 text-white/80 text-sm">
-                    <CheckCircle size={16} strokeWidth={1.5} style={{ color: GOLD }} className="shrink-0" />
+                    <CheckCircle size={16} strokeWidth={1.5} style={{ color: ACCENT }} className="shrink-0" />
                     {t}
                   </div>
                 ))}
@@ -709,7 +713,7 @@ export default function PartnersPage() {
                           type="button"
                           onClick={() => toggleServiceNeeded(s.value)}
                           className="px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors"
-                          style={active ? { background: NAVY, color: GOLD, borderColor: NAVY } : { borderColor: '#e5e1d8' }}
+                          style={active ? { background: NAVY, color: ACCENT, borderColor: NAVY } : { borderColor: '#e5e1d8' }}
                         >
                           {s.label}
                         </button>
@@ -730,8 +734,8 @@ export default function PartnersPage() {
                   type="submit"
                   size="lg"
                   disabled={mutation.isPending}
-                  className="w-full text-[#0A2342]! justify-center"
-                  style={{ background: GOLD }}
+                  className="w-full text-white! justify-center"
+                  style={{ background: ACCENT }}
                 >
                   {mutation.isPending ? 'Submitting…' : 'Submit application'}
                   <ArrowUpRight size={16} strokeWidth={1.5} />
