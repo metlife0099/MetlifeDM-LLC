@@ -62,6 +62,7 @@ export const NAV_SECTIONS = [
     items: [
       { label: 'Contact forms', href: '/leads/contacts', icon: 'Mail' },
       { label: 'Consultations', href: '/leads/consultations', icon: 'Calendar' },
+      { label: 'White-label partners', href: '/leads/partners', icon: 'Handshake' },
       { label: 'Newsletter', href: '/leads/subscribers', icon: 'MailPlus' },
       { label: 'Campaigns', href: '/leads/campaigns', icon: 'Send' },
     ],
@@ -101,6 +102,7 @@ export const NAV_NOTIFICATION_TYPES = {
   '/commerce/orders': 'order',
   '/leads/contacts': 'contact',
   '/leads/consultations': 'consultation',
+  '/leads/partners': 'partner_inquiry',
   '/leads/subscribers': 'subscriber',
   '/careers/applications': 'application',
   '/support/tickets': 'ticket',
@@ -164,6 +166,23 @@ export const CONSULTATION_STATUSES = [
   { value: 'no_show', label: 'No show' },
   { value: 'cancelled', label: 'Cancelled' },
 ];
+
+export const PARTNER_INQUIRY_STATUSES = [
+  { value: 'new', label: 'New' },
+  { value: 'contacted', label: 'Contacted' },
+  { value: 'qualified', label: 'Qualified' },
+  { value: 'active_partner', label: 'Active partner' },
+  { value: 'not_a_fit', label: 'Not a fit' },
+];
+
+export const AGENCY_TYPE_LABELS = {
+  marketing_agency: 'Digital Marketing Agency',
+  web_design_agency: 'Web Design Agency',
+  seo_agency: 'SEO Agency',
+  branding_agency: 'Branding Agency',
+  software_company: 'Software Company',
+  other: 'Other',
+};
 
 export const APPLICATION_STATUSES = [
   { value: 'new', label: 'New' },

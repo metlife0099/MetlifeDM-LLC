@@ -101,11 +101,11 @@ export const formatBytes = (bytes) => {
 export const statusTone = (status) => {
   if (!status) return 'default';
   const s = String(status).toLowerCase();
-  if (['paid', 'completed', 'approved', 'published', 'resolved', 'active', 'succeeded', 'delivered', 'accepted', 'sent'].includes(s))
+  if (['paid', 'completed', 'approved', 'published', 'resolved', 'active', 'succeeded', 'delivered', 'accepted', 'sent', 'active_partner', 'qualified'].includes(s))
     return 'success';
-  if (['pending', 'processing', 'in_progress', 'waiting_customer', 'draft', 'reviewing', 'scheduled', 'in_review', 'sending', 'partial'].includes(s))
+  if (['pending', 'processing', 'in_progress', 'waiting_customer', 'draft', 'reviewing', 'scheduled', 'in_review', 'sending', 'partial', 'contacted'].includes(s))
     return 'warn';
-  if (['cancelled', 'refunded', 'rejected', 'failed', 'suspended', 'expired', 'closed', 'archived', 'spam'].includes(s))
+  if (['cancelled', 'refunded', 'rejected', 'failed', 'suspended', 'expired', 'closed', 'archived', 'spam', 'not_a_fit', 'lost'].includes(s))
     return 'danger';
   if (['new', 'open', 'unread', 'submitted', 'confirmed'].includes(s)) return 'info';
   return 'default';

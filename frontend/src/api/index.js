@@ -73,6 +73,7 @@ export const contentApi = {
 export const leadsApi = {
   submitContact: (data) => apiClient.post(E.contact, data).then(unwrap),
   bookConsultation: (data) => apiClient.post(E.consultations, data).then(unwrap),
+  submitPartnerInquiry: (data) => apiClient.post(E.partnerInquiries, data).then(unwrap),
   subscribeNewsletter: (data) => apiClient.post(E.newsletter.subscribe, data).then(unwrap),
   listCareers: (params) => apiClient.get(E.careers.list, { params }).then(unwrapMeta),
   getCareerBySlug: (slug) => apiClient.get(E.careers.bySlug(slug)).then(unwrap),

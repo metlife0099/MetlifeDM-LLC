@@ -1,4 +1,10 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useMutation } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import {
   ArrowUpRight,
   Briefcase,
@@ -22,10 +28,16 @@ import {
   Accessibility,
   CheckCircle2,
   Quote,
+  CheckCircle,
 } from 'lucide-react';
 import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
+import { Input, Textarea, Select } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
+import { leadsApi } from '@/api/index.js';
+import { getErrorMessage } from '@/api/client.js';
+
+const PHONE_US = /^\+?1?[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}$/;
 
 /* ============================================================
  * Brand palette for this page only — a deliberately more corporate,
@@ -44,6 +56,55 @@ const fadeUp = {
   viewport: { once: true, margin: '-80px' },
   transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] },
 };
+
+/* In-page sub-navigation — clicking scrolls to the matching section */
+const SUB_NAV = [
+  { id: 'problem', label: 'The Problem' },
+  { id: 'how-it-works', label: 'How It Works' },
+  { id: 'trust-factors', label: 'Why Partner With Us' },
+  { id: 'systolab', label: 'SYSTOLAB™' },
+  { id: 'apply', label: 'Apply Now' },
+];
+
+/* ------------------------------------------------------------------ */
+/* Application form                                                    */
+/* ------------------------------------------------------------------ */
+const AGENCY_TYPES = [
+  { value: '', label: 'Select agency type…' },
+  { value: 'marketing_agency', label: 'Digital Marketing Agency' },
+  { value: 'web_design_agency', label: 'Web Design Agency' },
+  { value: 'seo_agency', label: 'SEO Agency' },
+  { value: 'branding_agency', label: 'Branding Agency' },
+  { value: 'software_company', label: 'Software Company' },
+  { value: 'other', label: 'Other' },
+];
+const VOLUME_OPTIONS = [
+  { value: '', label: 'Select volume…' },
+  { value: '1-2', label: '1–2 projects / month' },
+  { value: '3-5', label: '3–5 projects / month' },
+  { value: '6-10', label: '6–10 projects / month' },
+  { value: '10+', label: '10+ projects / month' },
+];
+const SERVICES_NEEDED_OPTIONS = [
+  { value: 'websites', label: 'Websites' },
+  { value: 'seo', label: 'SEO' },
+  { value: 'maintenance', label: 'Maintenance' },
+  { value: 'branding', label: 'Branding' },
+  { value: 'other', label: 'Other' },
+];
+
+const partnerFormSchema = z.object({
+  firstName: z.string().trim().min(2, 'At least 2 characters'),
+  lastName: z.string().trim().min(2, 'At least 2 characters'),
+  email: z.string().trim().email('Enter a valid email'),
+  phone: z.string().regex(PHONE_US, 'Enter a valid US phone number').optional().or(z.literal('')),
+  company: z.string().trim().min(2, 'Agency / company name is required'),
+  website: z.string().optional().or(z.literal('')),
+  agencyType: z.string().min(1, 'Please select an agency type'),
+  monthlyProjectVolume: z.string().optional(),
+  servicesNeeded: z.array(z.string()).optional(),
+  message: z.string().max(3000).optional().or(z.literal('')),
+});
 
 /* ------------------------------------------------------------------ */
 /* The problem — icon-led pain points agencies actually recognize      */
@@ -121,6 +182,65 @@ const SYSTOLAB_CHECKS = [
 ];
 
 export default function PartnersPage() {
+  const [activeSection, setActiveSection] = useState('');
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(partnerFormSchema),
+    defaultValues: { servicesNeeded: [] },
+  });
+  const servicesNeeded = watch('servicesNeeded') || [];
+
+  const mutation = useMutation({
+    mutationFn: leadsApi.submitPartnerInquiry,
+    onSuccess: () => {
+      toast.success("Application received — we'll review it and reply within 1-2 business days.");
+      reset();
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+
+  const onSubmit = (data) => {
+    const payload = { ...data };
+    Object.keys(payload).forEach((key) => {
+      if (payload[key] === '') delete payload[key];
+    });
+    mutation.mutate(payload);
+  };
+
+  const toggleServiceNeeded = (val) => {
+    const next = servicesNeeded.includes(val)
+      ? servicesNeeded.filter((s) => s !== val)
+      : [...servicesNeeded, val];
+    setValue('servicesNeeded', next);
+  };
+
+  const scrollToSection = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  // Scroll-spy — highlights whichever sub-nav section is currently in view.
+  useEffect(() => {
+    const sections = SUB_NAV.map((s) => document.getElementById(s.id)).filter(Boolean);
+    if (!sections.length) return undefined;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
+        });
+      },
+      { rootMargin: '-45% 0px -50% 0px', threshold: 0 }
+    );
+    sections.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
       <Seo
@@ -158,55 +278,127 @@ export default function PartnersPage() {
           }}
         />
 
-        <Container className="relative z-10 pt-36 pb-28 md:pt-44 md:pb-36">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
-            <div
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs uppercase tracking-widest font-medium backdrop-blur-md"
-              style={{ background: 'rgba(212,175,55,0.1)', border: `1px solid ${GOLD}55`, color: GOLD }}
+        <Container className="relative z-10 pt-36 pb-24 md:pt-44 md:pb-28">
+          <div className="grid gap-16 lg:grid-cols-[1.3fr_1fr] lg:items-center">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}>
+              <div
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs uppercase tracking-widest font-medium backdrop-blur-md"
+                style={{ background: 'rgba(212,175,55,0.1)', border: `1px solid ${GOLD}55`, color: GOLD }}
+              >
+                For agencies · White-label delivery partner
+              </div>
+
+              <h1 className="mt-8 text-[2.75rem] leading-[1.05] sm:text-6xl lg:text-[4.5rem] font-semibold tracking-tight text-white">
+                Scale your agency.
+                <br />
+                <span style={{ color: GOLD }}>Not your payroll.</span>
+              </h1>
+
+              <p className="mt-8 text-lg md:text-xl text-white/70 max-w-xl leading-relaxed">
+                MetlifeDM delivers websites, SEO, maintenance, and digital solutions under <em className="not-italic text-white">your</em> brand
+                — so you can say yes to more clients without hiring, training, or managing an in-house production team.
+              </p>
+
+              <div className="mt-6 text-sm uppercase tracking-[0.2em] font-medium" style={{ color: GOLD }}>
+                Evidence. Strategy. Sustainable Growth.
+              </div>
+
+              <div className="mt-12 flex flex-wrap items-center gap-5">
+                <Button
+                  to="/consultation"
+                  size="lg"
+                  className="text-[#0A2342]! hover:-translate-y-0.5!"
+                  style={{ background: GOLD }}
+                >
+                  Become a delivery partner <ArrowUpRight size={16} strokeWidth={1.5} />
+                </Button>
+                <a
+                  href="#how-it-works"
+                  className="text-sm font-medium text-white/80 hover:text-white transition-colors link-underline"
+                >
+                  See how it works
+                </a>
+              </div>
+
+              <div className="mt-16 flex flex-wrap items-center gap-x-10 gap-y-4 pt-8 border-t border-white/10 text-white/60 text-xs uppercase tracking-widest">
+                <span className="flex items-center gap-2"><Lock size={14} strokeWidth={1.5} style={{ color: GOLD }} /> NDA-protected</span>
+                <span className="flex items-center gap-2"><Landmark size={14} strokeWidth={1.5} style={{ color: GOLD }} /> US-registered company</span>
+                <span className="flex items-center gap-2"><Tags size={14} strokeWidth={1.5} style={{ color: GOLD }} /> Always white-label</span>
+              </div>
+            </motion.div>
+
+            {/* Right: glass "delivery pipeline" preview — balances the hero and
+                previews the workflow explained in full further down the page. */}
+            <motion.div
+              initial={{ opacity: 0, y: 30, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="relative hidden lg:block"
             >
-              For agencies · White-label delivery partner
-            </div>
-
-            <h1 className="mt-8 text-[2.75rem] leading-[1.05] sm:text-6xl lg:text-7xl font-semibold tracking-tight text-white max-w-4xl">
-              Scale your agency.
-              <br />
-              <span style={{ color: GOLD }}>Not your payroll.</span>
-            </h1>
-
-            <p className="mt-8 text-lg md:text-xl text-white/70 max-w-2xl leading-relaxed">
-              MetlifeDM delivers websites, SEO, maintenance, and digital solutions under <em className="not-italic text-white">your</em> brand
-              — so you can say yes to more clients without hiring, training, or managing an in-house production team.
-            </p>
-
-            <div className="mt-6 text-sm uppercase tracking-[0.2em] font-medium" style={{ color: GOLD }}>
-              Evidence. Strategy. Sustainable Growth.
-            </div>
-
-            <div className="mt-12 flex flex-wrap items-center gap-5">
-              <Button
-                to="/consultation"
-                size="lg"
-                className="!text-[#0A2342] hover:!-translate-y-0.5"
-                style={{ background: GOLD }}
+              <div
+                className="rounded-lg p-8 backdrop-blur-xl"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}
               >
-                Become a delivery partner <ArrowUpRight size={16} strokeWidth={1.5} />
-              </Button>
-              <a
-                href="#how-it-works"
-                className="text-sm font-medium text-white/80 hover:text-white transition-colors link-underline"
-              >
-                See how it works
-              </a>
-            </div>
-
-            <div className="mt-16 flex flex-wrap items-center gap-x-10 gap-y-4 pt-8 border-t border-white/10 text-white/60 text-xs uppercase tracking-widest">
-              <span className="flex items-center gap-2"><Lock size={14} strokeWidth={1.5} style={{ color: GOLD }} /> NDA-protected</span>
-              <span className="flex items-center gap-2"><Landmark size={14} strokeWidth={1.5} style={{ color: GOLD }} /> US-registered company</span>
-              <span className="flex items-center gap-2"><Tags size={14} strokeWidth={1.5} style={{ color: GOLD }} /> Always white-label</span>
-            </div>
-          </motion.div>
+                <div className="flex items-center justify-between mb-8">
+                  <span className="text-xs uppercase tracking-widest text-white/50">Your delivery pipeline</span>
+                  <span className="flex items-center gap-1.5 text-xs" style={{ color: GOLD }}>
+                    <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: GOLD }} /> Live
+                  </span>
+                </div>
+                <div className="space-y-0">
+                  {WORKFLOW.map((w, i) => (
+                    <div key={w.step} className="relative flex gap-4 pb-8 last:pb-0">
+                      {i < WORKFLOW.length - 1 && (
+                        <div className="absolute left-[1.375rem] top-11 bottom-0 w-px bg-white/15" />
+                      )}
+                      <div className="relative z-10 w-11 h-11 shrink-0 rounded-full grid place-items-center" style={{ background: 'rgba(212,175,55,0.15)', border: `1px solid ${GOLD}44` }}>
+                        <w.icon size={18} strokeWidth={1.5} style={{ color: GOLD }} />
+                      </div>
+                      <div className="pt-1.5">
+                        <div className="text-white text-sm font-medium">{w.title}</div>
+                        <div className="text-white/50 text-xs mt-1 max-w-[15rem] leading-relaxed">{w.desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-2 pt-6 border-t border-white/10 grid grid-cols-3 gap-3 text-center">
+                  {[['0', 'New hires'], ['100%', 'White-label'], ['1-2d', 'Response time']].map(([v, l]) => (
+                    <div key={l}>
+                      <div className="text-lg font-semibold text-white">{v}</div>
+                      <div className="text-[0.65rem] uppercase tracking-wider text-white/40 mt-1">{l}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </Container>
       </section>
+
+      {/* ============================================================ */}
+      {/* IN-PAGE SUB-NAV — sticky beneath the main header, click to jump */}
+      {/* ============================================================ */}
+      <div className="sticky top-20 z-40 bg-white/90 backdrop-blur-md border-b border-black/5 shadow-[0_4px_20px_-8px_rgba(10,35,66,0.15)]">
+        <Container>
+          <nav className="flex items-center gap-1 overflow-x-auto py-3 no-scrollbar">
+            {SUB_NAV.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => scrollToSection(s.id)}
+                className="relative shrink-0 px-4 py-2 text-xs font-medium uppercase tracking-widest rounded-full transition-colors duration-300 whitespace-nowrap"
+                style={
+                  activeSection === s.id
+                    ? { background: NAVY, color: GOLD }
+                    : { color: NAVY, opacity: 0.6 }
+                }
+              >
+                {s.label}
+              </button>
+            ))}
+          </nav>
+        </Container>
+      </div>
 
       {/* ============================================================ */}
       {/* COVER STATEMENT — the reframed question                      */}
@@ -231,7 +423,7 @@ export default function PartnersPage() {
       {/* ============================================================ */}
       {/* THE PROBLEM                                                   */}
       {/* ============================================================ */}
-      <Section tone="ivory" spacing="lg">
+      <Section tone="ivory" spacing="lg" id="problem">
         <Container>
           <motion.div {...fadeUp} className="max-w-2xl mb-16">
             <Eyebrow number="01">The problem</Eyebrow>
@@ -331,7 +523,7 @@ export default function PartnersPage() {
                 className="relative text-center"
               >
                 <div
-                  className="relative z-10 mx-auto w-[4.5rem] h-[4.5rem] rounded-full grid place-items-center shadow-[0_16px_32px_-12px_rgba(10,35,66,0.35)]"
+                  className="relative z-10 mx-auto w-18 h-18 rounded-full grid place-items-center shadow-[0_16px_32px_-12px_rgba(10,35,66,0.35)]"
                   style={{ background: NAVY }}
                 >
                   <w.icon size={26} strokeWidth={1.5} style={{ color: GOLD }} />
@@ -356,7 +548,7 @@ export default function PartnersPage() {
       {/* ============================================================ */}
       {/* SOLUTION — trust factors grid                                 */}
       {/* ============================================================ */}
-      <Section tone="ivory" spacing="lg">
+      <Section tone="ivory" spacing="lg" id="trust-factors">
         <Container>
           <motion.div {...fadeUp} className="max-w-2xl mb-16">
             <Eyebrow number="04">The solution</Eyebrow>
@@ -387,9 +579,9 @@ export default function PartnersPage() {
       {/* ============================================================ */}
       {/* SYSTOLAB INTELLIGENCE ENGINE                                  */}
       {/* ============================================================ */}
-      <section className="relative overflow-hidden" style={{ backgroundColor: NAVY }}>
-        <div className="pointer-events-none absolute top-1/3 left-1/2 -translate-x-1/2 w-[50rem] h-[50rem] rounded-full opacity-[0.08] blur-3xl" style={{ background: GOLD }} />
-        <Section tone="ink" spacing="lg" divider={false} className="!bg-transparent relative z-10">
+      <section id="systolab" className="relative overflow-hidden" style={{ backgroundColor: NAVY }}>
+        <div className="pointer-events-none absolute top-1/3 left-1/2 -translate-x-1/2 w-200 h-200 rounded-full opacity-[0.08] blur-3xl" style={{ background: GOLD }} />
+        <Section tone="ink" spacing="lg" divider={false} className="bg-transparent! relative z-10">
           <Container>
             <motion.div {...fadeUp} className="max-w-2xl mx-auto text-center mb-16">
               <div
@@ -443,40 +635,115 @@ export default function PartnersPage() {
       </section>
 
       {/* ============================================================ */}
-      {/* OUTCOME — final CTA                                           */}
+      {/* OUTCOME — final CTA + application form                        */}
       {/* ============================================================ */}
-      <Section tone="ivory" spacing="lg">
-        <Container>
-          <motion.div
-            {...fadeUp}
-            className="relative overflow-hidden p-10 md:p-16 lg:p-24 text-center"
-            style={{ background: NAVY_SOFT }}
-          >
-            <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full opacity-20 blur-3xl" style={{ background: GOLD }} />
-            <Eyebrow number="05" light className="justify-center relative z-10">The outcome</Eyebrow>
-            <h2 className="text-display-hero mt-6 text-white relative z-10 max-w-3xl mx-auto">
-              Stop outsourcing. <span style={{ color: GOLD }}>Start partnering.</span>
-            </h2>
-            <p className="text-white/70 text-lg mt-8 max-w-xl mx-auto leading-relaxed relative z-10">
-              A vendor delivers a project and disappears. A partner grows with you — same team, same standards,
-              every time you say yes to a new client. That&apos;s the relationship we&apos;re built for.
-            </p>
-            <div className="mt-12 flex flex-wrap justify-center gap-4 relative z-10">
-              <Button
-                to="/consultation"
-                size="lg"
-                className="!text-[#0A2342] hover:!-translate-y-0.5"
-                style={{ background: GOLD }}
-              >
-                Become a long-term partner <ArrowUpRight size={16} strokeWidth={1.5} />
-              </Button>
-              <Button to="/contact" variant="ghost" size="lg" className="!border-white/30 !text-white hover:!bg-white hover:!text-[#0A2342]">
-                Ask us a question
-              </Button>
-            </div>
-          </motion.div>
+      <section id="apply" className="relative overflow-hidden py-20 md:py-32" style={{ backgroundColor: NAVY_SOFT }}>
+        <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full opacity-20 blur-3xl" style={{ background: GOLD }} />
+        <div className="pointer-events-none absolute -bottom-32 -right-24 w-96 h-96 rounded-full opacity-10 blur-3xl" style={{ background: '#FFFFFF' }} />
+        <Container className="relative z-10">
+          <div className="grid gap-16 lg:grid-cols-2 lg:items-start">
+            {/* Messaging */}
+            <motion.div {...fadeUp}>
+              <Eyebrow number="05" light>The outcome</Eyebrow>
+              <h2 className="text-display-hero mt-6 text-white">
+                Stop outsourcing.<br />
+                <span style={{ color: GOLD }}>Start partnering.</span>
+              </h2>
+              <p className="text-white/70 text-lg mt-8 max-w-lg leading-relaxed">
+                A vendor delivers a project and disappears. A partner grows with you — same team, same standards,
+                every time you say yes to a new client. That&apos;s the relationship we&apos;re built for.
+              </p>
+              <div className="mt-10 space-y-4">
+                {['No cost to apply — we review every request personally', 'NDA sent before any details are shared', 'Reply within 1-2 business days'].map((t) => (
+                  <div key={t} className="flex items-center gap-3 text-white/80 text-sm">
+                    <CheckCircle size={16} strokeWidth={1.5} style={{ color: GOLD }} className="shrink-0" />
+                    {t}
+                  </div>
+                ))}
+              </div>
+              <p className="text-white/50 text-sm mt-10 hidden lg:block">
+                Prefer to talk it through first?{' '}
+                <Button to="/consultation" variant="underline" className="text-white!" style={{ padding: 0 }}>
+                  Book a call instead
+                </Button>
+              </p>
+            </motion.div>
+
+            {/* Application form */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              className="bg-white/95 backdrop-blur-xl rounded-lg p-6 md:p-10 shadow-[0_32px_80px_-24px_rgba(0,0,0,0.5)]"
+            >
+              <div className="text-eyebrow mb-1">Become a delivery partner</div>
+              <h3 className="text-display-sm text-ink mb-6">Apply in under 2 minutes.</h3>
+
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Input label="First name *" {...register('firstName')} error={errors.firstName?.message} />
+                  <Input label="Last name *" {...register('lastName')} error={errors.lastName?.message} />
+                </div>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Input label="Work email *" type="email" {...register('email')} error={errors.email?.message} />
+                  <Input label="Phone" type="tel" {...register('phone')} error={errors.phone?.message} />
+                </div>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Input label="Agency / company name *" {...register('company')} error={errors.company?.message} />
+                  <Input label="Website" type="url" placeholder="https://" {...register('website')} error={errors.website?.message} />
+                </div>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Select label="Agency type *" options={AGENCY_TYPES} {...register('agencyType')} error={errors.agencyType?.message} />
+                  <Select label="Est. monthly project volume" options={VOLUME_OPTIONS} {...register('monthlyProjectVolume')} />
+                </div>
+
+                <div>
+                  <span className="text-eyebrow block mb-3">Services you&apos;d white-label</span>
+                  <div className="flex flex-wrap gap-2">
+                    {SERVICES_NEEDED_OPTIONS.map((s) => {
+                      const active = servicesNeeded.includes(s.value);
+                      return (
+                        <button
+                          key={s.value}
+                          type="button"
+                          onClick={() => toggleServiceNeeded(s.value)}
+                          className="px-4 py-2 text-mono text-xs uppercase tracking-widest border transition-colors"
+                          style={active ? { background: NAVY, color: GOLD, borderColor: NAVY } : { borderColor: '#e5e1d8' }}
+                        >
+                          {s.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <Textarea
+                  label="Tell us about your agency (optional)"
+                  rows={3}
+                  placeholder="What kind of client work are you looking to delegate?"
+                  {...register('message')}
+                  error={errors.message?.message}
+                />
+
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={mutation.isPending}
+                  className="w-full text-[#0A2342]! justify-center"
+                  style={{ background: GOLD }}
+                >
+                  {mutation.isPending ? 'Submitting…' : 'Submit application'}
+                  <ArrowUpRight size={16} strokeWidth={1.5} />
+                </Button>
+                <p className="text-slate text-xs text-center leading-relaxed">
+                  By submitting, you agree to be contacted about your application. We never share your info.
+                </p>
+              </form>
+            </motion.div>
+          </div>
         </Container>
-      </Section>
+      </section>
     </>
   );
 }

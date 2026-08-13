@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { contact, consultation, newsletter, career } from '../controllers/leadCapture.controller.js';
+import { contact, consultation, newsletter, career, partnerInquiry } from '../controllers/leadCapture.controller.js';
 import * as v from '../validators/leadCapture.validator.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, requireAdmin } from '../middleware/auth.middleware.js';
@@ -12,6 +12,14 @@ contactRoutes.post('/', leadLimiter, validate(v.contactSchema), contact.submit);
 contactRoutes.get('/', requireAuth, requireAdmin, contact.list);
 contactRoutes.patch('/:id', requireAuth, requireAdmin, contact.update);
 contactRoutes.delete('/:id', requireAuth, requireAdmin, contact.remove);
+
+/* Partner inquiry (white-label delivery partner applications) */
+export const partnerInquiryRoutes = Router();
+partnerInquiryRoutes.post('/', leadLimiter, validate(v.partnerInquirySchema), partnerInquiry.submit);
+partnerInquiryRoutes.get('/', requireAuth, requireAdmin, partnerInquiry.list);
+partnerInquiryRoutes.get('/:id', requireAuth, requireAdmin, partnerInquiry.getById);
+partnerInquiryRoutes.patch('/:id', requireAuth, requireAdmin, partnerInquiry.update);
+partnerInquiryRoutes.delete('/:id', requireAuth, requireAdmin, partnerInquiry.remove);
 
 /* Consultation */
 export const consultationRoutes = Router();

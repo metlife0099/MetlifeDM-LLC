@@ -109,6 +109,10 @@ export const leadsApi = {
   updateSubscriber: (id, data) => apiClient.patch(E.leads.subscriber(id), data).then(unwrap),
   deleteSubscriber: (id) => apiClient.delete(E.leads.subscriber(id)).then(unwrap),
   exportSubscribers: () => apiClient.get(E.leads.exportSubscribers, { responseType: 'blob' }),
+  listPartners: (params) => apiClient.get(E.leads.partners, { params }).then(unwrapMeta),
+  getPartner: (id) => apiClient.get(E.leads.partner(id)).then(unwrap),
+  updatePartner: (id, data) => apiClient.put(E.leads.updatePartner(id), data).then(unwrap),
+  deletePartner: (id) => apiClient.delete(E.leads.deletePartner(id)).then(unwrap),
 };
 
 /* ===================== CAMPAIGNS ===================== */

@@ -32,6 +32,20 @@ export const contactSchema = z.object({
     .optional(),
 });
 
+/* Partner inquiry (white-label delivery partner applications) */
+export const partnerInquirySchema = z.object({
+  firstName: z.string().trim().min(2),
+  lastName: z.string().trim().min(2),
+  email: z.string().trim().toLowerCase().email(),
+  phone: z.string().regex(REGEX.PHONE_US, 'Invalid US phone').optional().or(z.literal('')),
+  company: z.string().trim().min(2, 'Agency / company name is required'),
+  website: z.string().optional().or(z.literal('')),
+  agencyType: z.enum(['marketing_agency', 'web_design_agency', 'seo_agency', 'branding_agency', 'software_company', 'other']),
+  monthlyProjectVolume: optionalEnum(['1-2', '3-5', '6-10', '10+']),
+  servicesNeeded: z.array(z.string()).optional(),
+  message: z.string().max(3000).optional().or(z.literal('')),
+});
+
 /* Consultation */
 export const consultationSchema = z.object({
   firstName: z.string().trim().min(2),

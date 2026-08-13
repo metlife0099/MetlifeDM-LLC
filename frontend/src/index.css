@@ -545,6 +545,16 @@
     letter-spacing: 0.06em;
     color: var(--color-slate);
   }
+
+  /* Hides the scrollbar on horizontally-scrollable strips (e.g. an in-page
+     sub-nav) while keeping the element natively scrollable/swipeable. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* ---------------------------------------------------------------

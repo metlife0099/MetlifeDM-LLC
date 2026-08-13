@@ -14,6 +14,7 @@ export { default as CaseStudyCategory } from './CaseStudyCategory.model.js';
 export { default as Testimonial } from './Testimonial.model.js';
 export { default as Contact } from './Contact.model.js';
 export { default as Consultation } from './Consultation.model.js';
+export { default as PartnerInquiry } from './PartnerInquiry.model.js';
 export { default as Newsletter } from './Newsletter.model.js';
 export { default as Coupon } from './Coupon.model.js';
 export { default as FAQ } from './FAQ.model.js';

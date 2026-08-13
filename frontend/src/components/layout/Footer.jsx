@@ -13,7 +13,7 @@ const Socials = () => (
   <div className="flex gap-3 text-ivory/60">
     {[
       { Icon: Twitter, href: 'https://x.com/MetlifeDM_LLC', label: 'Twitter' },
-      { Icon: Linkedin, href: 'linkedin.com/company/metlifedm-llc-digital-marketing', label: 'LinkedIn' },
+      { Icon: Linkedin, href: 'https://linkedin.com/company/metlifedm-llc-digital-marketing', label: 'LinkedIn' },
       { Icon: Instagram, href: 'https://www.instagram.com/metlifedm.llc/', label: 'Instagram' },
       { Icon: Facebook, href: 'https://www.facebook.com/profile.php?id=61591351247538', label: 'Facebook' },
     ].map(({ Icon, href, label }) => (

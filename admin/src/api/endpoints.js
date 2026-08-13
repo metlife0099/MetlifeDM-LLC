@@ -123,6 +123,10 @@ export const ENDPOINTS = {
     subscribersBulk: '/admin/leads/subscribers/bulk',
     subscribersImport: '/admin/leads/subscribers/import',
     exportSubscribers: '/admin/leads/subscribers/export',
+    partners: '/admin/leads/partners',
+    partner: (id) => `/admin/leads/partners/${id}`,
+    updatePartner: (id) => `/admin/leads/partners/${id}`,
+    deletePartner: (id) => `/admin/leads/partners/${id}`,
   },
 
   /* ————— Campaigns ————— */

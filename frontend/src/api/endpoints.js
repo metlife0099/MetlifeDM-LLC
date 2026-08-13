@@ -71,6 +71,7 @@ export const ENDPOINTS = {
   // Lead capture
   contact: '/contact',
   consultations: '/consultations',
+  partnerInquiries: '/partner-inquiries',
   newsletter: {
     subscribe: '/newsletter/subscribe',
     unsubscribe: '/newsletter/unsubscribe',

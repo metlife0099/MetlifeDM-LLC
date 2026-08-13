@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
-import { Contact, Consultation, Newsletter, Career, JobApplication } from '../models/index.js';
+import { Contact, Consultation, Newsletter, Career, JobApplication, PartnerInquiry } from '../models/index.js';
 import { getPaginationOptions, paginate } from '../utils/pagination.js';
 import { CONSULTATION_STATUS, REGEX } from '../utils/constants.js';
 import * as XLSX from 'xlsx';
@@ -54,6 +54,58 @@ export const contact = {
   remove: asyncHandler(async (req, res) => {
     const c = await Contact.findByIdAndDelete(req.params.id);
     if (!c) throw ApiError.notFound('Contact not found');
+    return ApiResponse.ok(res, null, 'Deleted');
+  }),
+};
+
+/* ========== PARTNER INQUIRY (white-label delivery applications) ========== */
+export const partnerInquiry = {
+  submit: asyncHandler(async (req, res) => {
+    const p = await PartnerInquiry.create({
+      ...req.body,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    emailService.notifyAdmins(p, 'white-label partner').catch(() => {});
+    notifyAdmins({
+      type: 'partner_inquiry',
+      title: 'New white-label partner application',
+      message: `${p.firstName} ${p.lastName} — ${p.company}`,
+      resourceType: 'partner_inquiry',
+      resourceId: p._id,
+      actionUrl: `/leads/partners`,
+    }).catch(() => {});
+    return ApiResponse.created(res, null, "Thanks! We'll review your application and get back within 1-2 business days.");
+  }),
+  list: asyncHandler(async (req, res) => {
+    const opts = getPaginationOptions(req.query);
+    const filter = {};
+    if (req.query.status) filter.status = req.query.status;
+    if (req.query.agencyType) filter.agencyType = req.query.agencyType;
+    if (opts.search) {
+      filter.$or = [
+        { email: { $regex: opts.search, $options: 'i' } },
+        { firstName: { $regex: opts.search, $options: 'i' } },
+        { lastName: { $regex: opts.search, $options: 'i' } },
+        { company: { $regex: opts.search, $options: 'i' } },
+      ];
+    }
+    const { items, meta } = await paginate(PartnerInquiry, filter, opts);
+    return ApiResponse.ok(res, items, 'Partner inquiries', meta);
+  }),
+  getById: asyncHandler(async (req, res) => {
+    const p = await PartnerInquiry.findById(req.params.id);
+    if (!p) throw ApiError.notFound('Partner inquiry not found');
+    return ApiResponse.ok(res, { inquiry: p }, 'Partner inquiry');
+  }),
+  update: asyncHandler(async (req, res) => {
+    const p = await PartnerInquiry.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!p) throw ApiError.notFound('Partner inquiry not found');
+    return ApiResponse.ok(res, { inquiry: p }, 'Updated');
+  }),
+  remove: asyncHandler(async (req, res) => {
+    const p = await PartnerInquiry.findByIdAndDelete(req.params.id);
+    if (!p) throw ApiError.notFound('Partner inquiry not found');
     return ApiResponse.ok(res, null, 'Deleted');
   }),
 };

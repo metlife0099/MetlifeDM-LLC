@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Mail, Calendar, MailPlus, Trash2, Download, ExternalLink, Plus, UserPlus, Upload, X, Star, Send } from 'lucide-react';
+import { Mail, Calendar, MailPlus, Trash2, Download, ExternalLink, Plus, UserPlus, Upload, X, Star, Send, Handshake } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Tabs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
-import { StatusPill, Card, NewBadge } from '@/components/ui/index.jsx';
+import { StatusPill, Card, NewBadge, Badge } from '@/components/ui/index.jsx';
 import { Drawer, ConfirmDialog, Modal } from '@/components/ui/Modal.jsx';
 import { Select, SearchInput, Textarea, Input } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
@@ -12,7 +12,7 @@ import { leadsApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { useDebounce } from '@/hooks/index.js';
 import { timeAgo, formatDate, truncate } from '@/utils/format.js';
-import { CONTACT_STATUSES, CONSULTATION_STATUSES } from '@/utils/constants.js';
+import { CONTACT_STATUSES, CONSULTATION_STATUSES, PARTNER_INQUIRY_STATUSES, AGENCY_TYPE_LABELS } from '@/utils/constants.js';
 
 /* ============================================================
  * CONTACTS
@@ -591,5 +591,157 @@ function AddSubscribersModal({ open, onClose, onDone }) {
         </div>
       )}
     </Modal>
+  );
+}
+
+/* ============================================================
+ * PARTNER INQUIRIES — white-label partner applications from /partners
+ * ============================================================ */
+export function PartnerInquiriesPage() {
+  const qc = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('new');
+  const [selected, setSelected] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
+  const debounced = useDebounce(search, 300);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'partners', { page, debounced, status }],
+    queryFn: () => leadsApi.listPartners({ page, search: debounced, status, limit: 25 }),
+  });
+
+  const updateStatus = useMutation({
+    mutationFn: ({ id, status, internalNotes }) => leadsApi.updatePartner(id, { status, internalNotes }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'partners'] });
+      toast.success('Application updated');
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+
+  const remove = useMutation({
+    mutationFn: (id) => leadsApi.deletePartner(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'partners'] });
+      toast.success('Application deleted');
+      setDeleteId(null);
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+
+  const columns = [
+    {
+      key: 'name', label: 'Applicant',
+      render: (r) => (
+        <button onClick={() => setSelected(r)} className="text-left">
+          <div className="text-sm hover:text-ultra">{r.firstName} {r.lastName}</div>
+          <div className="text-mono text-xs text-slate mt-0.5">{r.email}</div>
+        </button>
+      ),
+    },
+    { key: 'company', label: 'Agency', render: (r) => <span className="text-sm">{r.company}</span> },
+    { key: 'agencyType', label: 'Type', render: (r) => <span className="text-sm text-slate">{AGENCY_TYPE_LABELS[r.agencyType] || r.agencyType}</span> },
+    { key: 'monthlyProjectVolume', label: 'Volume', render: (r) => <span className="text-mono text-xs text-slate">{r.monthlyProjectVolume || '—'}</span> },
+    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.status || 'new'} /> },
+    { key: 'createdAt', label: 'Applied', render: (r) => <span className="text-mono text-xs text-slate">{timeAgo(r.createdAt)}</span> },
+    {
+      key: 'actions', label: '', align: 'right',
+      render: (row) => (
+        <button onClick={(e) => { e.stopPropagation(); setDeleteId(row._id); }} className="p-1.5 text-slate hover:text-danger">
+          <Trash2 size={13} />
+        </button>
+      ),
+    },
+  ];
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="Leads / White-label partners"
+        title={<>Partner <span className="text-italic-fraunces text-ultra">applications</span></>}
+        subtitle="Agencies applying to become a white-label delivery partner via /partners."
+        actions={<NewBadge resourceType="partner_inquiry" />}
+        tabs={
+          <Tabs
+            items={[
+              { value: 'new', label: 'New' },
+              { value: 'contacted', label: 'Contacted' },
+              { value: 'qualified', label: 'Qualified' },
+              { value: 'active_partner', label: 'Active partners' },
+              { value: '', label: 'All' },
+            ]}
+            active={status}
+            onChange={(v) => { setStatus(v); setPage(1); }}
+          />
+        }
+      />
+      <FilterBar>
+        <SearchInput value={search} onChange={setSearch} placeholder="Search applications…" className="w-64" />
+      </FilterBar>
+      <DataTable
+        columns={columns} rows={data?.data || []} loading={isLoading}
+        meta={data?.meta} onPageChange={setPage}
+        onRowClick={(row) => setSelected(row)}
+        emptyIcon={Handshake} emptyTitle="No partner applications yet"
+      />
+
+      <Drawer
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        title={selected ? `${selected.firstName} ${selected.lastName}` : ''}
+        description={selected?.company}
+        width="lg"
+      >
+        {selected && (
+          <div className="space-y-6">
+            <Card padding={false} className="p-5">
+              <div className="text-eyebrow mb-3">Agency</div>
+              <div className="grid gap-3 sm:grid-cols-2 text-sm">
+                <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Agency name</div><div className="mt-1">{selected.company}</div></div>
+                <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Type</div><div className="mt-1">{AGENCY_TYPE_LABELS[selected.agencyType] || selected.agencyType}</div></div>
+                {selected.website && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Website</div><a href={selected.website} target="_blank" rel="noopener noreferrer" className="mt-1 flex items-center gap-1 hover:text-ultra">{selected.website}<ExternalLink size={11} strokeWidth={1.5} /></a></div>}
+                {selected.monthlyProjectVolume && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Est. monthly volume</div><div className="mt-1">{selected.monthlyProjectVolume} projects</div></div>}
+              </div>
+              {selected.servicesNeeded?.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-hairline">
+                  <div className="text-mono text-xs text-slate uppercase tracking-widest mb-2">Services to white-label</div>
+                  <div className="flex flex-wrap gap-2">
+                    {selected.servicesNeeded.map((s) => <Badge key={s}>{s}</Badge>)}
+                  </div>
+                </div>
+              )}
+            </Card>
+            <Card padding={false} className="p-5">
+              <div className="text-eyebrow mb-3">Contact</div>
+              <div className="grid gap-3 sm:grid-cols-2 text-sm">
+                <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Email</div><a href={`mailto:${selected.email}`} className="mt-1 block hover:text-ultra">{selected.email}</a></div>
+                {selected.phone && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Phone</div><div className="mt-1">{selected.phone}</div></div>}
+                <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Applied</div><div className="mt-1">{formatDate(selected.createdAt, 'datetime')}</div></div>
+              </div>
+            </Card>
+            {selected.message && (
+              <Card padding={false} className="p-5">
+                <div className="text-eyebrow mb-3">Message</div>
+                <div className="text-sm whitespace-pre-line leading-relaxed">{selected.message}</div>
+              </Card>
+            )}
+            <Card padding={false} className="p-5">
+              <div className="text-eyebrow mb-3">Status</div>
+              <Select
+                options={PARTNER_INQUIRY_STATUSES}
+                value={selected.status}
+                onChange={(e) => {
+                  updateStatus.mutate({ id: selected._id, status: e.target.value });
+                  setSelected((s) => (s ? { ...s, status: e.target.value } : s));
+                }}
+              />
+            </Card>
+          </div>
+        )}
+      </Drawer>
+
+      <ConfirmDialog open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={() => remove.mutate(deleteId)} loading={remove.isPending} title="Delete this application?" confirmLabel="Delete" variant="danger" />
+    </>
   );
 }
