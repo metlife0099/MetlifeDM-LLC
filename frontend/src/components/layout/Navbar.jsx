@@ -16,7 +16,7 @@ import { cn, initials } from '@/utils/format.js';
 // scrolls past, then solidifies like everywhere else.
 const DARK_HERO_ROUTES = new Set([
   '/', '/about', '/services', '/industries', '/portfolio', '/case-studies',
-  '/pricing', '/partners', '/blog', '/testimonials', '/faq', '/careers', '/contact', '/consultation',
+  '/pricing', '/growth-solutions', '/diagnostic', '/pasco', '/partners', '/blog', '/testimonials', '/faq', '/careers', '/contact', '/consultation',
 ]);
 const DARK_HERO_PREFIXES = ['/services/'];
 const isDarkHeroRoute = (pathname) =>

@@ -1,52 +1,77 @@
-import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, ArrowRight } from 'lucide-react';
+import {
+  ArrowUpRight, ChevronRight,
+  Stethoscope, SlidersHorizontal, ShieldCheck, Hammer, ServerCog, TrendingUp, Maximize2,
+  Activity, LifeBuoy,
+  Headphones, LayoutTemplate, Cpu, Puzzle,
+} from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
-import {
-  TestimonialsCarousel,
-  CtaBanner,
-  FaqAccordion,
-  ServicesGrid,
-} from '@/components/sections/index.jsx';
-import { BrandStory, HowWeWork, SolutionsNotServices, PlatformShowcase, BuilderFeatures, WhyUsTimeline } from '@/components/home/index.jsx';
-import { contentApi } from '@/api/index.js';
+
+/* ---- Hero ---- */
+const HERO_LINES = [
+  { verb: 'Diagnose', rest: 'what is holding you back.' },
+  { verb: 'Recover', rest: "what's at risk." },
+  { verb: 'Build', rest: 'what you need.' },
+  { verb: 'Grow', rest: 'what works.' },
+  { verb: 'Protect', rest: "what you've built." },
+];
+
+/* ---- The MetlifeDM Method ---- */
+const METHOD_STAGES = [
+  { icon: Stethoscope, label: 'Diagnose' },
+  { icon: SlidersHorizontal, label: 'Control' },
+  { icon: ShieldCheck, label: 'Protect' },
+  { icon: Hammer, label: 'Build' },
+  { icon: ServerCog, label: 'Operate' },
+  { icon: TrendingUp, label: 'Grow' },
+  { icon: Maximize2, label: 'Scale' },
+];
+
+/* ---- SYSTOLAB / PASCO — the two diagnostic engines ----
+ * SYSTOLAB answers "what's wrong" (proactive audit); PASCO answers "what
+ * happened" (reactive recovery, when a site's been hacked, access lost, or
+ * a previous developer/agency has gone dark). */
+const DIAGNOSTIC_ENGINES = [
+  {
+    icon: Activity,
+    name: 'SYSTOLAB',
+    question: "What's wrong?",
+    desc: 'Our diagnostic engine — audits your visibility, positioning, website and customer journey to find the real bottleneck before we recommend anything.',
+    href: '/diagnostic',
+  },
+  {
+    icon: LifeBuoy,
+    name: 'PASCO',
+    question: 'What happened?',
+    desc: "Our recovery diagnostic — for when a site's been hacked, access has been lost, or a previous developer or agency has gone dark. We find out what happened, then help you recover it.",
+    href: '/pasco',
+  },
+];
+
+/* ---- Specialized Solutions teaser ---- */
+const SPECIALIZED_TEASER = [
+  { icon: Headphones, label: 'Customer Service' },
+  { icon: LayoutTemplate, label: 'Projects' },
+  { icon: Cpu, label: 'Technology' },
+  { icon: Puzzle, label: 'White Label' },
+];
+
+/* ---- Why MetlifeDM chain ---- */
+const WHY_CHAIN = ['Where you are', 'Where you want to go', "What's stopping you"];
 
 export default function HomePage() {
-  const { data: featuredServices = [] } = useQuery({
-    queryKey: ['services', 'home'],
-    // Show the top services by display order — not gated behind the separate
-    // "Featured" toggle, so newly added services show up here immediately.
-    queryFn: () =>
-      contentApi
-        .listServices({ limit: 5, sortBy: 'order', sortOrder: 'asc' })
-        .then((r) => r.data),
-  });
-
-  const { data: testimonials = [] } = useQuery({
-    queryKey: ['testimonials', 'featured'],
-    queryFn: () => contentApi.listTestimonials({ featured: 'true', limit: 6 }).then((r) => r.data),
-  });
-
-  const { data: faqs = [] } = useQuery({
-    queryKey: ['faqs', 'featured'],
-    queryFn: () => contentApi.listFaqs({ featured: 'true', limit: 6 }),
-  });
-
   return (
     <>
       <Seo
         title="Digital marketing excellence for USA businesses"
-        description="MetlifeDM helps US businesses across a range of industries grow through SEO, PPC, content, and AI-powered marketing. Measurable ROI, transparent pricing, senior strategists."
+        description="MetlifeDM is the infrastructure behind digital business growth — we diagnose what's holding a business back, then build, operate, and protect the exact systems it needs to grow."
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'LocalBusiness',
           '@id': 'https://metlifedm.com/#organization',
           name: 'MetlifeDM LLC',
-          // Google surfaces this as the brand icon in search results and
-          // knowledge panels — it must be the actual logo, not a stock photo.
           logo: 'https://metlifedm.com/icons/icon-512.png',
           image: 'https://metlifedm.com/og/default.jpg',
           description:
@@ -67,179 +92,346 @@ export default function HomePage() {
         }}
       />
 
-      {/* ============ HERO ============ */}
+      {/* ============================================================ */}
+      {/* HERO                                                          */}
+      {/* ============================================================ */}
       <Section tone="ink" spacing="xl" divider={false} className="relative">
         <HeroImage
-          src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&q=80&auto=format&fit=crop"
-          alt="Strategists collaborating around a laptop"
+          src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920&q=80&auto=format&fit=crop"
+          alt="Infrastructure powering a growing digital business"
         />
         <Container className="relative z-10">
-          <div className="grid gap-16 lg:grid-cols-[1.4fr_1fr] lg:items-end">
-            <div>
-              <Eyebrow number="00" light>Digital marketing / Est. 2024</Eyebrow>
-              <motion.h1
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-                className="text-display-hero mt-8 text-ivory"
-              >
-                We don&apos;t sell marketing services.
-                <br />
-                We solve <span className="text-italic-fraunces text-ultra-soft">growth bottlenecks.</span>
-              </motion.h1>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1, delay: 0.2 }}
-                className="mt-6 text-sm uppercase tracking-[0.2em] font-medium text-ultra-soft"
-              >
-                Diagnose first. Optimize second. Measure always.
-              </motion.div>
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1, delay: 0.3 }}
-                className="mt-8 max-w-xl text-lg text-ivory/75 leading-relaxed"
-              >
-                MetlifeDM is a lean, senior-only team that diagnoses what&apos;s actually stopping a business from
-                growing — then builds the exact SEO, paid media, content, or AI-powered systems needed to fix it.
-                No generic packages, no guesswork.
-              </motion.p>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 1, delay: 0.5 }}
-                className="mt-12 flex flex-wrap gap-4"
-              >
-                <Button to="/consultation" size="lg" variant="inverse">
-                  Find My Growth Path <ArrowUpRight size={16} strokeWidth={1.5} />
-                </Button>
-                <Button to="/case-studies" variant="ghost" size="lg" className="border-ivory/30 text-ivory hover:bg-ivory hover:text-ink">
-                  See how we work
-                </Button>
-              </motion.div>
-            </div>
-
-            {/* Right: evidence card — a real client, not a fabricated benchmark */}
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 1, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="relative"
+          <div className="max-w-3xl">
+            <Eyebrow number="00" light>MetlifeDM</Eyebrow>
+            <motion.h1
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+              className="text-display-hero mt-8 text-ivory"
             >
-              <div className="border border-hairline p-8 md:p-10 bg-ivory-soft shadow-[0_32px_64px_-24px_rgba(0,0,0,0.5)]">
-                <div className="text-eyebrow mb-4">Real client · Construction</div>
-                <div className="text-display-sm leading-snug text-ink">
-                  Buildcare Interiors
-                </div>
-                <p className="text-slate text-sm mt-2">From manual referrals to a real digital lead pipeline.</p>
-                <div className="mt-8 space-y-3">
-                  {[
-                    ['Website', 'No presence → Modern business site'],
-                    ['Leads', 'Manual referrals → Online inquiry system'],
-                    ['Visibility', 'Local referrals → Strong online presence'],
-                    ['Mobile', 'Not optimized → Fully responsive'],
-                  ].map(([k, v]) => (
-                    <div key={k} className="flex justify-between gap-4 text-mono text-xs border-b border-hairline pb-2">
-                      <span className="text-slate shrink-0">{k}</span>
-                      <span className="text-ink text-right">{v}</span>
-                    </div>
-                  ))}
-                </div>
-                <Link
-                  to="/case-studies/building-a-digital-presence-that-generates-qualified-construction-leads"
-                  className="mt-8 pt-6 border-t border-hairline text-xs text-ultra hover:text-ink transition-colors flex items-center gap-2 link-underline w-fit"
-                >
-                  Read the full case study <ArrowUpRight size={12} strokeWidth={1.5} />
-                </Link>
-              </div>
+              The infrastructure behind
+              <br />
+              <span className="text-italic-fraunces text-ultra-soft">digital business growth.</span>
+            </motion.h1>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 0.3 }}
+              className="mt-10 space-y-2"
+            >
+              {HERO_LINES.map((l) => (
+                <p key={l.verb} className="text-ivory/75 text-lg">
+                  <span className="text-ivory font-medium">{l.verb}</span> {l.rest}
+                </p>
+              ))}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1, delay: 0.5 }}
+              className="mt-12 flex flex-wrap gap-4"
+            >
+              <Button to="/consultation" size="lg" variant="inverse">
+                Find My Growth Path <ArrowUpRight size={16} strokeWidth={1.5} />
+              </Button>
+              <Button
+                to="/pasco"
+                variant="ghost"
+                size="lg"
+                className="border-ivory/30 text-ivory hover:bg-ivory hover:text-ink"
+              >
+                Something Went Wrong? <ArrowUpRight size={16} strokeWidth={1.5} />
+              </Button>
             </motion.div>
           </div>
         </Container>
       </Section>
 
-      {/* Solutions, not services — outcome-led, industry-specific positioning */}
-      <SolutionsNotServices />
+      {/* ============================================================ */}
+      {/* THE PROBLEM                                                   */}
+      {/* ============================================================ */}
+      <Section tone="ivory" spacing="md">
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-2xl mx-auto text-center"
+          >
+            <Eyebrow className="justify-center">The problem</Eyebrow>
+            <h2 className="text-display-lg mt-4">
+              Digital business infrastructure is <span className="text-italic-fraunces text-ultra">complicated.</span>
+            </h2>
+          </motion.div>
+        </Container>
+      </Section>
 
-      {/* Brand story */}
-      <BrandStory />
-
-      {/* How we work — Problem → Diagnosis → Evidence → Strategy → Solution → Outcome */}
-      <HowWeWork />
-
-      {/* Services */}
+      {/* ============================================================ */}
+      {/* THE METLIFEDM METHOD                                          */}
+      {/* ============================================================ */}
       <Section tone="ivory" spacing="lg">
         <Container>
-          <div className="flex items-end justify-between mb-14 gap-8 flex-wrap">
-            <div>
-              <Eyebrow number="04">Services</Eyebrow>
-              <h2 className="text-display-lg mt-4 max-w-3xl">
-                Full-stack marketing<br />
-                built for <span className="text-italic-fraunces text-ultra">compounding.</span>
-              </h2>
-            </div>
-            <Button to="/services" variant="underline" size="md">
-              All services <ArrowRight size={14} strokeWidth={1.5} />
-            </Button>
-          </div>
-          {featuredServices.length > 0 ? (
-            <ServicesGrid services={featuredServices} />
-          ) : (
-            <div className="text-slate text-sm">Loading services…</div>
-          )}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-2xl mx-auto text-center"
+          >
+            <Eyebrow className="justify-center">The MetlifeDM method</Eyebrow>
+            <h2 className="text-display-lg mt-4">
+              One method. <span className="text-italic-fraunces text-ultra">Every engagement.</span>
+            </h2>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 32 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-16 flex flex-wrap items-start justify-center gap-y-10"
+          >
+            {METHOD_STAGES.map((stage, i) => (
+              <div key={stage.label} className="flex items-center">
+                <div className="flex flex-col items-center gap-4 w-24 md:w-28 px-2">
+                  <div className="w-14 h-14 md:w-16 md:h-16 rounded-full grid place-items-center bg-ink text-ivory">
+                    <stage.icon size={20} strokeWidth={1.5} />
+                  </div>
+                  <span className="text-[0.65rem] md:text-xs uppercase tracking-widest text-center font-medium">
+                    {stage.label}
+                  </span>
+                </div>
+                {i < METHOD_STAGES.length - 1 && (
+                  <ChevronRight size={18} strokeWidth={1.5} className="text-slate shrink-0 hidden md:block" />
+                )}
+              </div>
+            ))}
+          </motion.div>
         </Container>
       </Section>
 
-      {/* Platform showcase */}
-      <PlatformShowcase />
+      {/* ============================================================ */}
+      {/* SYSTOLAB / PASCO — the two diagnostic engines                 */}
+      {/* ============================================================ */}
+      <Section tone="ink" spacing="lg" divider={false} id="diagnostics">
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-2xl mx-auto text-center"
+          >
+            <Eyebrow light className="justify-center">Two diagnostic engines</Eyebrow>
+            <h2 className="text-display-lg mt-4 text-ivory">
+              Before we touch anything, <span className="text-italic-fraunces text-ultra-soft">we find out why.</span>
+            </h2>
+          </motion.div>
 
-      {/* Website builder features */}
-      <BuilderFeatures />
+          <div className="mt-16 grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
+            {DIAGNOSTIC_ENGINES.map((d, i) => (
+              <motion.div
+                key={d.name}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="border border-ivory/15 bg-ivory/5 p-8 md:p-10"
+              >
+                <div className="w-12 h-12 grid place-items-center bg-ivory/10 text-ultra-soft">
+                  <d.icon size={20} strokeWidth={1.5} />
+                </div>
+                <div className="mt-6 flex items-baseline gap-3">
+                  <h3 className="text-display-sm text-ivory">{d.name}</h3>
+                  <span className="text-ivory/50 text-sm text-italic-fraunces">{d.question}</span>
+                </div>
+                <p className="text-ivory/65 text-sm mt-4 leading-relaxed">{d.desc}</p>
+                <Button to={d.href} variant="underline" className="mt-6 w-fit text-ivory!">
+                  Learn more <ArrowUpRight size={13} strokeWidth={1.5} />
+                </Button>
+              </motion.div>
+            ))}
+          </div>
+        </Container>
+      </Section>
 
-      {/* Image band — results in the wild */}
-      <div className="relative h-[55vh] md:h-[65vh] overflow-hidden img-zoom">
-        <motion.img
-          initial={{ scale: 1.15, opacity: 0 }}
-          whileInView={{ scale: 1, opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-          src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1600&q=80&auto=format&fit=crop"
-          alt="A client and strategist celebrating a campaign win"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-linear-to-r from-ink/80 via-ink/20 to-transparent" />
-        <div className="absolute inset-0 flex items-center">
-          <Container>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="max-w-lg"
-            >
-              <Eyebrow className="text-ivory/60">Real results</Eyebrow>
-              <p className="text-ivory text-2xl md:text-4xl mt-6 leading-tight text-italic-fraunces">
-                Clients don&apos;t hire us twice by accident.
+      {/* ============================================================ */}
+      {/* GROWTH SOLUTIONS TEASER                                       */}
+      {/* ============================================================ */}
+      <Section tone="ivory" spacing="lg">
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            className="border border-hairline hover:border-ink transition-colors duration-500 p-8 md:p-12 flex flex-col md:flex-row md:items-center gap-8"
+          >
+            <div className="flex-1">
+              <Eyebrow>Growth Solutions</Eyebrow>
+              <h2 className="text-display-lg mt-4">
+                What should <span className="text-italic-fraunces text-ultra">happen next?</span>
+              </h2>
+              <p className="text-slate text-lg mt-4 max-w-lg leading-relaxed">
+                Once we know what&apos;s wrong, we recommend the path built around your business — not a fixed
+                service list.
               </p>
-              <p className="text-ivory/70 mt-6 max-w-md leading-relaxed">
-                94% client retention. Senior strategists who stay on your account for years, not months.
-              </p>
-            </motion.div>
-          </Container>
-        </div>
-      </div>
+            </div>
+            <Button to="/growth-solutions" size="lg" className="shrink-0 w-fit">
+              Explore Growth Solutions <ArrowUpRight size={16} strokeWidth={1.5} />
+            </Button>
+          </motion.div>
+        </Container>
+      </Section>
 
-      {/* Why us — timeline */}
-      <WhyUsTimeline />
+      {/* ============================================================ */}
+      {/* SPECIALIZED SOLUTIONS TEASER                                  */}
+      {/* ============================================================ */}
+      <Section tone="ivory" spacing="md">
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <Eyebrow className="justify-center mb-10 md:justify-start">Specialized solutions</Eyebrow>
+            <div className="grid gap-px bg-hairline border border-hairline sm:grid-cols-2 lg:grid-cols-4">
+              {SPECIALIZED_TEASER.map((s) => (
+                <a
+                  key={s.label}
+                  href="/growth-solutions"
+                  className="group bg-ivory hover:bg-ink p-8 transition-colors duration-500 flex items-center gap-4"
+                >
+                  <div className="w-11 h-11 shrink-0 grid place-items-center bg-sand group-hover:bg-ivory/10 transition-colors duration-500">
+                    <s.icon size={18} strokeWidth={1.5} className="text-ink group-hover:text-ultra-soft transition-colors duration-500" />
+                  </div>
+                  <span className="text-sm font-medium group-hover:text-ivory transition-colors duration-500">{s.label}</span>
+                </a>
+              ))}
+            </div>
+          </motion.div>
+        </Container>
+      </Section>
 
-      {/* Testimonials */}
-      {testimonials.length > 0 && <TestimonialsCarousel testimonials={testimonials} />}
+      {/* ============================================================ */}
+      {/* WHY METLIFEDM?                                                */}
+      {/* ============================================================ */}
+      <Section tone="ink" spacing="md" divider={false}>
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-2xl mx-auto text-center"
+          >
+            <Eyebrow light className="justify-center">Why MetlifeDM?</Eyebrow>
+            <p className="text-ivory text-xl md:text-2xl text-italic-fraunces mt-6 leading-snug">
+              {WHY_CHAIN.join(' → ')}
+            </p>
+          </motion.div>
+        </Container>
+      </Section>
 
-      {/* FAQ */}
-      {faqs.length > 0 && <FaqAccordion items={faqs} />}
+      {/* ============================================================ */}
+      {/* ECOSYSTEM TEASER                                              */}
+      {/* ============================================================ */}
+      <Section tone="ivory" spacing="md">
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-2xl mx-auto text-center"
+          >
+            <Eyebrow className="justify-center">The MetlifeDM ecosystem</Eyebrow>
+            <p className="text-lg mt-4 max-w-xl mx-auto leading-relaxed text-slate">
+              Strategy, marketing, technology, customer service, white label, growth — one partner, evolving with
+              your business.
+            </p>
+            <Button to="/pricing" variant="underline" className="mt-6">
+              Explore the ecosystem <ArrowUpRight size={13} strokeWidth={1.5} />
+            </Button>
+          </motion.div>
+        </Container>
+      </Section>
 
-      {/* Final CTA */}
-      <CtaBanner />
+      {/* ============================================================ */}
+      {/* CLIENT FOR LIFE TEASER                                        */}
+      {/* ============================================================ */}
+      <Section tone="ink" spacing="md" divider={false}>
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-2xl mx-auto text-center"
+          >
+            <Eyebrow light className="justify-center">Client for life</Eyebrow>
+            <h2 className="text-display-lg mt-4 text-ivory">
+              Your subscription can end.<br />
+              <span className="text-italic-fraunces text-ultra-soft">Our relationship doesn&apos;t have to.</span>
+            </h2>
+            <Button to="/growth-solutions#client-for-life" variant="underline" className="mt-6 text-ivory!">
+              Learn how <ArrowUpRight size={13} strokeWidth={1.5} />
+            </Button>
+          </motion.div>
+        </Container>
+      </Section>
+
+      {/* ============================================================ */}
+      {/* 15-MINUTE CLARITY CONVERSATION                                */}
+      {/* ============================================================ */}
+      <Section tone="ivory" spacing="lg">
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="border border-ink p-10 md:p-16 text-center max-w-3xl mx-auto"
+          >
+            <Eyebrow className="justify-center">15-minute clarity conversation</Eyebrow>
+            <h2 className="text-display-lg mt-4">
+              No pitch. No pressure. <span className="text-italic-fraunces text-ultra">Just clarity.</span>
+            </h2>
+            <p className="text-slate text-lg mt-6 max-w-lg mx-auto leading-relaxed">
+              Fifteen minutes to figure out where the actual bottleneck is — and whether we&apos;re even the right
+              fit to fix it.
+            </p>
+            <Button to="/consultation" size="lg" className="mt-10">
+              Book Your 15 Minutes <ArrowUpRight size={16} strokeWidth={1.5} />
+            </Button>
+          </motion.div>
+        </Container>
+      </Section>
+
+      {/* ============================================================ */}
+      {/* FINAL CTA (kept extremely minimal, on purpose)                 */}
+      {/* ============================================================ */}
+      <Section tone="ink" spacing="md" divider={false}>
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-xl mx-auto text-center"
+          >
+            <p className="text-ivory text-xl md:text-2xl text-italic-fraunces leading-snug">
+              Let&apos;s start with the business — not the service.
+            </p>
+            <Button to="/consultation" size="lg" variant="inverse" className="mt-10">
+              Start a Conversation <ArrowUpRight size={16} strokeWidth={1.5} />
+            </Button>
+          </motion.div>
+        </Container>
+      </Section>
     </>
   );
 }

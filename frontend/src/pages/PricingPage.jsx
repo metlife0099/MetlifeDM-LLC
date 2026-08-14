@@ -641,7 +641,7 @@ export default function PricingPage() {
             <p className="text-xl text-italic-fraunces text-ivory leading-snug">
               We don&apos;t recommend services simply because they&apos;re available. We identify the bottleneck first.
             </p>
-            <Button to="/consultation" size="lg" variant="inverse" className="mt-10">
+            <Button to="/diagnostic" size="lg" variant="inverse" className="mt-10">
               Start a Diagnostic Conversation <ArrowUpRight size={16} strokeWidth={1.5} />
             </Button>
           </motion.div>

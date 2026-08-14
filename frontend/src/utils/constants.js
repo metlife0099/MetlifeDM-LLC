@@ -11,7 +11,7 @@ export const NAV_MAIN = [
   { label: 'Industries', href: '/industries' },
   { label: 'Case Studies', href: '/case-studies' },
   { label: 'Portfolio', href: '/portfolio' },
-  { label: 'Pricing', href: '/pricing' },
+  { label: 'Growth Solutions', href: '/growth-solutions' },
   { label: 'Partners', href: '/partners' },
   { label: 'Blog', href: '/blog' },
   { label: 'About', href: '/about' },
@@ -44,6 +44,7 @@ export const NAV_FOOTER = [
     title: 'Resources',
     links: [
       { label: 'Blog', href: '/blog' },
+      { label: 'Pricing', href: '/pricing' },
       { label: 'FAQ', href: '/faq' },
       { label: 'Testimonials', href: '/testimonials' },
       { label: 'Portfolio', href: '/portfolio' },

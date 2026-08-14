@@ -14,6 +14,9 @@ const AboutPage = lazy(() => import('@/pages/AboutPage.jsx'));
 const ServicesPage = lazy(() => import('@/pages/ServicesPage.jsx'));
 const ServiceDetailsPage = lazy(() => import('@/pages/ServiceDetailsPage.jsx'));
 const PricingPage = lazy(() => import('@/pages/PricingPage.jsx'));
+const GrowthSolutionsPage = lazy(() => import('@/pages/GrowthSolutionsPage.jsx'));
+const DiagnosticPage = lazy(() => import('@/pages/DiagnosticPage.jsx'));
+const PascoPage = lazy(() => import('@/pages/PascoPage.jsx'));
 const PortfolioPage = lazy(() => import('@/pages/PortfolioPage.jsx'));
 const PortfolioDetailsPage = lazy(() => import('@/pages/PortfolioDetailsPage.jsx'));
 const CaseStudiesPage = lazy(() => import('@/pages/CaseStudiesPage.jsx'));
@@ -104,6 +107,9 @@ export default function App() {
         <Route path="services" element={withSuspense(ServicesPage, 'Services')} />
         <Route path="services/:slug" element={withSuspense(ServiceDetailsPage, 'Service')} />
         <Route path="pricing" element={withSuspense(PricingPage, 'Pricing')} />
+        <Route path="growth-solutions" element={withSuspense(GrowthSolutionsPage, 'Growth Solutions')} />
+        <Route path="diagnostic" element={withSuspense(DiagnosticPage, 'Diagnostic')} />
+        <Route path="pasco" element={withSuspense(PascoPage, 'PASCO')} />
 
         {/* Work */}
         <Route path="portfolio" element={withSuspense(PortfolioPage, 'Portfolio')} />
