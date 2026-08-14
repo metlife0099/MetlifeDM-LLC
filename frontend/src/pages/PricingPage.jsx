@@ -2,7 +2,14 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
-import { Check, ShoppingBag, Star, ArrowUpRight, ShieldCheck, Sparkles, Ban, ChevronDown } from 'lucide-react';
+import {
+  Check, ShoppingBag, Star, ArrowUpRight, ShieldCheck, Sparkles, Ban, ChevronDown,
+  Headphones, Puzzle,
+  MessageCircle, Send, CalendarCheck, MessageSquareText, Mail, Repeat, Database, Settings2,
+  Globe, RefreshCw, LayoutTemplate, Search, MapPin, Palette, Target, Megaphone, Gauge, Wand2,
+  Eye, MousePointerClick, Route,
+  Users, Cpu,
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
@@ -20,6 +27,89 @@ const TRUST_POINTS = [
   { icon: Ban, label: 'No lock-in contracts' },
   { icon: ShieldCheck, label: 'Transparent, itemized pricing' },
   { icon: Sparkles, label: 'Senior strategist on every plan' },
+];
+
+/* Customer Service, Projects, and the Diagnostic are all important — and
+ * different — enough to get their own full sections below (07 / 08 / 09).
+ * Add-ons is the one entry point still compact. */
+const ADDONS_SOLUTION = {
+  icon: Puzzle,
+  name: 'Add-ons',
+  price: 'Custom',
+  tagline: 'Add exactly what your business needs.',
+  tags: ['SEO', 'Ads', 'Content', 'Automation', 'CRM', 'SYSTOLAB', 'Development'],
+  ctaLabel: 'Explore Add-ons',
+  href: '/services',
+};
+
+/* ---- 09 · The MetlifeDM Diagnostic (full section) ---- */
+const DIAGNOSTIC_STAGES = [
+  { icon: Eye, label: 'Visibility' },
+  { icon: Target, label: 'Positioning' },
+  { icon: ShieldCheck, label: 'Trust' },
+  { icon: Globe, label: 'Website' },
+  { icon: MousePointerClick, label: 'Conversion' },
+  { icon: Route, label: 'Customer Journey' },
+  { icon: Repeat, label: 'Retention' },
+];
+
+/* ---- 07 · Customer Service (full section, not just a card) ---- */
+const CUSTOMER_SERVICE_ITEMS = [
+  { icon: MessageCircle, label: 'WhatsApp Management' },
+  { icon: Send, label: 'Lead Follow-Up' },
+  { icon: CalendarCheck, label: 'Appointment & Booking Support' },
+  { icon: MessageSquareText, label: 'Customer Feedback' },
+  { icon: Star, label: 'Review Management' },
+  { icon: Mail, label: 'After-Sales Communication' },
+  { icon: Repeat, label: 'Customer Retention' },
+  { icon: Database, label: 'CRM & Lead Organization' },
+  { icon: Headphones, label: 'Dedicated Customer Support' },
+  { icon: Settings2, label: 'Custom Operations' },
+];
+
+/* ---- 08 · Projects (full section, not just a card) ---- */
+const PROJECT_CATEGORIES = [
+  { icon: Globe, label: 'Website Development' },
+  { icon: RefreshCw, label: 'Website Redesign' },
+  { icon: LayoutTemplate, label: 'Landing Pages' },
+  { icon: Search, label: 'SEO Setup' },
+  { icon: MapPin, label: 'Google Business Setup' },
+  { icon: Palette, label: 'Brand Strategy' },
+  { icon: Target, label: 'Marketing Strategy' },
+  { icon: Megaphone, label: 'Campaign Development' },
+  { icon: Gauge, label: 'SYSTOLAB Implementation' },
+  { icon: Wand2, label: 'Custom Digital Solutions' },
+];
+
+/* ---- 10 · White Label Partnership (full section) ---- */
+const WHITE_LABEL_PILLARS = [
+  { icon: Palette, name: 'Your Brand', desc: 'Your identity, domain and customer-facing experience.' },
+  { icon: Users, name: 'Your Clients', desc: 'You own the customer relationship.' },
+  { icon: Cpu, name: 'Our Engine', desc: 'MetlifeDM provides the infrastructure, technology and expertise.' },
+  { icon: Headphones, name: 'Our Support', desc: 'We operate behind the scenes.' },
+];
+
+/* ---- 11 · White Label Plans ---- */
+const WHITE_LABEL_PLANS = [
+  {
+    name: 'White Label Start',
+    price: 499,
+    tagline: 'For partners testing the ecosystem.',
+    ctaLabel: 'Become a Partner',
+  },
+  {
+    name: 'White Label Grow',
+    price: 999,
+    tagline: 'For businesses building recurring services around MetlifeDM technology.',
+    ctaLabel: 'Become a Partner',
+  },
+  {
+    name: 'White Label Enterprise',
+    price: null,
+    tagline: 'For organizations requiring deep integration and infrastructure.',
+    tags: ['Custom domain', 'API', 'Integrations', 'Workflows', 'Large volumes', 'Infrastructure', 'Development', 'Account Management', 'SLA'],
+    ctaLabel: 'Talk to Sales',
+  },
 ];
 
 /**
@@ -336,6 +426,327 @@ export default function PricingPage() {
               .
             </div>
           )}
+        </Container>
+      </Section>
+
+      {/* ============================================================ */}
+      {/* 07 — CUSTOMER SERVICE (its own section, not just a card — this */}
+      {/* is operational work, kept visually distinct from the marketing */}
+      {/* retainers above)                                               */}
+      {/* ============================================================ */}
+      <Section tone="ink" spacing="lg" divider={false}>
+        <Container>
+          <div className="grid gap-16 lg:grid-cols-[1fr_1.15fr] lg:items-start">
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <Eyebrow light>Customer Service</Eyebrow>
+              <h2 className="text-display-lg mt-4 text-ivory">
+                Built around <span className="text-italic-fraunces text-ultra-soft">your business.</span>
+              </h2>
+              <p className="text-ivory/70 text-lg mt-6 leading-relaxed">
+                Every touchpoint after the sale — a WhatsApp message, a booking request, a review, a follow-up — is
+                a system, not an afterthought. We build and run the exact customer service operation your business
+                needs, so no lead goes cold waiting on a reply.
+              </p>
+
+              <div className="mt-10 flex items-baseline gap-2">
+                <span className="text-display-md num-plate text-ivory">{formatMoney(199)}</span>
+                <span className="text-mono text-xs uppercase text-ivory/50">/ month, starting from</span>
+              </div>
+
+              <div className="mt-6 pt-6 border-t border-ivory/10">
+                <div className="text-mono text-xs uppercase tracking-widest text-ivory/50 mb-3">Why pricing varies</div>
+                <p className="text-ivory/60 text-sm leading-relaxed max-w-md">
+                  Customer Service is priced individually because it&apos;s operational work, not a marketing
+                  retainer — the cost depends on your message volume, the channels you use, and how complex your
+                  booking or support flow is. We quote it around how your business actually runs, not a fixed
+                  template.
+                </p>
+              </div>
+
+              <Button to="/consultation" size="lg" variant="inverse" className="mt-10">
+                Build Customer Service <ArrowUpRight size={16} strokeWidth={1.5} />
+              </Button>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="grid gap-px bg-ivory/10 border border-ivory/10 sm:grid-cols-2"
+            >
+              {CUSTOMER_SERVICE_ITEMS.map((item) => (
+                <div key={item.label} className="bg-ink p-6 flex items-center gap-3">
+                  <div className="w-9 h-9 shrink-0 grid place-items-center bg-ivory/5 text-ultra-soft">
+                    <item.icon size={16} strokeWidth={1.5} />
+                  </div>
+                  <span className="text-ivory/85 text-sm">{item.label}</span>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        </Container>
+      </Section>
+
+      {/* ============================================================ */}
+      {/* 08 — PROJECTS (the escape valve so a fixed tier never becomes */}
+      {/* a ceiling on what a client can build with us)                 */}
+      {/* ============================================================ */}
+      <Section tone="ivory" spacing="lg">
+        <Container>
+          <div className="grid gap-16 lg:grid-cols-[1fr_1.15fr] lg:items-start">
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <Eyebrow>Projects</Eyebrow>
+              <h2 className="text-display-lg mt-4">
+                Build it once. <span className="text-italic-fraunces text-ultra">Build it right.</span>
+              </h2>
+              <p className="text-slate text-lg mt-6 leading-relaxed">
+                Not everything fits into a monthly package. Some businesses need one project, done properly, and
+                nothing else — a new site, a rebrand, a single campaign. Projects are scoped and quoted
+                individually, so Foundation, Growth, and Growth Partnership never become a ceiling on what you can
+                build with us.
+              </p>
+              <Button to="/consultation" size="lg" className="mt-10">
+                Custom Quote <ArrowUpRight size={16} strokeWidth={1.5} />
+              </Button>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="grid gap-px bg-hairline border border-hairline sm:grid-cols-2"
+            >
+              {PROJECT_CATEGORIES.map((item) => (
+                <div key={item.label} className="bg-ivory p-6 flex items-center gap-3">
+                  <div className="w-9 h-9 shrink-0 grid place-items-center bg-ink text-ivory">
+                    <item.icon size={16} strokeWidth={1.5} />
+                  </div>
+                  <span className="text-ink text-sm">{item.label}</span>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+        </Container>
+      </Section>
+
+      {/* ============================================================ */}
+      {/* 09 — THE METLIFEDM DIAGNOSTIC                                  */}
+      {/* ============================================================ */}
+      <Section tone="ink" spacing="lg" divider={false}>
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-2xl mx-auto text-center"
+          >
+            <Eyebrow light className="justify-center">The MetlifeDM Diagnostic</Eyebrow>
+            <h2 className="text-display-lg mt-4 text-ivory">
+              Before we recommend anything,<br />
+              <span className="text-italic-fraunces text-ultra-soft">we find what&apos;s actually wrong.</span>
+            </h2>
+          </motion.div>
+
+          {/* Vertical funnel — each stage narrows in on the real bottleneck */}
+          <div className="mt-16 max-w-md mx-auto">
+            {DIAGNOSTIC_STAGES.map((stage, i) => (
+              <motion.div
+                key={stage.label}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                className="relative"
+              >
+                <div className="flex items-center gap-5 py-4">
+                  <div className="w-11 h-11 shrink-0 grid place-items-center rounded-full bg-ivory/5 border border-ivory/15 text-ultra-soft">
+                    <stage.icon size={18} strokeWidth={1.5} />
+                  </div>
+                  <div className="flex items-baseline gap-3">
+                    <span className="num-plate text-ivory/30 text-xs">{String(i + 1).padStart(2, '0')}</span>
+                    <span className="text-ivory text-lg">{stage.label}</span>
+                  </div>
+                </div>
+                {i < DIAGNOSTIC_STAGES.length - 1 && (
+                  <div className="pl-[1.375rem]">
+                    <div className="w-px h-6 bg-ivory/15" />
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-xl mx-auto text-center mt-16 pt-12 border-t border-ivory/10"
+          >
+            <p className="text-xl text-italic-fraunces text-ivory leading-snug">
+              We don&apos;t recommend services simply because they&apos;re available. We identify the bottleneck first.
+            </p>
+            <Button to="/consultation" size="lg" variant="inverse" className="mt-10">
+              Start a Diagnostic Conversation <ArrowUpRight size={16} strokeWidth={1.5} />
+            </Button>
+          </motion.div>
+        </Container>
+      </Section>
+
+      {/* Add-ons — the one remaining compact entry point */}
+      <Section tone="ivory" spacing="lg">
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            className="border border-hairline hover:border-ink transition-colors duration-500 p-8 md:p-10 flex flex-col md:flex-row md:items-center gap-8"
+          >
+            <div className="w-14 h-14 shrink-0 grid place-items-center bg-ink text-ivory">
+              <ADDONS_SOLUTION.icon size={22} strokeWidth={1.5} />
+            </div>
+            <div className="flex-1">
+              <div className="text-mono text-xs uppercase tracking-widest text-slate mb-2">{ADDONS_SOLUTION.name} · {ADDONS_SOLUTION.price}</div>
+              <h3 className="text-display-sm">{ADDONS_SOLUTION.tagline}</h3>
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {ADDONS_SOLUTION.tags.map((t) => (
+                  <span key={t} className="px-2.5 py-1 text-[0.65rem] uppercase tracking-wide text-slate border border-hairline">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <Button to={ADDONS_SOLUTION.href} size="md" className="shrink-0 w-fit">
+              {ADDONS_SOLUTION.ctaLabel} <ArrowUpRight size={14} strokeWidth={1.5} />
+            </Button>
+          </motion.div>
+        </Container>
+      </Section>
+
+      {/* ============================================================ */}
+      {/* 10 — WHITE LABEL PARTNERSHIP                                   */}
+      {/* ============================================================ */}
+      <Section tone="ink" spacing="lg" divider={false}>
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-2xl mx-auto text-center"
+          >
+            <Eyebrow light className="justify-center">White Label Partnership</Eyebrow>
+            <h2 className="text-display-lg mt-4 text-ivory">
+              Your brand. <span className="text-italic-fraunces text-ultra-soft">Our engine.</span>
+            </h2>
+            <p className="text-ivory/70 text-lg mt-6 leading-relaxed">
+              Offer MetlifeDM-powered technology and services under your own brand.
+            </p>
+          </motion.div>
+
+          <div className="mt-16 grid gap-px bg-ivory/10 border border-ivory/10 sm:grid-cols-2 lg:grid-cols-4">
+            {WHITE_LABEL_PILLARS.map((p, i) => (
+              <motion.div
+                key={p.name}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.6, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                className="bg-ink p-8"
+              >
+                <div className="w-11 h-11 grid place-items-center bg-ivory/5 text-ultra-soft">
+                  <p.icon size={18} strokeWidth={1.5} />
+                </div>
+                <div className="text-mono text-xs uppercase tracking-widest text-ivory/50 mt-6">{p.name}</div>
+                <p className="text-ivory/85 text-sm mt-3 leading-relaxed">{p.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }}
+            transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-2xl mx-auto text-center mt-16 pt-12 border-t border-ivory/10"
+          >
+            <p className="text-xl md:text-2xl text-italic-fraunces text-ivory leading-snug">
+              You build the relationship. We build what&apos;s behind it.
+            </p>
+          </motion.div>
+        </Container>
+      </Section>
+
+      {/* ============================================================ */}
+      {/* 11 — WHITE LABEL PLANS                                        */}
+      {/* ============================================================ */}
+      <Section tone="ivory" spacing="lg">
+        <Container>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-2xl mx-auto text-center mb-16"
+          >
+            <Eyebrow className="justify-center">White Label Plans</Eyebrow>
+            <h2 className="text-display-lg mt-4">
+              Built to grow <span className="text-italic-fraunces text-ultra">with your ecosystem.</span>
+            </h2>
+          </motion.div>
+
+          <div className="grid gap-6 lg:grid-cols-3">
+            {WHITE_LABEL_PLANS.map((plan, i) => (
+              <motion.div
+                key={plan.name}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                className="flex flex-col border border-hairline hover:border-ink hover-lift transition-colors duration-500 p-8"
+              >
+                <div className="text-mono text-xs uppercase tracking-widest text-slate">{plan.name}</div>
+                <div className="mt-4 flex items-baseline gap-2">
+                  {plan.price ? (
+                    <>
+                      <span className="text-display-md num-plate">{formatMoney(plan.price)}</span>
+                      <span className="text-mono text-xs uppercase text-slate">/ month, from</span>
+                    </>
+                  ) : (
+                    <span className="text-display-md num-plate">Custom</span>
+                  )}
+                </div>
+                <p className="text-slate text-sm mt-4 leading-relaxed">{plan.tagline}</p>
+
+                {plan.tags && (
+                  <div className="mt-6 flex flex-wrap gap-1.5">
+                    {plan.tags.map((t) => (
+                      <span key={t} className="px-2.5 py-1 text-[0.65rem] uppercase tracking-wide text-slate border border-hairline">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <Button to="/partners" variant="underline" className="mt-8 w-fit">
+                  {plan.ctaLabel} <ArrowUpRight size={13} strokeWidth={1.5} />
+                </Button>
+              </motion.div>
+            ))}
+          </div>
         </Container>
       </Section>
 
