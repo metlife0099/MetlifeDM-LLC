@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowUpRight, ChevronRight,
@@ -52,10 +53,10 @@ const DIAGNOSTIC_ENGINES = [
 
 /* ---- Specialized Solutions teaser ---- */
 const SPECIALIZED_TEASER = [
-  { icon: Headphones, label: 'Customer Service' },
-  { icon: LayoutTemplate, label: 'Projects' },
-  { icon: Cpu, label: 'Technology' },
-  { icon: Puzzle, label: 'White Label' },
+  { icon: Headphones, label: 'Customer Service', href: '/customer-service' },
+  { icon: LayoutTemplate, label: 'Projects', href: '/projects' },
+  { icon: Cpu, label: 'Technology', href: '/growth-solutions' },
+  { icon: Puzzle, label: 'White Label', href: '/partners' },
 ];
 
 /* ---- Why MetlifeDM chain ---- */
@@ -300,16 +301,16 @@ export default function HomePage() {
             <Eyebrow className="justify-center mb-10 md:justify-start">Specialized solutions</Eyebrow>
             <div className="grid gap-px bg-hairline border border-hairline sm:grid-cols-2 lg:grid-cols-4">
               {SPECIALIZED_TEASER.map((s) => (
-                <a
+                <Link
                   key={s.label}
-                  href="/growth-solutions"
+                  to={s.href}
                   className="group bg-ivory hover:bg-ink p-8 transition-colors duration-500 flex items-center gap-4"
                 >
                   <div className="w-11 h-11 shrink-0 grid place-items-center bg-sand group-hover:bg-ivory/10 transition-colors duration-500">
                     <s.icon size={18} strokeWidth={1.5} className="text-ink group-hover:text-ultra-soft transition-colors duration-500" />
                   </div>
                   <span className="text-sm font-medium group-hover:text-ivory transition-colors duration-500">{s.label}</span>
-                </a>
+                </Link>
               ))}
             </div>
           </motion.div>

@@ -728,6 +728,9 @@ export default function PricingPage() {
             <p className="text-xl md:text-2xl text-italic-fraunces text-ivory leading-snug">
               You build the relationship. We build what&apos;s behind it.
             </p>
+            <Button to="/partners" variant="underline" className="mt-8 text-ivory!">
+              Become a Partner <ArrowUpRight size={13} strokeWidth={1.5} />
+            </Button>
           </motion.div>
         </Container>
       </Section>

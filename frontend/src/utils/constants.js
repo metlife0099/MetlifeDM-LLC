@@ -20,7 +20,7 @@ export const NAV_MAIN = [
     items: [
       { label: 'Growth Solutions', href: '/growth-solutions', desc: 'Our main growth plans', icon: 'TrendingUp' },
       { label: 'Customer Service', href: '/customer-service', desc: 'Support systems built around you', icon: 'Headphones' },
-      { label: 'White Label', href: '/partners', desc: 'Scale your agency with our engine', icon: 'Tags' },
+      { label: 'Projects', href: '/projects', desc: 'Build it once, build it right', icon: 'Hammer' },
       { label: 'Pricing', href: '/pricing', desc: 'Full pricing reference', icon: 'Receipt' },
     ],
   },
@@ -44,6 +44,7 @@ export const NAV_MAIN = [
     label: 'Company',
     items: [
       { label: 'About', href: '/about', desc: 'Who we are', icon: 'Users' },
+      { label: 'Agency Partners', href: '/partners', desc: 'White-label delivery & partnership for agencies', icon: 'Handshake' },
       { label: 'Blog', href: '/blog', desc: 'Ideas & updates', icon: 'Newspaper' },
       { label: 'Careers', href: '/careers', desc: 'Join the team', icon: 'Briefcase' },
       { label: 'Testimonials', href: '/testimonials', desc: 'What clients say', icon: 'Quote' },

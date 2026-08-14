@@ -4,6 +4,7 @@ import {
   Menu, X, ArrowUpRight, ShoppingBag, User, LogOut, LayoutDashboard, ChevronDown,
   TrendingUp, Headphones, Tags, Receipt, Activity, LifeBuoy, ShieldCheck,
   LayoutTemplate, FileText, Building2, Users, Newspaper, Briefcase, Quote, HelpCircle, Mail,
+  Hammer, Handshake,
 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,6 +21,7 @@ import { cn, initials } from '@/utils/format.js';
 const NAV_ICONS = {
   TrendingUp, Headphones, Tags, Receipt, Activity, LifeBuoy, ShieldCheck,
   LayoutTemplate, FileText, Building2, Users, Newspaper, Briefcase, Quote, HelpCircle, Mail,
+  Hammer, Handshake,
 };
 
 // Routes whose hero section renders a full-bleed dark background image —
@@ -27,7 +29,7 @@ const NAV_ICONS = {
 // scrolls past, then solidifies like everywhere else.
 const DARK_HERO_ROUTES = new Set([
   '/', '/about', '/services', '/industries', '/portfolio', '/case-studies',
-  '/pricing', '/growth-solutions', '/diagnostic', '/pasco', '/control', '/customer-service',
+  '/pricing', '/growth-solutions', '/diagnostic', '/pasco', '/control', '/customer-service', '/projects',
   '/partners', '/blog', '/testimonials', '/faq', '/careers', '/contact', '/consultation',
 ]);
 const DARK_HERO_PREFIXES = ['/services/'];
