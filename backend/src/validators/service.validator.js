@@ -32,6 +32,11 @@ export const serviceCreateSchema = z.object({
     deliveryTimeDays: z.number().optional(),
     revisions: z.number().optional(),
   })).optional(),
+  comparisonTable: z.array(z.object({
+    feature: z.string(),
+    values: z.array(z.string()).optional(),
+    order: z.number().optional(),
+  })).optional(),
   isFeatured: z.boolean().optional(),
   isPublished: z.boolean().optional(),
   order: z.number().optional(),

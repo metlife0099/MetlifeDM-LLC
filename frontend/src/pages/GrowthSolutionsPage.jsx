@@ -157,6 +157,7 @@ export default function GrowthSolutionsPage() {
   });
   const growthService = data?.service;
   const plans = growthService?.pricingPlans || [];
+  const comparisonTable = growthService?.comparisonTable || [];
 
   const handleAddToCart = (plan) => {
     dispatch(addItem({ service: growthService, plan, quantity: 1 }));
@@ -333,8 +334,7 @@ export default function GrowthSolutionsPage() {
       </Section>
 
       {/* ============================================================ */}
-      {/* 04 — COMPARE GROWTH PATHS (strategic differences, not          */}
-      {/* checkboxes)                                                    */}
+      {/* 04 — COMPARE GROWTH PATHS                                      */}
       {/* ============================================================ */}
       <Section tone="ink" spacing="lg" divider={false}>
         <Container>
@@ -351,17 +351,68 @@ export default function GrowthSolutionsPage() {
             </h2>
           </motion.div>
 
-          <div className="mt-16 grid gap-px bg-ivory/10 border border-ivory/10 md:grid-cols-3">
-            {plans.map((plan) => (
-              <div key={plan._id || plan.name} className="bg-ink p-8">
-                <div className="text-mono text-xs uppercase tracking-widest text-ivory/50">{plan.name}</div>
-                <p className="text-ivory text-lg mt-3 leading-snug">{plan.tagline}</p>
-                <p className="text-ivory/60 text-xs mt-6 pt-6 border-t border-ivory/10 leading-relaxed">
-                  {(plan.features || []).map((f) => f.label).join(' → ')}
-                </p>
-              </div>
-            ))}
-          </div>
+          {comparisonTable.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+              className="mt-16 overflow-x-auto"
+            >
+              <table className="w-full min-w-[640px] border-collapse">
+                <thead>
+                  <tr>
+                    <th className="text-left py-4 pr-4 text-mono text-xs uppercase tracking-widest text-ivory/50 font-normal align-bottom">
+                      Features
+                    </th>
+                    {plans.map((plan) => (
+                      <th
+                        key={plan._id || plan.name}
+                        className={cn(
+                          'text-center py-4 px-4 align-bottom min-w-[9rem]',
+                          plan.isPopular && 'bg-ivory/5'
+                        )}
+                      >
+                        <div className="text-ivory text-base font-medium">{plan.name}</div>
+                        {plan.isPopular && (
+                          <div className="inline-flex items-center gap-1 mt-1.5 text-mono text-[0.6rem] uppercase tracking-widest text-ultra-soft">
+                            <Star size={9} strokeWidth={0} className="fill-current" /> Most popular
+                          </div>
+                        )}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {comparisonTable.map((row, ri) => (
+                    <tr key={row._id || row.feature} className={cn(ri % 2 === 1 && 'bg-ivory/[0.03]')}>
+                      <td className="py-4 pr-4 text-ivory/85 text-sm border-t border-ivory/10">{row.feature}</td>
+                      {plans.map((plan, pi) => {
+                        const value = row.values?.[pi];
+                        return (
+                          <td
+                            key={plan._id || plan.name}
+                            className={cn(
+                              'text-center py-4 px-4 border-t border-ivory/10',
+                              plan.isPopular && 'bg-ivory/5'
+                            )}
+                          >
+                            {value === '✅' ? (
+                              <Check size={16} strokeWidth={2} className="mx-auto text-ultra-soft" />
+                            ) : !value || value === '—' ? (
+                              <span className="text-ivory/25">—</span>
+                            ) : (
+                              <span className="text-ivory/80 text-xs">{value}</span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </motion.div>
+          )}
         </Container>
       </Section>
 

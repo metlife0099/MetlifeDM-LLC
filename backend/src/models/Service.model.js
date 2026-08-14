@@ -27,6 +27,19 @@ const pricingPlanSchema = new Schema(
   { _id: true, timestamps: true }
 );
 
+// One row of a plan-comparison table (e.g. "SEO" -> ["Basic", "Advanced", "Enterprise"]).
+// `values` is aligned by index to this service's `pricingPlans` order, so the
+// admin UI renders one input per current plan rather than keying by plan id —
+// simpler to edit, and correct as long as plans aren't silently reordered.
+const comparisonRowSchema = new Schema(
+  {
+    feature: { type: String, required: true },
+    values: [{ type: String, default: '' }],
+    order: { type: Number, default: 0 },
+  },
+  { _id: true }
+);
+
 const processStepSchema = new Schema(
   {
     order: { type: Number, required: true },
@@ -93,6 +106,7 @@ const serviceSchema = new Schema(
     // Pricing
     pricingPlans: [pricingPlanSchema],
     startingPrice: { type: Number, min: 0 },
+    comparisonTable: [comparisonRowSchema],
 
     // Relations
     relatedServices: [{ type: Schema.Types.ObjectId, ref: 'Service' }],

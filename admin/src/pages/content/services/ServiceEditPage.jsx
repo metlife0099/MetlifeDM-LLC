@@ -58,6 +58,10 @@ const schema = z.object({
   benefits: z.array(z.object({ title: z.string().min(1, 'Required'), description: z.string().optional(), icon: z.string().optional() })).optional(),
   process: z.array(z.object({ title: z.string(), description: z.string().optional(), icon: z.string().optional(), duration: z.string().optional() })).optional(),
   pricingPlans: z.array(planSchema).optional(),
+  comparisonTable: z.array(z.object({
+    feature: z.string().min(1, 'Required'),
+    values: z.array(z.string()).optional(),
+  })).optional(),
 });
 
 export default function ServiceEditPage() {
@@ -97,6 +101,7 @@ export default function ServiceEditPage() {
       benefits: [],
       process: [],
       pricingPlans: [],
+      comparisonTable: [],
       seo: {},
     },
   });
@@ -105,6 +110,7 @@ export default function ServiceEditPage() {
   const benefitsArr = useFieldArray({ control, name: 'benefits' });
   const processArr = useFieldArray({ control, name: 'process' });
   const plansArr = useFieldArray({ control, name: 'pricingPlans' });
+  const comparisonArr = useFieldArray({ control, name: 'comparisonTable' });
 
   useEffect(() => {
     if (service && !isNew) {
@@ -128,6 +134,7 @@ export default function ServiceEditPage() {
   }, [service, isNew, reset]);
 
   const title = watch('title');
+  const watchedPlans = watch('pricingPlans') || [];
   useEffect(() => {
     if (isNew && title) setValue('slug', slugify(title));
   }, [title, isNew, setValue]);
@@ -401,6 +408,75 @@ export default function ServiceEditPage() {
                     index={i}
                     onRemove={() => plansArr.remove(i)}
                   />
+                ))}
+              </div>
+            )}
+          </Card>
+
+          {/* Comparison table */}
+          <Card>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <div className="text-eyebrow">08 / Comparison table</div>
+                <p className="text-slate text-xs mt-1">
+                  Feature-by-feature comparison shown on the public pricing page. Each row has one value per
+                  pricing plan above, in the same order. Use ✅, — , or a short label like &quot;Advanced&quot;.
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="xs"
+                icon={Plus}
+                onClick={() => comparisonArr.append({ feature: '', values: watchedPlans.map(() => '') })}
+              >
+                Add row
+              </Button>
+            </div>
+            {plansArr.fields.length === 0 ? (
+              <div className="text-slate text-sm">Add pricing plans above first — comparison values are keyed to them.</div>
+            ) : comparisonArr.fields.length === 0 ? (
+              <div className="text-slate text-sm">No comparison rows yet.</div>
+            ) : (
+              <div className="space-y-3">
+                {/* Column header, mirrors current plan order */}
+                <div
+                  className="hidden sm:grid gap-3 text-mono text-[0.65rem] uppercase tracking-widest text-slate"
+                  style={{ gridTemplateColumns: `1fr repeat(${plansArr.fields.length}, minmax(0,1fr)) auto` }}
+                >
+                  <span>Feature</span>
+                  {watchedPlans.map((p, pi) => (
+                    <span key={pi} className="truncate">{p?.name || `Plan ${pi + 1}`}</span>
+                  ))}
+                  <span />
+                </div>
+                {comparisonArr.fields.map((row, ri) => (
+                  <div
+                    key={row.id}
+                    className="grid gap-3 items-center sm:grid-flow-col"
+                    style={{ gridTemplateColumns: `1fr repeat(${plansArr.fields.length}, minmax(0,1fr)) auto` }}
+                  >
+                    <Input
+                      placeholder="e.g. SEO"
+                      {...register(`comparisonTable.${ri}.feature`)}
+                      error={errors.comparisonTable?.[ri]?.feature?.message}
+                    />
+                    {plansArr.fields.map((_, pi) => (
+                      <Input
+                        key={pi}
+                        placeholder="✅ / — / Advanced"
+                        {...register(`comparisonTable.${ri}.values.${pi}`)}
+                      />
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => comparisonArr.remove(ri)}
+                      className="text-slate hover:text-danger shrink-0"
+                      aria-label="Remove row"
+                    >
+                      <Trash2 size={13} strokeWidth={1.5} />
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
