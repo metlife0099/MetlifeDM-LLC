@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
-import { Check, ShoppingBag, Star, ArrowUpRight, ShieldCheck, Sparkles, Ban } from 'lucide-react';
+import { Check, ShoppingBag, Star, ArrowUpRight, ShieldCheck, Sparkles, Ban, ChevronDown } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Spinner } from '@/components/ui/index.jsx';
@@ -21,6 +21,100 @@ const TRUST_POINTS = [
   { icon: ShieldCheck, label: 'Transparent, itemized pricing' },
   { icon: Sparkles, label: 'Senior strategist on every plan' },
 ];
+
+/**
+ * A single pricing tier. Collapsed by default — shows just a one-line
+ * teaser of the inclusions (chained with "→", matching how the plan's
+ * own copy describes them) — so a plan with a long feature list doesn't
+ * turn the page into a wall of checkmarks. "See what's included" expands
+ * it to the full itemized list.
+ */
+function PricingPlanCard({ plan, billing, onAddToCart }) {
+  const [expanded, setExpanded] = useState(false);
+  const price = billing === 'yearly' ? plan.price * 12 * 0.85 : plan.price;
+  const features = plan.features || [];
+  const teaserCount = 2;
+  const teaser = features.slice(0, teaserCount).map((f) => f.label).join(' → ');
+  const remaining = features.length - teaserCount;
+
+  return (
+    <div
+      className={cn(
+        'relative p-8 flex flex-col border transition-all duration-500',
+        plan.isPopular
+          ? 'bg-ink text-ivory border-ink shadow-[0_32px_64px_-24px_rgba(10,23,48,0.5)] md:-translate-y-3 hover:-translate-y-4'
+          : 'bg-ivory border-hairline hover:border-ink hover-lift'
+      )}
+    >
+      {plan.isPopular && (
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-ultra text-ivory text-mono text-[0.65rem] uppercase tracking-widest px-3 py-1.5">
+          <Star size={11} strokeWidth={0} className="fill-current" />
+          Most popular
+        </div>
+      )}
+      <h3 className={cn('text-display-sm', plan.isPopular ? 'text-ivory' : 'text-ink')}>
+        {plan.name}
+      </h3>
+      {plan.tagline && (
+        <p className={cn('text-xs mt-2 leading-relaxed', plan.isPopular ? 'text-ivory/60' : 'text-slate')}>
+          {plan.tagline}
+        </p>
+      )}
+      <div className="mt-6 flex items-baseline gap-2">
+        <span className={cn('text-display-md num-plate', plan.isPopular ? 'text-ivory' : 'text-ink')}>
+          {formatMoney(price)}
+        </span>
+        <span className={cn('text-mono text-xs uppercase', plan.isPopular ? 'text-ivory/60' : 'text-slate')}>
+          / {billing === 'yearly' ? 'year' : 'mo'}
+        </span>
+      </div>
+
+      <div className="mt-6 flex-1">
+        {features.length > 0 && (
+          <>
+            {!expanded && (
+              <p className={cn('text-xs leading-relaxed', plan.isPopular ? 'text-ivory/70' : 'text-slate')}>
+                {teaser}
+                {remaining > 0 && ` +${remaining} more`}
+              </p>
+            )}
+            {expanded && (
+              <ul className={cn('space-y-2 text-sm', plan.isPopular ? 'text-ivory/80' : 'text-ink')}>
+                {features.map((f, j) => (
+                  <li key={j} className="flex items-start gap-2">
+                    <Check size={14} className={plan.isPopular ? 'text-ultra-soft mt-0.5 shrink-0' : 'text-success mt-0.5 shrink-0'} strokeWidth={2} />
+                    <span>{f.label}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <button
+              type="button"
+              onClick={() => setExpanded((e) => !e)}
+              className={cn(
+                'mt-3 flex items-center gap-1.5 text-mono text-xs uppercase tracking-widest link-underline',
+                plan.isPopular ? 'text-ivory/70 hover:text-ivory' : 'text-slate hover:text-ink'
+              )}
+            >
+              {expanded ? 'Hide details' : "See what's included"}
+              <ChevronDown size={13} strokeWidth={1.5} className={cn('transition-transform duration-300', expanded && 'rotate-180')} />
+            </button>
+          </>
+        )}
+      </div>
+
+      <Button
+        onClick={onAddToCart}
+        variant={plan.isPopular ? 'inverse' : 'primary'}
+        className="mt-8 w-full"
+        size="md"
+      >
+        <ShoppingBag size={14} strokeWidth={1.5} />
+        {plan.ctaLabel || 'Add to cart'}
+      </Button>
+    </div>
+  );
+}
 
 export default function PricingPage() {
   const dispatch = useDispatch();
@@ -205,60 +299,14 @@ export default function PricingPage() {
 
                   {service.pricingPlans?.length > 0 ? (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                      {service.pricingPlans.map((plan) => {
-                        const price = billing === 'yearly' ? plan.price * 12 * 0.85 : plan.price;
-                        return (
-                          <div
-                            key={plan._id}
-                            className={cn(
-                              'relative p-8 flex flex-col border transition-all duration-500',
-                              plan.isPopular
-                                ? 'bg-ink text-ivory border-ink shadow-[0_32px_64px_-24px_rgba(10,23,48,0.5)] md:-translate-y-3 hover:-translate-y-4'
-                                : 'bg-ivory border-hairline hover:border-ink hover-lift'
-                            )}
-                          >
-                            {plan.isPopular && (
-                              <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-ultra text-ivory text-mono text-[0.65rem] uppercase tracking-widest px-3 py-1.5">
-                                <Star size={11} strokeWidth={0} className="fill-current" />
-                                Most popular
-                              </div>
-                            )}
-                            <h3 className={cn('text-display-sm', plan.isPopular ? 'text-ivory' : 'text-ink')}>
-                              {plan.name}
-                            </h3>
-                            {plan.tagline && (
-                              <p className={cn('text-xs mt-2 leading-relaxed', plan.isPopular ? 'text-ivory/60' : 'text-slate')}>
-                                {plan.tagline}
-                              </p>
-                            )}
-                            <div className="mt-6 flex items-baseline gap-2">
-                              <span className={cn('text-display-md num-plate', plan.isPopular ? 'text-ivory' : 'text-ink')}>
-                                {formatMoney(price)}
-                              </span>
-                              <span className={cn('text-mono text-xs uppercase', plan.isPopular ? 'text-ivory/60' : 'text-slate')}>
-                                / {billing === 'yearly' ? 'year' : 'mo'}
-                              </span>
-                            </div>
-                            <ul className={cn('mt-6 space-y-2 flex-1 text-sm', plan.isPopular ? 'text-ivory/80' : 'text-ink')}>
-                              {(plan.features || []).map((f, j) => (
-                                <li key={j} className="flex items-start gap-2">
-                                  <Check size={14} className={plan.isPopular ? 'text-ultra-soft mt-0.5 shrink-0' : 'text-success mt-0.5 shrink-0'} strokeWidth={2} />
-                                  <span>{f.label}</span>
-                                </li>
-                              ))}
-                            </ul>
-                            <Button
-                              onClick={() => handleAddToCart(service, plan)}
-                              variant={plan.isPopular ? 'inverse' : 'primary'}
-                              className="mt-8 w-full"
-                              size="md"
-                            >
-                              <ShoppingBag size={14} strokeWidth={1.5} />
-                              {plan.ctaLabel || 'Add to cart'}
-                            </Button>
-                          </div>
-                        );
-                      })}
+                      {service.pricingPlans.map((plan) => (
+                        <PricingPlanCard
+                          key={plan._id}
+                          plan={plan}
+                          billing={billing}
+                          onAddToCart={() => handleAddToCart(service, plan)}
+                        />
+                      ))}
                     </div>
                   ) : (
                     <div className="border border-hairline bg-ivory-soft hover:border-ink transition-colors duration-500 p-8 flex items-center justify-between gap-6 flex-wrap">

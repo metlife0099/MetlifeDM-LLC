@@ -83,20 +83,27 @@ export default function HomePage() {
                 transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
                 className="text-display-hero mt-8 text-ivory"
               >
-                Growth is a{' '}
-                <span className="text-italic-fraunces text-ultra-soft">discipline,</span>
+                We don&apos;t sell marketing services.
                 <br />
-                not a lottery.
+                We solve <span className="text-italic-fraunces text-ultra-soft">growth bottlenecks.</span>
               </motion.h1>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 0.2 }}
+                className="mt-6 text-sm uppercase tracking-[0.2em] font-medium text-ultra-soft"
+              >
+                Diagnose first. Optimize second. Measure always.
+              </motion.div>
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1, delay: 0.3 }}
                 className="mt-8 max-w-xl text-lg text-ivory/75 leading-relaxed"
               >
-                We&apos;re a lean US-based agency of senior strategists helping <strong className="text-ivory">brands
-                across a range of industries</strong> compound revenue through SEO, paid media, content, and
-                AI-powered marketing — with measurable results in the first 90 days.
+                MetlifeDM is a lean, senior-only team that diagnoses what&apos;s actually stopping a business from
+                growing — then builds the exact SEO, paid media, content, or AI-powered systems needed to fix it.
+                No generic packages, no guesswork.
               </motion.p>
               <motion.div
                 initial={{ opacity: 0 }}
@@ -105,7 +112,7 @@ export default function HomePage() {
                 className="mt-12 flex flex-wrap gap-4"
               >
                 <Button to="/consultation" size="lg" variant="inverse">
-                  Book a strategy call <ArrowUpRight size={16} strokeWidth={1.5} />
+                  Find My Growth Path <ArrowUpRight size={16} strokeWidth={1.5} />
                 </Button>
                 <Button to="/case-studies" variant="ghost" size="lg" className="border-ivory/30 text-ivory hover:bg-ivory hover:text-ink">
                   See how we work

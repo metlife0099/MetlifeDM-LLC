@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import {
   ArrowUpRight,
+  ArrowDown,
   Award,
   Search,
   Globe,
@@ -14,13 +15,14 @@ import {
   Code2,
   Smartphone,
   ServerCog,
+  Hammer,
   Wand2,
   Check,
-  AlertTriangle,
   Stethoscope,
   BarChart3,
   Compass,
-  TrendingUp,
+  Rocket,
+  RefreshCw,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
@@ -178,83 +180,68 @@ export const BrandStory = () => (
   </Section>
 );
 
-/* ================== 1c. HOW WE WORK ==================
+/* ================== 1c. THE METLIFEDM APPROACH ==================
  * The methodology behind every engagement, made explicit: we don't open
- * with a service pitch, we open with your problem. */
+ * with a service pitch, we open with a diagnosis. */
 const PROCESS_STEPS = [
-  {
-    icon: AlertTriangle,
-    stage: 'Problem',
-    title: 'What’s actually costing you leads',
-    desc: 'We start with the business problem, not a service — too few enquiries, too few bookings, too few qualified leads.',
-  },
-  {
-    icon: Stethoscope,
-    stage: 'Diagnosis',
-    title: 'Why it’s happening',
-    desc: 'A real audit of your site, rankings, and funnel to find the specific, fixable reasons demand isn’t converting.',
-  },
-  {
-    icon: BarChart3,
-    stage: 'Evidence',
-    title: 'What the data says',
-    desc: 'We back the diagnosis with real numbers — traffic, rankings, conversion points — not guesses or generic benchmarks.',
-  },
-  {
-    icon: Compass,
-    stage: 'Strategy',
-    title: 'The plan to fix it',
-    desc: 'A prioritized plan built around your industry and your funnel, not a one-size-fits-all package.',
-  },
-  {
-    icon: Wand2,
-    stage: 'Solution',
-    title: 'What we actually build',
-    desc: 'Websites, campaigns, and content built to execute the strategy — not deliverables for their own sake.',
-  },
-  {
-    icon: TrendingUp,
-    stage: 'Outcome',
-    title: 'The result you hired us for',
-    desc: 'More enquiries, more bookings, more qualified leads — measured against the problem we started with.',
-  },
+  { icon: Stethoscope, stage: 'Diagnose', desc: 'Find the bottleneck.' },
+  { icon: Compass, stage: 'Strategize', desc: 'Build the right plan.' },
+  { icon: Hammer, stage: 'Build', desc: 'Create the necessary systems.' },
+  { icon: Rocket, stage: 'Activate', desc: 'Put them into action.' },
+  { icon: BarChart3, stage: 'Measure', desc: 'Understand what is working.' },
+  { icon: RefreshCw, stage: 'Optimize', desc: 'Continuously improve.' },
 ];
 
 export const HowWeWork = () => (
   <Section tone="ivory" spacing="lg">
     <Container>
       <div className="max-w-2xl mx-auto text-center mb-16 lg:mb-20">
-        <Eyebrow number="03" className="justify-center">How we work</Eyebrow>
+        <Eyebrow number="03" className="justify-center">The MetlifeDM approach</Eyebrow>
         <h2 className="text-display-lg mt-4">
-          Every engagement follows<br />
-          the <span className="text-italic-fraunces text-ultra">same six steps.</span>
+          Before we build,<br />
+          <span className="text-italic-fraunces text-ultra">we diagnose.</span>
         </h2>
-        <p className="text-slate text-lg mt-6 leading-relaxed">
-          Business problem → diagnosis → evidence → strategy → solution → outcome. No step gets skipped, and
-          nothing gets built before we know exactly what it needs to achieve.
-        </p>
       </div>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {PROCESS_STEPS.map((s, i) => (
-          <motion.div
-            key={s.stage}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.6, delay: (i % 3) * 0.08, ease: [0.22, 1, 0.36, 1] }}
-            className="group border border-hairline hover:border-ink hover-lift transition-colors duration-500 p-8"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <div className="w-11 h-11 grid place-items-center bg-ink text-ivory group-hover:bg-ultra transition-colors duration-500">
-                <s.icon size={18} strokeWidth={1.5} />
+      <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+        {PROCESS_STEPS.map((s, i) => {
+          const lastInRow = i % 3 === 2;
+          const isLast = i === PROCESS_STEPS.length - 1;
+          return (
+            <motion.div
+              key={s.stage}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.6, delay: (i % 3) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              className="group relative border border-hairline hover:border-ink hover-lift transition-colors duration-500 p-8 text-center"
+            >
+              <div className="w-14 h-14 mx-auto grid place-items-center bg-ink text-ivory group-hover:bg-ultra transition-colors duration-500">
+                <s.icon size={22} strokeWidth={1.5} />
               </div>
-              <div className="num-plate text-slate text-xs">{String(i + 1).padStart(2, '0')} / 06</div>
-            </div>
-            <div className="text-mono text-xs uppercase tracking-widest text-ultra mb-2">{s.stage}</div>
-            <h3 className="text-display-sm mb-3">{s.title}</h3>
-            <p className="text-slate text-sm leading-relaxed">{s.desc}</p>
-          </motion.div>
-        ))}
+              <div className="num-plate text-slate text-xs mt-5">{String(i + 1).padStart(2, '0')} / 06</div>
+              <h3 className="text-display-sm mt-2">{s.stage}</h3>
+              <p className="text-slate text-sm mt-2 leading-relaxed">{s.desc}</p>
+
+              {/* Flow connectors — right arrow to the next card in the same
+                  row, down arrow when the row wraps. Desktop only; the grid
+                  just stacks plainly on mobile. */}
+              {!isLast && !lastInRow && (
+                <ArrowUpRight
+                  size={16}
+                  strokeWidth={1.5}
+                  className="hidden lg:block absolute top-1/2 -right-4 -translate-y-1/2 rotate-45 text-slate/50"
+                />
+              )}
+              {!isLast && lastInRow && (
+                <ArrowDown
+                  size={16}
+                  strokeWidth={1.5}
+                  className="hidden lg:block absolute -bottom-8 left-1/2 -translate-x-1/2 text-slate/50"
+                />
+              )}
+            </motion.div>
+          );
+        })}
       </div>
     </Container>
   </Section>
