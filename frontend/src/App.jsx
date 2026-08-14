@@ -17,6 +17,8 @@ const PricingPage = lazy(() => import('@/pages/PricingPage.jsx'));
 const GrowthSolutionsPage = lazy(() => import('@/pages/GrowthSolutionsPage.jsx'));
 const DiagnosticPage = lazy(() => import('@/pages/DiagnosticPage.jsx'));
 const PascoPage = lazy(() => import('@/pages/PascoPage.jsx'));
+const ControlPage = lazy(() => import('@/pages/ControlPage.jsx'));
+const CustomerServicePage = lazy(() => import('@/pages/CustomerServicePage.jsx'));
 const PortfolioPage = lazy(() => import('@/pages/PortfolioPage.jsx'));
 const PortfolioDetailsPage = lazy(() => import('@/pages/PortfolioDetailsPage.jsx'));
 const CaseStudiesPage = lazy(() => import('@/pages/CaseStudiesPage.jsx'));
@@ -110,6 +112,8 @@ export default function App() {
         <Route path="growth-solutions" element={withSuspense(GrowthSolutionsPage, 'Growth Solutions')} />
         <Route path="diagnostic" element={withSuspense(DiagnosticPage, 'Diagnostic')} />
         <Route path="pasco" element={withSuspense(PascoPage, 'PASCO')} />
+        <Route path="control" element={withSuspense(ControlPage, 'Control')} />
+        <Route path="customer-service" element={withSuspense(CustomerServicePage, 'Customer Service')} />
 
         {/* Work */}
         <Route path="portfolio" element={withSuspense(PortfolioPage, 'Portfolio')} />

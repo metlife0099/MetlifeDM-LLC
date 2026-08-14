@@ -1,6 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ArrowUpRight, ShoppingBag, User, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react';
+import {
+  Menu, X, ArrowUpRight, ShoppingBag, User, LogOut, LayoutDashboard, ChevronDown,
+  TrendingUp, Headphones, Tags, Receipt, Activity, LifeBuoy, ShieldCheck,
+  LayoutTemplate, FileText, Building2, Users, Newspaper, Briefcase, Quote, HelpCircle, Mail,
+} from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toggleMobileMenu } from '@/store/index.js';
@@ -11,16 +15,203 @@ import { useAuth } from '@/hooks/useAuth.js';
 import Button from '@/components/ui/Button.jsx';
 import { cn, initials } from '@/utils/format.js';
 
+// String -> component lookup for NAV_MAIN sub-item icons (constants.js stays
+// framework-agnostic, so icon names are strings there and resolved here).
+const NAV_ICONS = {
+  TrendingUp, Headphones, Tags, Receipt, Activity, LifeBuoy, ShieldCheck,
+  LayoutTemplate, FileText, Building2, Users, Newspaper, Briefcase, Quote, HelpCircle, Mail,
+};
+
 // Routes whose hero section renders a full-bleed dark background image —
 // the header floats transparent/light-text over them until the user
 // scrolls past, then solidifies like everywhere else.
 const DARK_HERO_ROUTES = new Set([
   '/', '/about', '/services', '/industries', '/portfolio', '/case-studies',
-  '/pricing', '/growth-solutions', '/diagnostic', '/pasco', '/partners', '/blog', '/testimonials', '/faq', '/careers', '/contact', '/consultation',
+  '/pricing', '/growth-solutions', '/diagnostic', '/pasco', '/control', '/customer-service',
+  '/partners', '/blog', '/testimonials', '/faq', '/careers', '/contact', '/consultation',
 ]);
 const DARK_HERO_PREFIXES = ['/services/'];
 const isDarkHeroRoute = (pathname) =>
   DARK_HERO_ROUTES.has(pathname) || DARK_HERO_PREFIXES.some((p) => pathname.startsWith(p));
+
+const dropdownVariants = {
+  hidden: { opacity: 0, y: -8, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.22, ease: [0.22, 1, 0.36, 1], staggerChildren: 0.035, delayChildren: 0.02 },
+  },
+  exit: { opacity: 0, y: -6, scale: 0.98, transition: { duration: 0.15, ease: [0.22, 1, 0.36, 1] } },
+};
+
+const dropdownItemVariants = {
+  hidden: { opacity: 0, y: -6 },
+  visible: { opacity: 1, y: 0 },
+};
+
+/** Desktop dropdown / mega-menu for a NAV_MAIN group ({label, items}). */
+function NavDropdown({ item, floating, active, pathname }) {
+  const [open, setOpen] = useState(false);
+  const closeTimer = useRef(null);
+
+  const show = () => {
+    clearTimeout(closeTimer.current);
+    setOpen(true);
+  };
+  const hide = () => {
+    closeTimer.current = setTimeout(() => setOpen(false), 120);
+  };
+
+  useEffect(() => () => clearTimeout(closeTimer.current), []);
+
+  const twoCol = item.items.length > 4;
+
+  return (
+    <div className="relative" onMouseEnter={show} onMouseLeave={hide}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className={cn(
+          'flex items-center gap-1.5 text-sm relative py-2 transition-colors duration-500',
+          floating
+            ? active ? 'text-ivory' : 'text-ivory/65 hover:text-ivory'
+            : active ? 'text-ink' : 'text-ink/70 hover:text-ink'
+        )}
+      >
+        {item.label}
+        <ChevronDown
+          size={14}
+          strokeWidth={1.5}
+          className={cn('transition-transform duration-300', open && 'rotate-180')}
+        />
+        {active && (
+          <motion.span
+            layoutId="nav-active-indicator"
+            className={cn('nav-indicator-glow absolute left-0 right-0 -bottom-0.5 h-0.5', floating ? 'bg-ivory' : 'bg-ultra')}
+            transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+          />
+        )}
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            variants={dropdownVariants}
+            className={cn(
+              'absolute left-1/2 -translate-x-1/2 top-full mt-3 bg-ivory border border-hairline shadow-[0_24px_48px_-16px_rgba(10,23,48,0.25)] p-2 z-50',
+              twoCol ? 'w-[30rem] grid grid-cols-2 gap-1' : 'w-72'
+            )}
+          >
+            {item.items.map((sub) => {
+              const Icon = NAV_ICONS[sub.icon];
+              const subActive = pathname.startsWith(sub.href);
+              return (
+                <motion.div key={sub.href} variants={dropdownItemVariants}>
+                  <Link
+                    to={sub.href}
+                    className={cn(
+                      'group flex items-start gap-3 p-3 transition-colors duration-200',
+                      subActive ? 'bg-sand' : 'hover:bg-sand'
+                    )}
+                  >
+                    {Icon && (
+                      <div className="w-9 h-9 shrink-0 grid place-items-center bg-ink text-ivory group-hover:bg-ultra transition-colors duration-300">
+                        <Icon size={15} strokeWidth={1.5} />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-ink truncate">{sub.label}</span>
+                        {sub.badge && (
+                          <span className="shrink-0 px-1.5 py-0.5 text-[0.55rem] uppercase tracking-widest text-ultra border border-ultra/30 bg-ultra/5">
+                            {sub.badge}
+                          </span>
+                        )}
+                      </div>
+                      {sub.desc && <p className="text-xs text-slate mt-0.5 leading-snug">{sub.desc}</p>}
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/** Mobile accordion group for a NAV_MAIN group ({label, items}). */
+function MobileNavGroup({ item, pathname, index }) {
+  const active = item.items.some((sub) => pathname.startsWith(sub.href));
+  const [open, setOpen] = useState(active);
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between py-5 group"
+        aria-expanded={open}
+      >
+        <span className={cn('text-display-sm transition-colors', active ? 'text-ultra' : 'text-ink group-hover:text-ultra')}>
+          {item.label}
+        </span>
+        <span className="flex items-center gap-3">
+          <span className={cn('num-plate text-xs transition-colors', active ? 'text-ultra' : 'text-slate')}>
+            {String(index + 1).padStart(2, '0')}
+          </span>
+          <ChevronDown
+            size={16}
+            strokeWidth={1.5}
+            className={cn('text-slate transition-transform duration-300', open && 'rotate-180')}
+          />
+        </span>
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="pb-4 space-y-1">
+              {item.items.map((sub) => {
+                const Icon = NAV_ICONS[sub.icon];
+                const subActive = pathname.startsWith(sub.href);
+                return (
+                  <Link
+                    key={sub.href}
+                    to={sub.href}
+                    className={cn(
+                      'flex items-center gap-3 py-3 px-3 -mx-3 rounded-xs transition-colors',
+                      subActive ? 'bg-sand text-ultra' : 'text-ink/80 hover:bg-sand'
+                    )}
+                  >
+                    {Icon && <Icon size={15} strokeWidth={1.5} className="shrink-0" />}
+                    <span className="text-sm">{sub.label}</span>
+                    {sub.badge && (
+                      <span className="ml-auto shrink-0 px-1.5 py-0.5 text-[0.55rem] uppercase tracking-widest text-ultra border border-ultra/30 bg-ultra/5">
+                        {sub.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function Navbar() {
   const dispatch = useDispatch();
@@ -80,6 +271,12 @@ export default function Navbar() {
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-8">
             {NAV_MAIN.map((item) => {
+              if (item.items) {
+                const active = item.items.some((sub) => pathname.startsWith(sub.href));
+                return (
+                  <NavDropdown key={item.label} item={item} floating={floating} active={active} pathname={pathname} />
+                );
+              }
               const active = pathname.startsWith(item.href);
               return (
                 <Link
@@ -257,31 +454,26 @@ export default function Navbar() {
             className="lg:hidden fixed inset-x-0 top-20 bottom-0 bg-ivory z-40 overflow-y-auto"
           >
             <div className="px-6 py-8 flex flex-col divide-editorial">
-              {NAV_MAIN.map((item, i) => {
-                const active = pathname.startsWith(item.href);
-                return (
+              {NAV_MAIN.map((item, i) =>
+                item.items ? (
+                  <div key={item.label} className="border-b border-hairline last:border-b-0">
+                    <MobileNavGroup item={item} pathname={pathname} index={i} />
+                  </div>
+                ) : (
                   <Link
                     key={item.href}
                     to={item.href}
-                    className="flex items-center justify-between py-5 group"
+                    className="flex items-center justify-between py-5 group border-b border-hairline last:border-b-0"
                   >
-                    <span className={cn('text-display-sm transition-colors', active ? 'text-ultra' : 'text-ink group-hover:text-ultra')}>
+                    <span className={cn('text-display-sm transition-colors', pathname.startsWith(item.href) ? 'text-ultra' : 'text-ink group-hover:text-ultra')}>
                       {item.label}
                     </span>
-                    <span className={cn('num-plate text-xs transition-colors', active ? 'text-ultra' : 'text-slate')}>
+                    <span className={cn('num-plate text-xs transition-colors', pathname.startsWith(item.href) ? 'text-ultra' : 'text-slate')}>
                       {String(i + 1).padStart(2, '0')}
                     </span>
                   </Link>
-                );
-              })}
-              <Link to="/contact" className="flex items-center justify-between py-5 group">
-                <span className={cn('text-display-sm transition-colors', pathname.startsWith('/contact') ? 'text-ultra' : 'text-ink group-hover:text-ultra')}>
-                  Contact
-                </span>
-                <span className={cn('num-plate text-xs transition-colors', pathname.startsWith('/contact') ? 'text-ultra' : 'text-slate')}>
-                  {String(NAV_MAIN.length + 1).padStart(2, '0')}
-                </span>
-              </Link>
+                )
+              )}
             </div>
             <div className="px-6 pb-6 space-y-3 border-t border-hairline pt-6">
               {isAuthenticated ? (

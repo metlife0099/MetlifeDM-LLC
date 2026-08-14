@@ -6,15 +6,51 @@ export const SITE = {
   city: 'Miami, FL',
 };
 
+/**
+ * Header nav. A plain entry ({label, href}) renders as a top-level link.
+ * An entry with `items` renders as a dropdown/mega-menu on desktop and an
+ * expandable accordion group on mobile — see Navbar.jsx. Icon names are
+ * strings (not components) so this file stays framework-agnostic; Navbar.jsx
+ * resolves them against its own lucide-react icon map.
+ */
 export const NAV_MAIN = [
   { label: 'Services', href: '/services' },
-  { label: 'Industries', href: '/industries' },
-  { label: 'Case Studies', href: '/case-studies' },
-  { label: 'Portfolio', href: '/portfolio' },
-  { label: 'Growth Solutions', href: '/growth-solutions' },
-  { label: 'Partners', href: '/partners' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'About', href: '/about' },
+  {
+    label: 'Solutions',
+    items: [
+      { label: 'Growth Solutions', href: '/growth-solutions', desc: 'Our main growth plans', icon: 'TrendingUp' },
+      { label: 'Customer Service', href: '/customer-service', desc: 'Support systems built around you', icon: 'Headphones' },
+      { label: 'White Label', href: '/partners', desc: 'Scale your agency with our engine', icon: 'Tags' },
+      { label: 'Pricing', href: '/pricing', desc: 'Full pricing reference', icon: 'Receipt' },
+    ],
+  },
+  {
+    label: 'Diagnostics',
+    items: [
+      { label: 'The Diagnostic', href: '/diagnostic', desc: "Find what's actually wrong", icon: 'Activity' },
+      { label: 'PASCO™', href: '/pasco', desc: 'Business continuity & recovery', icon: 'LifeBuoy' },
+      { label: 'Control™', href: '/control', desc: 'Digital asset intelligence', icon: 'ShieldCheck', badge: 'Preview' },
+    ],
+  },
+  {
+    label: 'Work',
+    items: [
+      { label: 'Portfolio', href: '/portfolio', desc: 'Recent builds', icon: 'LayoutTemplate' },
+      { label: 'Case Studies', href: '/case-studies', desc: 'Real results, in depth', icon: 'FileText' },
+      { label: 'Industries', href: '/industries', desc: 'Outcomes by vertical', icon: 'Building2' },
+    ],
+  },
+  {
+    label: 'Company',
+    items: [
+      { label: 'About', href: '/about', desc: 'Who we are', icon: 'Users' },
+      { label: 'Blog', href: '/blog', desc: 'Ideas & updates', icon: 'Newspaper' },
+      { label: 'Careers', href: '/careers', desc: 'Join the team', icon: 'Briefcase' },
+      { label: 'Testimonials', href: '/testimonials', desc: 'What clients say', icon: 'Quote' },
+      { label: 'FAQ', href: '/faq', desc: 'Common questions', icon: 'HelpCircle' },
+      { label: 'Contact', href: '/contact', desc: 'Get in touch', icon: 'Mail' },
+    ],
+  },
 ];
 
 export const NAV_FOOTER = [
@@ -27,6 +63,9 @@ export const NAV_FOOTER = [
       { label: 'Content Marketing', href: '/services?category=content_marketing' },
       { label: 'Web Development', href: '/services?category=web_development' },
       { label: 'AI Solutions', href: '/services?category=ai_solutions' },
+      { label: 'Customer Service', href: '/customer-service' },
+      { label: 'The Diagnostic', href: '/diagnostic' },
+      { label: 'PASCO', href: '/pasco' },
     ],
   },
   {
