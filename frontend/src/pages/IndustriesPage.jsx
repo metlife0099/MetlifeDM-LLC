@@ -16,7 +16,11 @@ export default function IndustriesPage() {
 
   return (
     <>
-      <Seo title="Industries" description="Specialized digital marketing for construction, real estate, healthcare, law firms, education, hospitality, and ecommerce — outcome-focused, not one-size-fits-all." />
+      <Seo
+        title="Industries"
+        description="Specialized digital marketing for construction, real estate, healthcare, law firms, education, hospitality, and ecommerce — outcome-focused, not one-size-fits-all."
+        keywords="marketing by industry, industry specific marketing, construction marketing agency, healthcare marketing agency, real estate marketing agency, law firm marketing, ecommerce marketing agency"
+      />
 
       <Section tone="ink" spacing="lg" divider={false} className="relative">
         <HeroImage

@@ -54,6 +54,7 @@ export default function FaqPage() {
       <Seo
         title="FAQ"
         description="Answers to common questions about MetlifeDM's services, pricing, timelines, and process."
+        keywords="digital marketing FAQ, marketing agency questions, SEO PPC FAQ, marketing agency process questions"
       />
 
       <Section tone="ink" spacing="lg" divider={false} className="relative">

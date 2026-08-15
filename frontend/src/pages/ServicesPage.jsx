@@ -33,6 +33,7 @@ export default function ServicesPage() {
       <Seo
         title="Services"
         description="SEO, PPC, content, social, web development, and AI marketing services — each one exists to solve a specific business problem, not fill a menu."
+        keywords="digital marketing services, SEO PPC social media services, full service marketing agency, marketing services USA, web development services, AI marketing solutions"
       />
 
       <Section tone="ink" spacing="lg" divider={false} className="relative">

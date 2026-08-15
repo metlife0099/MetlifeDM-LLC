@@ -68,7 +68,12 @@ export default function CaseStudyDetailsPage() {
 
   return (
     <>
-      <Seo title={cs.title} description={cs.tagline} image={cs.heroImage?.url} />
+      <Seo
+        title={cs.seo?.metaTitle || cs.title}
+        description={cs.seo?.metaDescription || cs.tagline}
+        keywords={cs.seo?.keywords?.length > 0 ? cs.seo.keywords.join(', ') : undefined}
+        ogImage={cs.seo?.ogImage || cs.heroImage?.url}
+      />
 
       {/* Hero */}
       <Section tone="ink" spacing="lg" divider={false} className="relative">

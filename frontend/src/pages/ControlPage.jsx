@@ -56,6 +56,7 @@ export default function ControlPage() {
       <Seo
         title="Control — Digital Asset Intelligence"
         description="Control is MetlifeDM's digital asset intelligence concept — know what your business owns, who controls it, and what happens if they disappear. Currently available through a PASCO engagement."
+        keywords="digital asset management, website ownership audit, digital asset intelligence, business digital ownership, domain and account ownership audit"
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'WebPage',

@@ -33,7 +33,11 @@ export default function PortfolioPage() {
 
   return (
     <>
-      <Seo title="Portfolio" description="Selected work from MetlifeDM — websites, campaigns, and brand systems for US businesses." />
+      <Seo
+        title="Portfolio"
+        description="Selected work from MetlifeDM — websites, campaigns, and brand systems for US businesses."
+        keywords="marketing portfolio, web design portfolio, digital marketing case studies, client work examples, website design examples"
+      />
 
       <Section tone="ink" spacing="lg" divider={false} className="relative">
         <HeroImage

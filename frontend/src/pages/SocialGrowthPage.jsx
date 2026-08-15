@@ -271,6 +271,7 @@ export default function SocialGrowthPage() {
       <Seo
         title="Social Growth Pricing"
         description="Don't just post. Build an audience that moves. Social Foundation, Social Growth, and Social Partnership plans, plus a one-time Social Growth Diagnostic to find out what your presence is missing."
+        keywords="social media marketing pricing, social media management packages, social media agency pricing, Instagram marketing agency, social media growth services, content marketing packages, social media management cost"
         jsonLd={
           plans.length > 0
             ? {

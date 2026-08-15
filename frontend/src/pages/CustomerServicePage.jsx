@@ -47,6 +47,7 @@ export default function CustomerServicePage() {
       <Seo
         title="Customer Service — Built Around Your Business"
         description="MetlifeDM designs and runs the customer service operation your business needs — WhatsApp, enquiries, follow-up, booking, reviews, retention, and CRM — starting from $199/month."
+        keywords="customer service outsourcing, WhatsApp business management, customer support services, lead follow-up service, CRM management service, customer service agency, outsourced customer support USA"
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'Service',

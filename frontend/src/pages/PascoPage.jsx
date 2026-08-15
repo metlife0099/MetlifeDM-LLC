@@ -93,6 +93,7 @@ export default function PascoPage() {
       <Seo
         title="PASCO — Business Digital Continuity & Recovery"
         description="PASCO is MetlifeDM's business digital continuity and recovery framework — for when an agency, employee, freelancer, or developer disappears, an account gets locked out, or a website fails. Secure, audit, recover, stabilize, rebuild, transition, move forward."
+        keywords="business continuity recovery, digital asset recovery, website recovery service, agency exit recovery, digital continuity planning, hacked website recovery, lost website access recovery"
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'Service',

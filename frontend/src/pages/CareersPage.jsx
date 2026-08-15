@@ -48,6 +48,7 @@ export default function CareersPage() {
       <Seo
         title="Careers"
         description="Join MetlifeDM. We're hiring strategists, designers, engineers, and content operators who care about craft."
+        keywords="marketing agency careers, digital marketing jobs, remote marketing jobs USA, SEO jobs, PPC jobs, marketing agency hiring"
       />
 
       <Section tone="ink" spacing="lg" divider={false} className="relative">

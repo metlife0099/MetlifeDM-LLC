@@ -76,7 +76,11 @@ export default function ContactPage() {
 
   return (
     <>
-      <Seo title="Contact" description="Get in touch with MetlifeDM. We respond to every inquiry within one business day." />
+      <Seo
+        title="Contact"
+        description="Get in touch with MetlifeDM. We respond to every inquiry within one business day."
+        keywords="contact digital marketing agency, get a marketing quote, marketing agency contact, digital marketing consultation request"
+      />
 
       {/* Hero */}
       <Section tone="ink" spacing="lg" divider={false} className="relative">

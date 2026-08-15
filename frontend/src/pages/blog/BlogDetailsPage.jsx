@@ -120,9 +120,10 @@ export default function BlogDetailsPage() {
   return (
     <>
       <Seo
-        title={post.title}
-        description={post.excerpt || post.seo?.metaDescription}
-        image={post.coverImage?.url}
+        title={post.seo?.metaTitle || post.title}
+        description={post.seo?.metaDescription || post.excerpt}
+        keywords={post.seo?.keywords?.length > 0 ? post.seo.keywords.join(', ') : undefined}
+        ogImage={post.seo?.ogImage || post.coverImage?.url}
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'BlogPosting',

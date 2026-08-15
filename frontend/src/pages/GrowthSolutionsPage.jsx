@@ -171,6 +171,7 @@ export default function GrowthSolutionsPage() {
       <Seo
         title="Growth Solutions"
         description="MetlifeDM's Growth Solutions — Foundation, Growth, and Growth Partnership plans built around a diagnose-first process, not a fixed service list."
+        keywords="growth marketing plans, digital marketing packages, growth solutions agency, monthly marketing retainer, business growth plans, marketing pricing plans, growth partnership agency, digital marketing subscription"
         jsonLd={
           plans.length > 0
             ? {

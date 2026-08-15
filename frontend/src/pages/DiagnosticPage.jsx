@@ -60,6 +60,7 @@ export default function DiagnosticPage() {
       <Seo
         title="The MetlifeDM Diagnostic"
         description="Before we recommend anything, we find what's actually wrong. The MetlifeDM Diagnostic identifies the real bottleneck across visibility, positioning, trust, website, conversion, customer journey, and retention."
+        keywords="digital marketing audit, website audit, marketing diagnostic, business growth audit, digital presence audit, SEO audit service, growth bottleneck analysis"
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'Service',

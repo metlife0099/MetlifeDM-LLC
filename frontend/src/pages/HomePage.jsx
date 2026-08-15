@@ -40,6 +40,7 @@ export default function HomePage() {
       <Seo
         title="Digital marketing excellence for USA businesses"
         description="MetlifeDM helps US businesses across a range of industries grow through SEO, PPC, content, and AI-powered marketing. Measurable ROI, transparent pricing, senior strategists."
+        keywords="digital marketing agency, digital marketing agency USA, SEO agency, PPC management agency, social media marketing agency, growth marketing agency, business growth agency, US digital marketing company, full service marketing agency"
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'LocalBusiness',

@@ -31,6 +31,16 @@ export const sitemap = asyncHandler(async (req, res) => {
     { path: '/contact', priority: 0.7 },
     { path: '/consultation', priority: 0.7 },
     { path: '/careers', priority: 0.5 },
+    // Flagship growth/pricing pages
+    { path: '/growth-solutions', priority: 0.9, changefreq: 'weekly' },
+    { path: '/seo', priority: 0.9, changefreq: 'weekly' },
+    { path: '/google-ads', priority: 0.9, changefreq: 'weekly' },
+    { path: '/social-growth', priority: 0.9, changefreq: 'weekly' },
+    { path: '/customer-service', priority: 0.8, changefreq: 'weekly' },
+    { path: '/projects', priority: 0.8, changefreq: 'weekly' },
+    { path: '/diagnostic', priority: 0.8, changefreq: 'weekly' },
+    { path: '/pasco', priority: 0.8, changefreq: 'weekly' },
+    { path: '/control', priority: 0.6, changefreq: 'monthly' },
   ];
 
   const [services, blogs, portfolios, caseStudies, industries, pages] = await Promise.all([

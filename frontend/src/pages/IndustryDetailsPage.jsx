@@ -99,7 +99,12 @@ export default function IndustryDetailsPage() {
 
   return (
     <>
-      <Seo title={ind.name} description={ind.shortDescription} image={ind.heroImage?.url} />
+      <Seo
+        title={ind.seo?.metaTitle || ind.name}
+        description={ind.seo?.metaDescription || ind.shortDescription}
+        keywords={ind.seo?.keywords?.length > 0 ? ind.seo.keywords.join(', ') : undefined}
+        ogImage={ind.seo?.ogImage || ind.heroImage?.url}
+      />
 
       {/* Hero */}
       <Section tone="ink" spacing="lg" divider={false} className="relative">

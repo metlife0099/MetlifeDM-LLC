@@ -134,7 +134,11 @@ export default function ConsultationPage() {
 
   return (
     <>
-      <Seo title="Book a consultation" description="Book a free 30-minute strategy call with MetlifeDM's senior strategists. No pitch — just a plan." />
+      <Seo
+        title="Book a consultation"
+        description="Book a free 30-minute strategy call with MetlifeDM's senior strategists. No pitch — just a plan."
+        keywords="free marketing consultation, book a growth strategy call, marketing audit consultation, free SEO consultation, digital marketing strategy call"
+      />
 
       <Section tone="ink" spacing="lg" divider={false} className="relative">
         <HeroImage

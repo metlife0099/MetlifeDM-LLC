@@ -104,7 +104,11 @@ export default function CareerDetailsPage() {
 
   return (
     <>
-      <Seo title={job.title} description={job.shortDescription} />
+      <Seo
+        title={job.title}
+        description={job.shortDescription}
+        keywords={`${job.title}, marketing agency jobs, ${job.department || 'marketing'} careers, remote marketing jobs USA`}
+      />
 
       {/* Hero */}
       <Section tone="ivory" spacing="lg" divider={false}>

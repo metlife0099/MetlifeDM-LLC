@@ -44,7 +44,12 @@ export default function PortfolioDetailsPage() {
 
   return (
     <>
-      <Seo title={p.title} description={p.tagline} image={p.coverImage?.url} />
+      <Seo
+        title={p.seo?.metaTitle || p.title}
+        description={p.seo?.metaDescription || p.tagline}
+        keywords={p.seo?.keywords?.length > 0 ? p.seo.keywords.join(', ') : undefined}
+        ogImage={p.seo?.ogImage || p.coverImage?.url}
+      />
 
       {/* Hero */}
       <Section tone="ivory" spacing="lg" divider={false}>

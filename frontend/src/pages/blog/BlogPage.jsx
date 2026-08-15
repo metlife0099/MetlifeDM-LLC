@@ -66,7 +66,11 @@ export default function BlogPage() {
 
   return (
     <>
-      <Seo title="Blog" description="Growth playbooks, SEO strategy, PPC deep-dives, and marketing analytics from MetlifeDM's senior team." />
+      <Seo
+        title="Blog"
+        description="Growth playbooks, SEO strategy, PPC deep-dives, and marketing analytics from MetlifeDM's senior team."
+        keywords="digital marketing blog, SEO tips, marketing strategy blog, growth marketing insights, PPC blog, marketing analytics blog"
+      />
 
       <Section tone="ink" spacing="lg" divider={false} className="relative">
         <HeroImage

@@ -199,6 +199,7 @@ export default function PricingPage() {
       <Seo
         title="Pricing"
         description="Transparent, itemized pricing across every MetlifeDM service — filter by category, compare plans, and see exactly what each dollar buys."
+        keywords="digital marketing pricing, marketing agency pricing, SEO and PPC pricing, transparent marketing pricing, digital marketing packages USA, marketing agency cost, monthly marketing plans"
         jsonLd={
           services.length > 0
             ? {

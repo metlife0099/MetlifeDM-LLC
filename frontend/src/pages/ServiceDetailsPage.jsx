@@ -53,9 +53,11 @@ export default function ServiceDetailsPage() {
   return (
     <>
       <Seo
-        title={service.title}
-        description={service.shortDescription}
-        image={service.heroImage?.url}
+        title={service.seo?.metaTitle || service.title}
+        description={service.seo?.metaDescription || service.shortDescription}
+        keywords={service.seo?.keywords?.length > 0 ? service.seo.keywords.join(', ') : undefined}
+        canonical={service.seo?.canonical}
+        ogImage={service.seo?.ogImage || service.heroImage?.url}
         jsonLd={[
           {
             '@context': 'https://schema.org',

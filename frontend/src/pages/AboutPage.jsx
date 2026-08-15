@@ -26,6 +26,7 @@ export default function AboutPage() {
       <Seo
         title="About"
         description="MetlifeDM LLC — a US business growth machine. Bold digital strategies, killer results, and a team obsessed with turning your brand into a powerhouse of clicks and cash."
+        keywords="about MetlifeDM, digital marketing team, marketing agency USA, senior marketing strategists, digital marketing company history"
       />
 
       {/* Hero */}

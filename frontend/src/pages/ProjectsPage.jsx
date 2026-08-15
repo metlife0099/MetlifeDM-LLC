@@ -41,6 +41,7 @@ export default function ProjectsPage() {
       <Seo
         title="Projects — Build It Once. Build It Right."
         description="MetlifeDM Projects — websites, redesigns, landing pages, SEO setup, branding, marketing strategy, campaigns, and custom technology, built through a discover-plan-build-launch-optimize process. Custom quote."
+        keywords="website development projects, custom web design, landing page design, branding projects, marketing campaign development, custom digital projects, website redesign service"
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'Service',

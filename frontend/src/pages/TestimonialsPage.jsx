@@ -26,6 +26,7 @@ export default function TestimonialsPage() {
       <Seo
         title="Testimonials"
         description="What US business owners say about working with MetlifeDM. Unedited quotes with real names, companies, and metrics."
+        keywords="client testimonials, marketing agency reviews, digital marketing client reviews, MetlifeDM reviews, marketing agency success stories"
       />
 
       <Section tone="ink" spacing="lg" divider={false} className="relative">

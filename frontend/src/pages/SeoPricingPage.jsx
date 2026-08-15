@@ -254,6 +254,7 @@ export default function SeoPricingPage() {
       <Seo
         title="SEO & Search Growth Pricing"
         description="SEO isn't a monthly checklist — it's a search-growth system that gets smarter over time. Search Foundation, Search Growth, and Search Partnership plans, plus a one-time SEO Diagnostic to find the bottleneck first."
+        keywords="SEO pricing, SEO packages, SEO services pricing, monthly SEO plans, SEO agency pricing, search engine optimization cost, SEO management pricing, affordable SEO packages USA, SEO audit"
         jsonLd={
           plans.length > 0
             ? {

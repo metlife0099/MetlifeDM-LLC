@@ -283,6 +283,7 @@ export default function GoogleAdsPricingPage() {
       <Seo
         title="Google Ads & Paid Growth Pricing"
         description="Don't buy clicks. Buy better customer opportunities. MetlifeDM's Paid Growth System — Ads Foundation, Ads Growth, and Ads Partnership plans, plus a one-time Paid Growth Diagnostic to find out where the money is leaking."
+        keywords="Google Ads pricing, PPC management pricing, Google Ads management cost, paid search agency, Google Ads agency pricing, PPC agency packages, paid media management, Google Ads management services"
         jsonLd={
           plans.length > 0
             ? {

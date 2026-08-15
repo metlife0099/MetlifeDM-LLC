@@ -45,7 +45,11 @@ export default function CaseStudiesPage() {
 
   return (
     <>
-      <Seo title="Case Studies" description="Detailed case studies showing measurable ROI from MetlifeDM's SEO, PPC, and content campaigns for US businesses." />
+      <Seo
+        title="Case Studies"
+        description="Detailed case studies showing measurable ROI from MetlifeDM's SEO, PPC, and content campaigns for US businesses."
+        keywords="marketing case studies, SEO case studies, PPC case studies, digital marketing results, client success stories, marketing ROI examples"
+      />
 
       <Section tone="ink" spacing="lg" divider={false} className="relative">
         <HeroImage
