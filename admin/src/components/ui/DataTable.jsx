@@ -7,8 +7,12 @@ import { Spinner, EmptyState } from './index.jsx';
  * columns: [{ key, label, sortable?, align?, width?, render?(row, i), className? }]
  * rows: array of records
  * onRowClick(row) optional
- * meta: { page, limit, total, pages } for pagination
+ * meta: { page, limit, total, totalPages } for pagination — the shared
+ * `paginate()` backend helper names the field `totalPages`; a couple of
+ * hand-rolled admin endpoints still emit the older `pages` name, so this
+ * component accepts either.
  * onPageChange, onLimitChange, sort { key, direction: 'asc'|'desc' }, onSortChange
+ * limitOptions: page-size choices for the limit selector (only shown when onLimitChange is passed)
  */
 export default function DataTable({
   columns = [],
@@ -22,6 +26,7 @@ export default function DataTable({
   meta,
   onPageChange,
   onLimitChange,
+  limitOptions = [10, 25, 50, 100],
   sort,
   onSortChange,
   rowKey = '_id',
@@ -30,6 +35,7 @@ export default function DataTable({
   onSelectionChange,
   className,
 }) {
+  const totalPages = meta?.totalPages ?? meta?.pages;
   const toggleAll = () => {
     if (!onSelectionChange) return;
     if (selectedIds.length === rows.length) onSelectionChange([]);
@@ -164,7 +170,7 @@ export default function DataTable({
       </div>
 
       {/* Pagination */}
-      {meta && meta.pages > 1 && (
+      {meta && (meta.total > 0) && (
         <div className="flex items-center justify-between px-4 py-3 border-t border-hairline text-mono text-xs">
           <div className="text-slate uppercase tracking-widest">
             Showing {(meta.page - 1) * meta.limit + 1}–{Math.min(meta.page * meta.limit, meta.total)}{' '}
@@ -177,7 +183,7 @@ export default function DataTable({
                 onChange={(e) => onLimitChange(Number(e.target.value))}
                 className="bg-surface border border-hairline-strong px-2 py-1 text-mono text-xs hover:border-slate transition-colors"
               >
-                {[10, 25, 50, 100].map((n) => (
+                {limitOptions.map((n) => (
                   <option key={n} value={n}>
                     {n} / page
                   </option>
@@ -193,11 +199,11 @@ export default function DataTable({
               <ChevronLeft size={12} strokeWidth={1.5} />
             </button>
             <span className="px-3">
-              {meta.page} / {meta.pages}
+              {meta.page} / {totalPages || 1}
             </span>
             <button
               onClick={() => onPageChange?.(meta.page + 1)}
-              disabled={meta.page >= meta.pages}
+              disabled={meta.page >= totalPages}
               className="p-1.5 border border-hairline-strong hover:border-ink disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               aria-label="Next"
             >

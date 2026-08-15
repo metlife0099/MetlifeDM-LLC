@@ -11,7 +11,7 @@ import Button from '@/components/ui/Button.jsx';
 import { leadsApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { useDebounce } from '@/hooks/index.js';
-import { timeAgo, formatDate, truncate } from '@/utils/format.js';
+import { timeAgo, formatDate, truncate, formatNumber } from '@/utils/format.js';
 import { CONTACT_STATUSES, CONSULTATION_STATUSES, PARTNER_INQUIRY_STATUSES, AGENCY_TYPE_LABELS } from '@/utils/constants.js';
 
 /* ============================================================
@@ -265,6 +265,7 @@ export function ConsultationsPage() {
 export function SubscribersPage() {
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(50);
   const [search, setSearch] = useState('');
   const [active, setActive] = useState('');
   const [deleteId, setDeleteId] = useState(null);
@@ -272,8 +273,8 @@ export function SubscribersPage() {
   const debounced = useDebounce(search, 300);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'subscribers', { page, debounced, active }],
-    queryFn: () => leadsApi.listSubscribers({ page, search: debounced, active: active || undefined, limit: 50 }),
+    queryKey: ['admin', 'subscribers', { page, limit, debounced, active }],
+    queryFn: () => leadsApi.listSubscribers({ page, limit, search: debounced, active: active || undefined }),
   });
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['admin', 'subscribers'] });
@@ -347,7 +348,12 @@ export function SubscribersPage() {
     <>
       <PageHeader
         eyebrow="Leads / Newsletter"
-        title={<>Newsletter <span className="text-italic-fraunces text-ultra">subscribers</span></>}
+        title={
+          <span className="flex items-center gap-3 flex-wrap">
+            <span>Newsletter <span className="text-italic-fraunces text-ultra">subscribers</span></span>
+            <Badge>{formatNumber(data?.meta?.total ?? 0)} total</Badge>
+          </span>
+        }
         subtitle="Everyone opted in to updates. Star a subscriber to add them to the “featured” audience."
         actions={
           <>
@@ -370,6 +376,8 @@ export function SubscribersPage() {
       <DataTable
         columns={columns} rows={data?.data || []} loading={isLoading}
         meta={data?.meta} onPageChange={setPage}
+        onLimitChange={(n) => { setLimit(n); setPage(1); }}
+        limitOptions={[25, 50, 100, 200]}
         emptyIcon={MailPlus} emptyTitle="No subscribers yet"
       />
       <ConfirmDialog open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={() => remove.mutate(deleteId)} loading={remove.isPending} title="Remove this subscriber?" confirmLabel="Remove" variant="danger" />

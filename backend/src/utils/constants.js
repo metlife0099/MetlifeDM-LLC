@@ -127,7 +127,7 @@ export const APPLICATION_STATUS = Object.freeze({
 export const PAGINATION = Object.freeze({
   DEFAULT_PAGE: 1,
   DEFAULT_LIMIT: 12,
-  MAX_LIMIT: 100,
+  MAX_LIMIT: 200,
 });
 
 export const CACHE_KEYS = Object.freeze({
