@@ -19,6 +19,7 @@ export const NAV_MAIN = [
     label: 'Solutions',
     items: [
       { label: 'Growth Solutions', href: '/growth-solutions', desc: 'Our main growth plans', icon: 'TrendingUp' },
+      { label: 'SEO & Search Growth', href: '/seo', desc: 'Search-growth plans & diagnostic', icon: 'Search' },
       { label: 'Customer Service', href: '/customer-service', desc: 'Support systems built around you', icon: 'Headphones' },
       { label: 'Projects', href: '/projects', desc: 'Build it once, build it right', icon: 'Hammer' },
       { label: 'Pricing', href: '/pricing', desc: 'Full pricing reference', icon: 'Receipt' },

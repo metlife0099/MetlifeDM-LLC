@@ -5,11 +5,7 @@ import { motion } from 'framer-motion';
 import {
   Check, ShoppingBag, Star, ArrowUpRight, ShieldCheck, Sparkles, Ban, ChevronDown,
   Headphones, Puzzle,
-  MessageCircle, Send, CalendarCheck, MessageSquareText, Mail, Repeat, Database, Settings2,
-  Globe, RefreshCw, LayoutTemplate, Search, MapPin, Palette, Target, Megaphone, Gauge, Wand2,
-  Eye, MousePointerClick, Route,
-  Users, Cpu,
-  Heart, Info, Award,
+  Target, Megaphone, Cpu,
   TrendingUp, ChevronRight,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -31,9 +27,10 @@ const TRUST_POINTS = [
   { icon: Sparkles, label: 'Senior strategist on every plan' },
 ];
 
-/* Customer Service, Projects, and the Diagnostic are all important — and
- * different — enough to get their own full sections below (07 / 08 / 09).
- * Add-ons is the one entry point still compact. */
+/* Customer Service, Projects, the Diagnostic, and White Label each have
+ * their own dedicated page now (/customer-service, /projects, /diagnostic,
+ * /partners) — this page stays focused on pricing itself, so it only keeps
+ * a compact, linked-out entry point for anything not directly priced here. */
 const ADDONS_SOLUTION = {
   icon: Puzzle,
   name: 'Add-ons',
@@ -44,107 +41,7 @@ const ADDONS_SOLUTION = {
   href: '/services',
 };
 
-/* ---- 09 · The MetlifeDM Diagnostic (full section) ---- */
-const DIAGNOSTIC_STAGES = [
-  { icon: Eye, label: 'Visibility' },
-  { icon: Target, label: 'Positioning' },
-  { icon: ShieldCheck, label: 'Trust' },
-  { icon: Globe, label: 'Website' },
-  { icon: MousePointerClick, label: 'Conversion' },
-  { icon: Route, label: 'Customer Journey' },
-  { icon: Repeat, label: 'Retention' },
-];
-
-/* ---- 07 · Customer Service (full section, not just a card) ---- */
-const CUSTOMER_SERVICE_ITEMS = [
-  { icon: MessageCircle, label: 'WhatsApp Management' },
-  { icon: Send, label: 'Lead Follow-Up' },
-  { icon: CalendarCheck, label: 'Appointment & Booking Support' },
-  { icon: MessageSquareText, label: 'Customer Feedback' },
-  { icon: Star, label: 'Review Management' },
-  { icon: Mail, label: 'After-Sales Communication' },
-  { icon: Repeat, label: 'Customer Retention' },
-  { icon: Database, label: 'CRM & Lead Organization' },
-  { icon: Headphones, label: 'Dedicated Customer Support' },
-  { icon: Settings2, label: 'Custom Operations' },
-];
-
-/* ---- 08 · Projects (full section, not just a card) ---- */
-const PROJECT_CATEGORIES = [
-  { icon: Globe, label: 'Website Development' },
-  { icon: RefreshCw, label: 'Website Redesign' },
-  { icon: LayoutTemplate, label: 'Landing Pages' },
-  { icon: Search, label: 'SEO Setup' },
-  { icon: MapPin, label: 'Google Business Setup' },
-  { icon: Palette, label: 'Brand Strategy' },
-  { icon: Target, label: 'Marketing Strategy' },
-  { icon: Megaphone, label: 'Campaign Development' },
-  { icon: Gauge, label: 'SYSTOLAB Implementation' },
-  { icon: Wand2, label: 'Custom Digital Solutions' },
-];
-
-/* ---- 10 · White Label Partnership (full section) ---- */
-const WHITE_LABEL_PILLARS = [
-  { icon: Palette, name: 'Your Brand', desc: 'Your identity, domain and customer-facing experience.' },
-  { icon: Users, name: 'Your Clients', desc: 'You own the customer relationship.' },
-  { icon: Cpu, name: 'Our Engine', desc: 'MetlifeDM provides the infrastructure, technology and expertise.' },
-  { icon: Headphones, name: 'Our Support', desc: 'We operate behind the scenes.' },
-];
-
-/* ---- 11 · White Label Plans ---- */
-const WHITE_LABEL_PLANS = [
-  {
-    name: 'White Label Start',
-    price: 499,
-    tagline: 'For partners testing the ecosystem.',
-    ctaLabel: 'Become a Partner',
-  },
-  {
-    name: 'White Label Grow',
-    price: 999,
-    tagline: 'For businesses building recurring services around MetlifeDM technology.',
-    ctaLabel: 'Become a Partner',
-  },
-  {
-    name: 'White Label Enterprise',
-    price: null,
-    tagline: 'For organizations requiring deep integration and infrastructure.',
-    tags: ['Custom domain', 'API', 'Integrations', 'Workflows', 'Large volumes', 'Infrastructure', 'Development', 'Account Management', 'SLA'],
-    ctaLabel: 'Talk to Sales',
-  },
-];
-
-/* ---- 13 · The MetlifeDM Client Promise ---- */
-const CLIENT_PROMISE_BENEFITS = [
-  'Strategic guidance',
-  'Digital-growth advice',
-  'Recommendations',
-  'Direction when they need it',
-  'Priority reactivation',
-  'Future project opportunities',
-  'Retained business knowledge',
-  'Early access to selected opportunities',
-];
-
-const EXECUTION_EXCLUSIONS = [
-  'Hands-on execution', 'Advertising management', 'SEO implementation', 'Content production',
-  'Website work', 'Development', 'Customer-service operations', 'Hosting', 'Substantial consulting',
-];
-
-/* ---- 14 · MetlifeDM Client For Life (visually separate from 13) ---- */
-const CLIENT_FOR_LIFE_BENEFITS = [
-  'Lifetime strategic guidance',
-  'Priority reactivation',
-  'Preferential future-project consideration',
-  'Early access to selected services',
-  'Existing business knowledge retained',
-  'No starting from zero when you return',
-];
-
-/* ---- 15 · Why MetlifeDM? ---- */
-const WHY_METLIFEDM_STEPS = ['Where you are.', 'Where you want to go.', "What's stopping you."];
-
-/* ---- 16 · The MetlifeDM Ecosystem ---- */
+/* ---- The MetlifeDM Ecosystem ---- */
 const ECOSYSTEM_STAGES = [
   { icon: Target, label: 'Strategy' },
   { icon: Megaphone, label: 'Marketing' },
@@ -278,7 +175,7 @@ export default function PricingPage() {
     <>
       <Seo
         title="Pricing"
-        description="Transparent pricing across all MetlifeDM marketing services. Monthly, quarterly, and annual plans available."
+        description="Transparent, itemized pricing across every MetlifeDM service — filter by category, compare plans, and see exactly what each dollar buys."
         jsonLd={
           services.length > 0
             ? {
@@ -471,184 +368,7 @@ export default function PricingPage() {
         </Container>
       </Section>
 
-      {/* ============================================================ */}
-      {/* 07 — CUSTOMER SERVICE (its own section, not just a card — this */}
-      {/* is operational work, kept visually distinct from the marketing */}
-      {/* retainers above)                                               */}
-      {/* ============================================================ */}
-      <Section tone="ink" spacing="lg" divider={false}>
-        <Container>
-          <div className="grid gap-16 lg:grid-cols-[1fr_1.15fr] lg:items-start">
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <Eyebrow light>Customer Service</Eyebrow>
-              <h2 className="text-display-lg mt-4 text-ivory">
-                Built around <span className="text-italic-fraunces text-ultra-soft">your business.</span>
-              </h2>
-              <p className="text-ivory/70 text-lg mt-6 leading-relaxed">
-                Every touchpoint after the sale — a WhatsApp message, a booking request, a review, a follow-up — is
-                a system, not an afterthought. We build and run the exact customer service operation your business
-                needs, so no lead goes cold waiting on a reply.
-              </p>
-
-              <div className="mt-10 flex items-baseline gap-2">
-                <span className="text-display-md num-plate text-ivory">{formatMoney(199)}</span>
-                <span className="text-mono text-xs uppercase text-ivory/50">/ month, starting from</span>
-              </div>
-
-              <div className="mt-6 pt-6 border-t border-ivory/10">
-                <div className="text-mono text-xs uppercase tracking-widest text-ivory/50 mb-3">Why pricing varies</div>
-                <p className="text-ivory/60 text-sm leading-relaxed max-w-md">
-                  Customer Service is priced individually because it&apos;s operational work, not a marketing
-                  retainer — the cost depends on your message volume, the channels you use, and how complex your
-                  booking or support flow is. We quote it around how your business actually runs, not a fixed
-                  template.
-                </p>
-              </div>
-
-              <Button to="/consultation" size="lg" variant="inverse" className="mt-10">
-                Build Customer Service <ArrowUpRight size={16} strokeWidth={1.5} />
-              </Button>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className="grid gap-px bg-ivory/10 border border-ivory/10 sm:grid-cols-2"
-            >
-              {CUSTOMER_SERVICE_ITEMS.map((item) => (
-                <div key={item.label} className="bg-ink p-6 flex items-center gap-3">
-                  <div className="w-9 h-9 shrink-0 grid place-items-center bg-ivory/5 text-ultra-soft">
-                    <item.icon size={16} strokeWidth={1.5} />
-                  </div>
-                  <span className="text-ivory/85 text-sm">{item.label}</span>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-        </Container>
-      </Section>
-
-      {/* ============================================================ */}
-      {/* 08 — PROJECTS (the escape valve so a fixed tier never becomes */}
-      {/* a ceiling on what a client can build with us)                 */}
-      {/* ============================================================ */}
-      <Section tone="ivory" spacing="lg">
-        <Container>
-          <div className="grid gap-16 lg:grid-cols-[1fr_1.15fr] lg:items-start">
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <Eyebrow>Projects</Eyebrow>
-              <h2 className="text-display-lg mt-4">
-                Build it once. <span className="text-italic-fraunces text-ultra">Build it right.</span>
-              </h2>
-              <p className="text-slate text-lg mt-6 leading-relaxed">
-                Not everything fits into a monthly package. Some businesses need one project, done properly, and
-                nothing else — a new site, a rebrand, a single campaign. Projects are scoped and quoted
-                individually, so Foundation, Growth, and Growth Partnership never become a ceiling on what you can
-                build with us.
-              </p>
-              <Button to="/consultation" size="lg" className="mt-10">
-                Custom Quote <ArrowUpRight size={16} strokeWidth={1.5} />
-              </Button>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-              className="grid gap-px bg-hairline border border-hairline sm:grid-cols-2"
-            >
-              {PROJECT_CATEGORIES.map((item) => (
-                <div key={item.label} className="bg-ivory p-6 flex items-center gap-3">
-                  <div className="w-9 h-9 shrink-0 grid place-items-center bg-ink text-ivory">
-                    <item.icon size={16} strokeWidth={1.5} />
-                  </div>
-                  <span className="text-ink text-sm">{item.label}</span>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-        </Container>
-      </Section>
-
-      {/* ============================================================ */}
-      {/* 09 — THE METLIFEDM DIAGNOSTIC                                  */}
-      {/* ============================================================ */}
-      <Section tone="ink" spacing="lg" divider={false}>
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-2xl mx-auto text-center"
-          >
-            <Eyebrow light className="justify-center">The MetlifeDM Diagnostic</Eyebrow>
-            <h2 className="text-display-lg mt-4 text-ivory">
-              Before we recommend anything,<br />
-              <span className="text-italic-fraunces text-ultra-soft">we find what&apos;s actually wrong.</span>
-            </h2>
-          </motion.div>
-
-          {/* Vertical funnel — each stage narrows in on the real bottleneck */}
-          <div className="mt-16 max-w-md mx-auto">
-            {DIAGNOSTIC_STAGES.map((stage, i) => (
-              <motion.div
-                key={stage.label}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                className="relative"
-              >
-                <div className="flex items-center gap-5 py-4">
-                  <div className="w-11 h-11 shrink-0 grid place-items-center rounded-full bg-ivory/5 border border-ivory/15 text-ultra-soft">
-                    <stage.icon size={18} strokeWidth={1.5} />
-                  </div>
-                  <div className="flex items-baseline gap-3">
-                    <span className="num-plate text-ivory/30 text-xs">{String(i + 1).padStart(2, '0')}</span>
-                    <span className="text-ivory text-lg">{stage.label}</span>
-                  </div>
-                </div>
-                {i < DIAGNOSTIC_STAGES.length - 1 && (
-                  <div className="pl-[1.375rem]">
-                    <div className="w-px h-6 bg-ivory/15" />
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-xl mx-auto text-center mt-16 pt-12 border-t border-ivory/10"
-          >
-            <p className="text-xl text-italic-fraunces text-ivory leading-snug">
-              We don&apos;t recommend services simply because they&apos;re available. We identify the bottleneck first.
-            </p>
-            <Button to="/diagnostic" size="lg" variant="inverse" className="mt-10">
-              Start a Diagnostic Conversation <ArrowUpRight size={16} strokeWidth={1.5} />
-            </Button>
-          </motion.div>
-        </Container>
-      </Section>
-
-      {/* Add-ons — the one remaining compact entry point */}
+      {/* Add-ons — a compact, linked-out entry point */}
       <Section tone="ivory" spacing="lg">
         <Container>
           <motion.div
@@ -679,268 +399,7 @@ export default function PricingPage() {
       </Section>
 
       {/* ============================================================ */}
-      {/* 10 — WHITE LABEL PARTNERSHIP                                   */}
-      {/* ============================================================ */}
-      <Section tone="ink" spacing="lg" divider={false}>
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-2xl mx-auto text-center"
-          >
-            <Eyebrow light className="justify-center">White Label Partnership</Eyebrow>
-            <h2 className="text-display-lg mt-4 text-ivory">
-              Your brand. <span className="text-italic-fraunces text-ultra-soft">Our engine.</span>
-            </h2>
-            <p className="text-ivory/70 text-lg mt-6 leading-relaxed">
-              Offer MetlifeDM-powered technology and services under your own brand.
-            </p>
-          </motion.div>
-
-          <div className="mt-16 grid gap-px bg-ivory/10 border border-ivory/10 sm:grid-cols-2 lg:grid-cols-4">
-            {WHITE_LABEL_PILLARS.map((p, i) => (
-              <motion.div
-                key={p.name}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.6, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                className="bg-ink p-8"
-              >
-                <div className="w-11 h-11 grid place-items-center bg-ivory/5 text-ultra-soft">
-                  <p.icon size={18} strokeWidth={1.5} />
-                </div>
-                <div className="text-mono text-xs uppercase tracking-widest text-ivory/50 mt-6">{p.name}</div>
-                <p className="text-ivory/85 text-sm mt-3 leading-relaxed">{p.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-2xl mx-auto text-center mt-16 pt-12 border-t border-ivory/10"
-          >
-            <p className="text-xl md:text-2xl text-italic-fraunces text-ivory leading-snug">
-              You build the relationship. We build what&apos;s behind it.
-            </p>
-            <Button to="/partners" variant="underline" className="mt-8 text-ivory!">
-              Become a Partner <ArrowUpRight size={13} strokeWidth={1.5} />
-            </Button>
-          </motion.div>
-        </Container>
-      </Section>
-
-      {/* ============================================================ */}
-      {/* 11 — WHITE LABEL PLANS                                        */}
-      {/* ============================================================ */}
-      <Section tone="ivory" spacing="lg">
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-2xl mx-auto text-center mb-16"
-          >
-            <Eyebrow className="justify-center">White Label Plans</Eyebrow>
-            <h2 className="text-display-lg mt-4">
-              Built to grow <span className="text-italic-fraunces text-ultra">with your ecosystem.</span>
-            </h2>
-          </motion.div>
-
-          <div className="grid gap-6 lg:grid-cols-3">
-            {WHITE_LABEL_PLANS.map((plan, i) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-60px' }}
-                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                className="flex flex-col border border-hairline hover:border-ink hover-lift transition-colors duration-500 p-8"
-              >
-                <div className="text-mono text-xs uppercase tracking-widest text-slate">{plan.name}</div>
-                <div className="mt-4 flex items-baseline gap-2">
-                  {plan.price ? (
-                    <>
-                      <span className="text-display-md num-plate">{formatMoney(plan.price)}</span>
-                      <span className="text-mono text-xs uppercase text-slate">/ month, from</span>
-                    </>
-                  ) : (
-                    <span className="text-display-md num-plate">Custom</span>
-                  )}
-                </div>
-                <p className="text-slate text-sm mt-4 leading-relaxed">{plan.tagline}</p>
-
-                {plan.tags && (
-                  <div className="mt-6 flex flex-wrap gap-1.5">
-                    {plan.tags.map((t) => (
-                      <span key={t} className="px-2.5 py-1 text-[0.65rem] uppercase tracking-wide text-slate border border-hairline">
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                <Button to="/partners" variant="underline" className="mt-8 w-fit">
-                  {plan.ctaLabel} <ArrowUpRight size={13} strokeWidth={1.5} />
-                </Button>
-              </motion.div>
-            ))}
-          </div>
-        </Container>
-      </Section>
-
-      {/* ============================================================ */}
-      {/* 13 — THE METLIFEDM CLIENT PROMISE                              */}
-      {/* ============================================================ */}
-      <Section tone="ink" spacing="lg" divider={false}>
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-2xl mx-auto text-center"
-          >
-            <div className="inline-flex items-center gap-2 mx-auto mb-2 text-ultra-soft">
-              <Heart size={16} strokeWidth={1.5} fill="currentColor" />
-              <span className="text-mono text-xs uppercase tracking-widest">Client for life</span>
-            </div>
-            <h2 className="text-display-lg mt-2 text-ivory">
-              Your subscription can end.<br />
-              <span className="text-italic-fraunces text-ultra-soft">Our relationship doesn&apos;t have to.</span>
-            </h2>
-            <p className="text-ivory/70 text-lg mt-6 leading-relaxed">
-              When an engagement ends, we don&apos;t disappear. Every client who&apos;s worked with MetlifeDM keeps a
-              standing line to us — because the relationship was never just the invoice.
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-14 max-w-2xl mx-auto grid gap-x-8 gap-y-4 sm:grid-cols-2"
-          >
-            {CLIENT_PROMISE_BENEFITS.map((b) => (
-              <div key={b} className="flex items-center gap-3">
-                <Check size={15} strokeWidth={2} className="shrink-0 text-ultra-soft" />
-                <span className="text-ivory/85 text-sm">{b}</span>
-              </div>
-            ))}
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-16 max-w-2xl mx-auto border border-ivory/15 bg-ivory/5 p-8 md:p-10"
-          >
-            <div className="flex items-start gap-4">
-              <div className="w-9 h-9 shrink-0 grid place-items-center bg-ivory/10 text-ultra-soft">
-                <Info size={16} strokeWidth={1.5} />
-              </div>
-              <div>
-                <h3 className="text-ivory text-lg font-medium">Lifetime support does not mean unlimited free execution.</h3>
-                <p className="text-ivory/65 text-sm mt-3 leading-relaxed">
-                  Hands-on execution, advertising management, SEO implementation, content production, website work,
-                  development, customer-service operations, hosting, and substantial consulting require an active
-                  engagement or a separate quote.
-                </p>
-              </div>
-            </div>
-            <div className="mt-6 pt-6 border-t border-ivory/10 flex flex-wrap gap-1.5">
-              {EXECUTION_EXCLUSIONS.map((t) => (
-                <span key={t} className="px-2.5 py-1 text-[0.65rem] uppercase tracking-wide text-ivory/50 border border-ivory/15">
-                  {t}
-                </span>
-              ))}
-            </div>
-          </motion.div>
-        </Container>
-      </Section>
-
-      {/* ============================================================ */}
-      {/* 14 — METLIFEDM CLIENT FOR LIFE (visually distinct from 13 —    */}
-      {/* framed as membership, not a discount)                         */}
-      {/* ============================================================ */}
-      <Section tone="ivory" spacing="lg">
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-3xl mx-auto border border-ink p-10 md:p-14 text-center"
-          >
-            <div className="w-14 h-14 mx-auto grid place-items-center bg-ink text-ivory">
-              <Award size={22} strokeWidth={1.5} />
-            </div>
-            <div className="text-mono text-xs uppercase tracking-widest text-slate mt-6">Membership status</div>
-            <h2 className="text-display-lg mt-3">
-              Client <span className="text-italic-fraunces text-ultra">for life.</span>
-            </h2>
-            <p className="text-slate text-lg mt-6 max-w-lg mx-auto leading-relaxed">
-              Complete 6 continuous months with MetlifeDM and you&apos;re in — a relationship that lasts beyond the
-              engagement, not just a discount for coming back.
-            </p>
-
-            <div className="mt-10 pt-10 border-t border-hairline grid gap-x-8 gap-y-4 sm:grid-cols-2 text-left max-w-xl mx-auto">
-              {CLIENT_FOR_LIFE_BENEFITS.map((b) => (
-                <div key={b} className="flex items-center gap-3">
-                  <Check size={15} strokeWidth={2} className="shrink-0 text-ultra" />
-                  <span className="text-ink text-sm">{b}</span>
-                </div>
-              ))}
-            </div>
-
-            <p className="text-slate text-xs uppercase tracking-widest mt-10">
-              Ask your strategist about Client For Life status
-            </p>
-          </motion.div>
-        </Container>
-      </Section>
-
-      {/* ============================================================ */}
-      {/* 15 — WHY METLIFEDM?                                           */}
-      {/* ============================================================ */}
-      <Section tone="ink" spacing="md" divider={false}>
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-2xl mx-auto text-center"
-          >
-            <Eyebrow light className="justify-center">Why MetlifeDM?</Eyebrow>
-            <h2 className="text-display-lg mt-4 text-ivory">
-              We don&apos;t want to be <span className="text-italic-fraunces text-ultra-soft">another vendor.</span>
-            </h2>
-            <div className="mt-10 text-ivory/50 text-xs uppercase tracking-widest">We want to understand:</div>
-            <div className="mt-4 space-y-1">
-              {WHY_METLIFEDM_STEPS.map((s) => (
-                <p key={s} className="text-2xl md:text-3xl text-italic-fraunces text-ivory/90 leading-snug">
-                  {s}
-                </p>
-              ))}
-            </div>
-            <p className="text-ivory text-lg mt-10 pt-8 border-t border-ivory/10 max-w-lg mx-auto leading-relaxed">
-              We build around the problem — not around a fixed service list.
-            </p>
-          </motion.div>
-        </Container>
-      </Section>
-
-      {/* ============================================================ */}
-      {/* 16 — THE METLIFEDM ECOSYSTEM                                  */}
+      {/* THE METLIFEDM ECOSYSTEM                                       */}
       {/* ============================================================ */}
       <Section tone="ivory" spacing="xl">
         <Container>
@@ -992,7 +451,7 @@ export default function PricingPage() {
       </Section>
 
       {/* ============================================================ */}
-      {/* 17 — METLIFEDM PARTNER CIRCLE (deliberately minimal —          */}
+      {/* METLIFEDM PARTNER CIRCLE (deliberately minimal —               */}
       {/* invitation-only, not a public referral pitch)                 */}
       {/* ============================================================ */}
       <Section tone="ink" spacing="sm" divider={false}>
@@ -1061,37 +520,12 @@ export default function PricingPage() {
         />
       )}
 
-      {/* ============================================================ */}
-      {/* 18 — NOT SURE WHERE TO START? (final major conversion section) */}
-      {/* ============================================================ */}
       <CtaBanner
-        eyebrow="Not sure where to start?"
-        title="You don't have to know what you need. That's our job."
-        subtitle="Tell us where your business is today, where you want to go, and what's not working. We'll help identify the bottleneck and recommend the right path — even if the answer isn't one of our standard packages."
-        primary={{ label: 'Find My Growth Path', href: '/consultation' }}
-        secondary={{ label: 'Book a Diagnostic Conversation', href: '/consultation' }}
+        eyebrow="Custom scope?"
+        title="If your needs don't fit a standard plan, we'll build a quote around them."
+        subtitle="Book a call and we'll scope a tailored plan in under 48 hours — no pressure, no fixed menu."
+        primary={{ label: 'Book a Call', href: '/consultation' }}
       />
-
-      {/* ============================================================ */}
-      {/* 19 — FINAL CTA (kept extremely minimal, on purpose)            */}
-      {/* ============================================================ */}
-      <Section tone="ink" spacing="md" divider={false}>
-        <Container>
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-xl mx-auto text-center"
-          >
-            <h2 className="text-display-lg text-ivory">Ready to find the bottleneck?</h2>
-            <p className="text-ivory/60 text-lg mt-4">Let&apos;s start with the business — not the service.</p>
-            <Button to="/consultation" size="lg" variant="inverse" className="mt-10">
-              Start a Conversation <ArrowUpRight size={16} strokeWidth={1.5} />
-            </Button>
-          </motion.div>
-        </Container>
-      </Section>
     </>
   );
 }
