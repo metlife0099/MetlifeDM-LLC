@@ -63,6 +63,7 @@ export const NAV_SECTIONS = [
       { label: 'Contact forms', href: '/leads/contacts', icon: 'Mail' },
       { label: 'Consultations', href: '/leads/consultations', icon: 'Calendar' },
       { label: 'White-label partners', href: '/leads/partners', icon: 'Handshake' },
+      { label: 'Pricing enquiries', href: '/leads/pricing-enquiries', icon: 'DollarSign' },
       { label: 'Newsletter', href: '/leads/subscribers', icon: 'MailPlus' },
       { label: 'Campaigns', href: '/leads/campaigns', icon: 'Send' },
     ],
@@ -103,6 +104,7 @@ export const NAV_NOTIFICATION_TYPES = {
   '/leads/contacts': 'contact',
   '/leads/consultations': 'consultation',
   '/leads/partners': 'partner_inquiry',
+  '/leads/pricing-enquiries': 'pricing_enquiry',
   '/leads/subscribers': 'subscriber',
   '/careers/applications': 'application',
   '/support/tickets': 'ticket',
@@ -182,6 +184,19 @@ export const AGENCY_TYPE_LABELS = {
   branding_agency: 'Branding Agency',
   software_company: 'Software Company',
   other: 'Other',
+};
+
+export const PRICING_ENQUIRY_STATUSES = [
+  { value: 'new', label: 'New' },
+  { value: 'contacted', label: 'Contacted' },
+  { value: 'qualified', label: 'Qualified' },
+  { value: 'converted', label: 'Converted' },
+  { value: 'not_a_fit', label: 'Not a fit' },
+];
+
+export const INQUIRER_TYPE_LABELS = {
+  customer: 'Customer',
+  agency: 'Agency',
 };
 
 export const APPLICATION_STATUSES = [

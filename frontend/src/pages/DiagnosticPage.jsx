@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   ArrowUpRight, Check,
@@ -7,6 +8,7 @@ import {
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
+import PricingEnquiryModal from '@/components/sections/PricingEnquiryModal.jsx';
 
 /* ---- What We Diagnose ---- */
 const DIAGNOSE_AREAS = [
@@ -52,6 +54,7 @@ const SEVERITY_STYLES = {
 };
 
 export default function DiagnosticPage() {
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
   return (
     <>
       <Seo
@@ -295,12 +298,19 @@ export default function DiagnosticPage() {
             <p className="text-slate text-lg mt-6 max-w-lg mx-auto leading-relaxed">
               No pitch. Just a clear-eyed look at what&apos;s actually stopping your business from growing.
             </p>
-            <Button to="/consultation" size="lg" className="mt-10">
-              Find My Growth Bottleneck <ArrowUpRight size={16} strokeWidth={1.5} />
-            </Button>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+              <Button to="/consultation" size="lg">
+                Find My Growth Bottleneck <ArrowUpRight size={16} strokeWidth={1.5} />
+              </Button>
+              <Button variant="ghost" size="lg" onClick={() => setEnquiryOpen(true)}>
+                Enquire About Pricing
+              </Button>
+            </div>
           </motion.div>
         </Container>
       </Section>
+
+      <PricingEnquiryModal open={enquiryOpen} onClose={() => setEnquiryOpen(false)} service="The Diagnostic" />
     </>
   );
 }

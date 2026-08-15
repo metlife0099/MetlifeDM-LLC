@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   ArrowUpRight,
@@ -8,6 +9,7 @@ import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.j
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { formatMoney } from '@/utils/format.js';
+import PricingEnquiryModal from '@/components/sections/PricingEnquiryModal.jsx';
 
 /* ---- Customer Operations ---- */
 const OPERATIONS = [
@@ -39,6 +41,7 @@ const PRICING_FACTORS = [
 ];
 
 export default function CustomerServicePage() {
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
   return (
     <>
       <Seo
@@ -192,6 +195,9 @@ export default function CustomerServicePage() {
                 ))}
               </div>
             </div>
+            <Button variant="outline" size="md" onClick={() => setEnquiryOpen(true)} className="mt-8">
+              Enquire About Pricing
+            </Button>
           </motion.div>
         </Container>
       </Section>
@@ -220,6 +226,8 @@ export default function CustomerServicePage() {
           </motion.div>
         </Container>
       </Section>
+
+      <PricingEnquiryModal open={enquiryOpen} onClose={() => setEnquiryOpen(false)} service="Customer Service" />
     </>
   );
 }

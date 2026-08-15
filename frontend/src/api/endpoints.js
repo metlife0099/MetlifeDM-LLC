@@ -72,6 +72,7 @@ export const ENDPOINTS = {
   contact: '/contact',
   consultations: '/consultations',
   partnerInquiries: '/partner-inquiries',
+  pricingEnquiries: '/pricing-enquiries',
   newsletter: {
     subscribe: '/newsletter/subscribe',
     unsubscribe: '/newsletter/unsubscribe',

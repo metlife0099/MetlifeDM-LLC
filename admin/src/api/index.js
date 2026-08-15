@@ -113,6 +113,10 @@ export const leadsApi = {
   getPartner: (id) => apiClient.get(E.leads.partner(id)).then(unwrap),
   updatePartner: (id, data) => apiClient.put(E.leads.updatePartner(id), data).then(unwrap),
   deletePartner: (id) => apiClient.delete(E.leads.deletePartner(id)).then(unwrap),
+  listPricingEnquiries: (params) => apiClient.get(E.leads.pricingEnquiries, { params }).then(unwrapMeta),
+  getPricingEnquiry: (id) => apiClient.get(E.leads.pricingEnquiry(id)).then(unwrap),
+  updatePricingEnquiry: (id, data) => apiClient.put(E.leads.updatePricingEnquiry(id), data).then(unwrap),
+  deletePricingEnquiry: (id) => apiClient.delete(E.leads.deletePricingEnquiry(id)).then(unwrap),
 };
 
 /* ===================== CAMPAIGNS ===================== */

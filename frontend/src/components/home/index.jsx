@@ -118,14 +118,14 @@ export const BrandStory = () => (
         >
           <img
             src="https://images.unsplash.com/photo-1506966953602-c20cc11f75e3?w=1200&q=80&auto=format&fit=crop"
-            alt="Miami skyline at dusk, home of the MetlifeDM team"
+            alt="Team collaborating, home of the MetlifeDM team"
             className="h-full w-full object-cover"
             loading="lazy"
           />
           <div className="absolute inset-0 bg-linear-to-t from-ink/70 via-transparent to-transparent" />
           <div className="absolute bottom-6 left-6 right-6 text-ivory">
             <div className="text-mono text-xs uppercase tracking-widest text-ivory/70">Headquartered in</div>
-            <div className="text-display-sm mt-1">Miami, Florida</div>
+            <div className="text-display-sm mt-1">Nassau, Delaware</div>
           </div>
         </motion.div>
 
@@ -142,7 +142,7 @@ export const BrandStory = () => (
             <span className="text-italic-fraunces text-ultra">data-driven</span> digital marketing.
           </motion.h2>
           <p className="text-slate text-lg mt-6 max-w-xl leading-relaxed">
-            Your digital roadmap to success starts with MetlifeDM — Miami, FL&apos;s best digital marketing agency.
+            Your digital roadmap to success starts with MetlifeDM — America&apos;s best digital marketing agency.
           </p>
 
           <motion.blockquote
@@ -161,8 +161,8 @@ export const BrandStory = () => (
 
           <div className="mt-8 space-y-4 text-slate leading-relaxed max-w-lg">
             <p>
-              That call wasn&apos;t made to any agency — it was made to MetlifeDM, Miami&apos;s rapidly emerging
-              digital marketing agency rewriting the rules of online growth.
+              That call wasn&apos;t made to any agency — it was made to MetlifeDM, a rapidly emerging digital
+              marketing agency rewriting the rules of online growth.
             </p>
             <p>
               What began as a single call became the way we work with every client since — across real estate,
@@ -532,7 +532,7 @@ export const WhyUsTimeline = () => {
           </Eyebrow>
           <h2 className="text-display-lg mt-4">
             Why MetlifeDM is the <span className="text-italic-fraunces text-ultra">best</span> digital marketing
-            agency in Miami.
+            agency in America.
           </h2>
           <p className="text-slate text-lg mt-6 leading-relaxed">
             At MetlifeDM, we don&apos;t just market — we drive real, measurable growth. Our data-driven strategies

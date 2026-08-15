@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   ArrowUpRight, Check, ChevronRight, ShieldAlert,
@@ -9,6 +10,7 @@ import {
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
+import PricingEnquiryModal from '@/components/sections/PricingEnquiryModal.jsx';
 
 /* ---- The Problem — how digital continuity breaks ---- */
 const PROBLEM_TRIGGERS = [
@@ -85,6 +87,7 @@ const ENGAGEMENTS = [
 ];
 
 export default function PascoPage() {
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
   return (
     <>
       <Seo
@@ -356,6 +359,14 @@ export default function PascoPage() {
             <h2 className="text-display-lg mt-4 text-ivory">
               Scoped to the <span className="text-italic-fraunces text-ultra-soft">situation, not the hours.</span>
             </h2>
+            <Button
+              variant="ghost"
+              size="md"
+              onClick={() => setEnquiryOpen(true)}
+              className="mt-6 border-ivory/30 text-ivory hover:bg-ivory hover:text-ink"
+            >
+              Not Sure Which Engagement? Enquire About Pricing
+            </Button>
           </motion.div>
 
           <div className="grid gap-6 lg:grid-cols-3 max-w-5xl mx-auto">
@@ -406,6 +417,8 @@ export default function PascoPage() {
           </motion.div>
         </Container>
       </Section>
+
+      <PricingEnquiryModal open={enquiryOpen} onClose={() => setEnquiryOpen(false)} service="PASCO" />
     </>
   );
 }

@@ -14,6 +14,7 @@ import { Spinner } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { contentApi } from '@/api/index.js';
+import PricingEnquiryModal from '@/components/sections/PricingEnquiryModal.jsx';
 import { addItem } from '@/store/index.js';
 import { formatMoney } from '@/utils/format.js';
 import { cn } from '@/utils/format.js';
@@ -255,6 +256,7 @@ function AdsPlanCard({ name, price, priceLabel, tagline, features, isPopular, ct
 
 export default function GoogleAdsPricingPage() {
   const dispatch = useDispatch();
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
 
   const { data: adsData, isLoading } = useQuery({
     queryKey: ['services', 'ads-pricing', ADS_SLUG],
@@ -457,6 +459,9 @@ export default function GoogleAdsPricingPage() {
             <h2 className="text-display-lg mt-4">
               Four levels of <span className="text-italic-fraunces text-ultra">paid-growth execution.</span>
             </h2>
+            <Button variant="outline" size="md" onClick={() => setEnquiryOpen(true)} className="mt-6">
+              Not sure which plan? Enquire About Pricing
+            </Button>
           </motion.div>
 
           {isLoading ? (
@@ -939,6 +944,8 @@ export default function GoogleAdsPricingPage() {
           </motion.div>
         </Container>
       </Section>
+
+      <PricingEnquiryModal open={enquiryOpen} onClose={() => setEnquiryOpen(false)} service="Google Ads & Paid Growth" />
     </>
   );
 }

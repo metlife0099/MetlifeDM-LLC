@@ -15,6 +15,7 @@ import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner, FaqAccordion } from '@/components/sections/index.jsx';
+import PricingEnquiryModal from '@/components/sections/PricingEnquiryModal.jsx';
 import { contentApi } from '@/api/index.js';
 import { addItem } from '@/store/index.js';
 import { formatMoney } from '@/utils/format.js';
@@ -170,6 +171,7 @@ export default function PricingPage() {
   const dispatch = useDispatch();
   const [category, setCategory] = useState('');
   const [billing, setBilling] = useState('monthly');
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
 
   const { data: services = [], isLoading } = useQuery({
     queryKey: ['services', 'pricing', category],
@@ -269,6 +271,15 @@ export default function PricingPage() {
               </div>
             ))}
           </div>
+
+          <Button
+            variant="ghost"
+            size="md"
+            onClick={() => setEnquiryOpen(true)}
+            className="mt-8 border-ivory/30 text-ivory hover:bg-ivory hover:text-ink"
+          >
+            Have a Question About Pricing? Enquire
+          </Button>
         </Container>
       </Section>
 
@@ -572,6 +583,8 @@ export default function PricingPage() {
         subtitle="Book a call and we'll scope a tailored plan in under 48 hours — no pressure, no fixed menu."
         primary={{ label: 'Book a Call', href: '/consultation' }}
       />
+
+      <PricingEnquiryModal open={enquiryOpen} onClose={() => setEnquiryOpen(false)} service="Pricing" />
     </>
   );
 }

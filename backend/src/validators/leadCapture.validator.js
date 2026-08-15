@@ -46,6 +46,20 @@ export const partnerInquirySchema = z.object({
   message: z.string().max(3000).optional().or(z.literal('')),
 });
 
+/* Pricing enquiry — the "ask about this plan" form on every pricing page */
+export const pricingEnquirySchema = z.object({
+  firstName: z.string().trim().min(2),
+  lastName: z.string().trim().min(2),
+  email: z.string().trim().toLowerCase().email(),
+  phone: z.string().regex(REGEX.PHONE_US, 'Invalid US phone').optional().or(z.literal('')),
+  company: z.string().optional().or(z.literal('')),
+  inquirerType: z.enum(['customer', 'agency']),
+  service: z.string().trim().min(1),
+  plan: z.string().optional().or(z.literal('')),
+  budget: optionalEnum(['<5k', '5k-10k', '10k-25k', '25k-50k', '50k-100k', '100k+', 'undecided']),
+  message: z.string().max(3000).optional().or(z.literal('')),
+});
+
 /* Consultation */
 export const consultationSchema = z.object({
   firstName: z.string().trim().min(2),

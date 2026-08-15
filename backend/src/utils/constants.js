@@ -86,6 +86,7 @@ export const NOTIFICATION_TYPES = Object.freeze({
   CONSULTATION: 'consultation',
   CONTACT: 'contact',
   PARTNER_INQUIRY: 'partner_inquiry',
+  PRICING_ENQUIRY: 'pricing_enquiry',
   APPLICATION: 'application',
   USER: 'user',
   SUBSCRIBER: 'subscriber',

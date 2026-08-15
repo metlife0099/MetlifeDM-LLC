@@ -25,7 +25,7 @@ export default function AboutPage() {
     <>
       <Seo
         title="About"
-        description="MetlifeDM LLC — Miami, FL's business growth machine. Bold digital strategies, killer results, and a team obsessed with turning your brand into a powerhouse of clicks and cash."
+        description="MetlifeDM LLC — a US business growth machine. Bold digital strategies, killer results, and a team obsessed with turning your brand into a powerhouse of clicks and cash."
       />
 
       {/* Hero */}

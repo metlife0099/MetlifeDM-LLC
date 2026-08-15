@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Mail, Calendar, MailPlus, Trash2, Download, ExternalLink, Plus, UserPlus, Upload, X, Star, Send, Handshake } from 'lucide-react';
+import { Mail, Calendar, MailPlus, Trash2, Download, ExternalLink, Plus, UserPlus, Upload, X, Star, Send, Handshake, DollarSign } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Tabs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
@@ -12,7 +12,7 @@ import { leadsApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { useDebounce } from '@/hooks/index.js';
 import { timeAgo, formatDate, truncate, formatNumber } from '@/utils/format.js';
-import { CONTACT_STATUSES, CONSULTATION_STATUSES, PARTNER_INQUIRY_STATUSES, AGENCY_TYPE_LABELS } from '@/utils/constants.js';
+import { CONTACT_STATUSES, CONSULTATION_STATUSES, PARTNER_INQUIRY_STATUSES, AGENCY_TYPE_LABELS, PRICING_ENQUIRY_STATUSES, INQUIRER_TYPE_LABELS } from '@/utils/constants.js';
 
 /* ============================================================
  * CONTACTS
@@ -750,6 +750,156 @@ export function PartnerInquiriesPage() {
       </Drawer>
 
       <ConfirmDialog open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={() => remove.mutate(deleteId)} loading={remove.isPending} title="Delete this application?" confirmLabel="Delete" variant="danger" />
+    </>
+  );
+}
+
+/* ============================================================
+ * PRICING ENQUIRIES — the "ask about this plan" form submitted
+ * from every pricing page (Growth Solutions, SEO, Ads, Social, etc.)
+ * ============================================================ */
+export function PricingEnquiriesPage() {
+  const qc = useQueryClient();
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('new');
+  const [selected, setSelected] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
+  const debounced = useDebounce(search, 300);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'pricing-enquiries', { page, debounced, status }],
+    queryFn: () => leadsApi.listPricingEnquiries({ page, search: debounced, status, limit: 25 }),
+  });
+
+  const updateStatus = useMutation({
+    mutationFn: ({ id, status, internalNotes }) => leadsApi.updatePricingEnquiry(id, { status, internalNotes }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'pricing-enquiries'] });
+      toast.success('Enquiry updated');
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+
+  const remove = useMutation({
+    mutationFn: (id) => leadsApi.deletePricingEnquiry(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'pricing-enquiries'] });
+      toast.success('Enquiry deleted');
+      setDeleteId(null);
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+
+  const columns = [
+    {
+      key: 'name', label: 'Contact',
+      render: (r) => (
+        <button onClick={() => setSelected(r)} className="text-left">
+          <div className="text-sm hover:text-ultra">{r.firstName} {r.lastName}</div>
+          <div className="text-mono text-xs text-slate mt-0.5">{r.email}</div>
+        </button>
+      ),
+    },
+    {
+      key: 'inquirerType', label: 'Type',
+      render: (r) => <Badge tone={r.inquirerType === 'agency' ? 'ultra' : 'default'}>{INQUIRER_TYPE_LABELS[r.inquirerType] || r.inquirerType}</Badge>,
+    },
+    { key: 'service', label: 'Service', render: (r) => <span className="text-sm">{r.service}</span> },
+    { key: 'plan', label: 'Plan', render: (r) => <span className="text-sm text-slate">{r.plan || '—'}</span> },
+    { key: 'company', label: 'Company', render: (r) => <span className="text-sm text-slate">{r.company || '—'}</span> },
+    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.status || 'new'} /> },
+    { key: 'createdAt', label: 'Submitted', render: (r) => <span className="text-mono text-xs text-slate">{timeAgo(r.createdAt)}</span> },
+    {
+      key: 'actions', label: '', align: 'right',
+      render: (row) => (
+        <button onClick={(e) => { e.stopPropagation(); setDeleteId(row._id); }} className="p-1.5 text-slate hover:text-danger">
+          <Trash2 size={13} />
+        </button>
+      ),
+    },
+  ];
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="Leads / Pricing enquiries"
+        title={<>Pricing <span className="text-italic-fraunces text-ultra">enquiries</span></>}
+        subtitle="Everyone who asked about a plan from a pricing page — Growth Solutions, SEO, Google Ads, Social Growth, and more."
+        actions={<NewBadge resourceType="pricing_enquiry" />}
+        tabs={
+          <Tabs
+            items={[
+              { value: 'new', label: 'New' },
+              { value: 'contacted', label: 'Contacted' },
+              { value: 'qualified', label: 'Qualified' },
+              { value: 'converted', label: 'Converted' },
+              { value: '', label: 'All' },
+            ]}
+            active={status}
+            onChange={(v) => { setStatus(v); setPage(1); }}
+          />
+        }
+      />
+      <FilterBar>
+        <SearchInput value={search} onChange={setSearch} placeholder="Search enquiries…" className="w-64" />
+      </FilterBar>
+      <DataTable
+        columns={columns} rows={data?.data || []} loading={isLoading}
+        meta={data?.meta} onPageChange={setPage}
+        onRowClick={(row) => setSelected(row)}
+        emptyIcon={DollarSign} emptyTitle="No pricing enquiries yet"
+      />
+
+      <Drawer
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        title={selected ? `${selected.firstName} ${selected.lastName}` : ''}
+        description={selected?.service}
+        width="lg"
+      >
+        {selected && (
+          <div className="space-y-6">
+            <Card padding={false} className="p-5">
+              <div className="text-eyebrow mb-3">Enquiry</div>
+              <div className="grid gap-3 sm:grid-cols-2 text-sm">
+                <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Type</div><div className="mt-1">{INQUIRER_TYPE_LABELS[selected.inquirerType] || selected.inquirerType}</div></div>
+                <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Service</div><div className="mt-1">{selected.service}</div></div>
+                {selected.plan && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Plan</div><div className="mt-1">{selected.plan}</div></div>}
+                {selected.budget && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Budget</div><div className="mt-1">{selected.budget}</div></div>}
+                {selected.company && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Company</div><div className="mt-1">{selected.company}</div></div>}
+              </div>
+            </Card>
+            <Card padding={false} className="p-5">
+              <div className="text-eyebrow mb-3">Contact</div>
+              <div className="grid gap-3 sm:grid-cols-2 text-sm">
+                <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Email</div><a href={`mailto:${selected.email}`} className="mt-1 block hover:text-ultra">{selected.email}</a></div>
+                {selected.phone && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Phone</div><div className="mt-1">{selected.phone}</div></div>}
+                <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Submitted</div><div className="mt-1">{formatDate(selected.createdAt, 'datetime')}</div></div>
+              </div>
+            </Card>
+            {selected.message && (
+              <Card padding={false} className="p-5">
+                <div className="text-eyebrow mb-3">Message</div>
+                <div className="text-sm whitespace-pre-line leading-relaxed">{selected.message}</div>
+              </Card>
+            )}
+            <Card padding={false} className="p-5">
+              <div className="text-eyebrow mb-3">Status</div>
+              <Select
+                options={PRICING_ENQUIRY_STATUSES}
+                value={selected.status}
+                onChange={(e) => {
+                  updateStatus.mutate({ id: selected._id, status: e.target.value });
+                  setSelected((s) => (s ? { ...s, status: e.target.value } : s));
+                }}
+              />
+            </Card>
+          </div>
+        )}
+      </Drawer>
+
+      <ConfirmDialog open={!!deleteId} onClose={() => setDeleteId(null)} onConfirm={() => remove.mutate(deleteId)} loading={remove.isPending} title="Delete this enquiry?" confirmLabel="Delete" variant="danger" />
     </>
   );
 }

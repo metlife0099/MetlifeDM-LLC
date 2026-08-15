@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   ArrowUpRight,
@@ -7,6 +8,7 @@ import {
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
+import PricingEnquiryModal from '@/components/sections/PricingEnquiryModal.jsx';
 
 /* ---- Projects ---- */
 const PROJECT_TYPES = [
@@ -33,6 +35,7 @@ const PROCESS_STAGES = [
 ];
 
 export default function ProjectsPage() {
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
   return (
     <>
       <Seo
@@ -171,12 +174,19 @@ export default function ProjectsPage() {
             <p className="text-slate text-lg mt-6 max-w-lg mx-auto leading-relaxed">
               Every project is scoped around what it actually needs — not a template.
             </p>
-            <Button to="/consultation" size="lg" className="mt-10">
-              Discuss a Project <ArrowUpRight size={16} strokeWidth={1.5} />
-            </Button>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+              <Button to="/consultation" size="lg">
+                Discuss a Project <ArrowUpRight size={16} strokeWidth={1.5} />
+              </Button>
+              <Button variant="ghost" size="lg" onClick={() => setEnquiryOpen(true)}>
+                Enquire About Pricing
+              </Button>
+            </div>
           </motion.div>
         </Container>
       </Section>
+
+      <PricingEnquiryModal open={enquiryOpen} onClose={() => setEnquiryOpen(false)} service="Projects" />
     </>
   );
 }

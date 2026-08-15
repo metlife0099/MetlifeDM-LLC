@@ -13,6 +13,7 @@ import { Spinner } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { contentApi } from '@/api/index.js';
+import PricingEnquiryModal from '@/components/sections/PricingEnquiryModal.jsx';
 import { addItem } from '@/store/index.js';
 import { formatMoney } from '@/utils/format.js';
 import { cn } from '@/utils/format.js';
@@ -226,6 +227,7 @@ function SeoPlanCard({ name, price, priceLabel, tagline, features, isPopular, ct
 
 export default function SeoPricingPage() {
   const dispatch = useDispatch();
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
 
   const { data: seoData, isLoading } = useQuery({
     queryKey: ['services', 'seo-pricing', SEO_SLUG],
@@ -314,6 +316,9 @@ export default function SeoPricingPage() {
             <h2 className="text-display-lg mt-4">
               Four levels of <span className="text-italic-fraunces text-ultra">search intelligence.</span>
             </h2>
+            <Button variant="outline" size="md" onClick={() => setEnquiryOpen(true)} className="mt-6">
+              Not sure which plan? Enquire About Pricing
+            </Button>
           </motion.div>
 
           {isLoading ? (
@@ -820,6 +825,8 @@ export default function SeoPricingPage() {
           </motion.div>
         </Container>
       </Section>
+
+      <PricingEnquiryModal open={enquiryOpen} onClose={() => setEnquiryOpen(false)} service="SEO & Search Growth" />
     </>
   );
 }

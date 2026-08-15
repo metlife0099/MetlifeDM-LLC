@@ -14,6 +14,7 @@ import { Spinner } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
+import PricingEnquiryModal from '@/components/sections/PricingEnquiryModal.jsx';
 import { contentApi } from '@/api/index.js';
 import { addItem } from '@/store/index.js';
 import { formatMoney } from '@/utils/format.js';
@@ -150,6 +151,7 @@ function IncludedPlanCard({ plan }) {
 
 export default function GrowthSolutionsPage() {
   const dispatch = useDispatch();
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['services', 'growth-paths', GROWTH_PATHS_SLUG],
@@ -275,6 +277,9 @@ export default function GrowthSolutionsPage() {
             <h2 className="text-display-lg mt-4">
               Three paths. <span className="text-italic-fraunces text-ultra">One diagnosis-first process.</span>
             </h2>
+            <Button variant="outline" size="md" onClick={() => setEnquiryOpen(true)} className="mt-6">
+              Not sure which plan? Enquire About Pricing
+            </Button>
           </motion.div>
 
           {isLoading ? (
@@ -581,6 +586,8 @@ export default function GrowthSolutionsPage() {
         subtitle="Tell us where your business is today and what's not working — we'll recommend the right path, even if it isn't one of these three."
         primary={{ label: 'Find My Growth Path', href: '/consultation' }}
       />
+
+      <PricingEnquiryModal open={enquiryOpen} onClose={() => setEnquiryOpen(false)} service="Growth Solutions" />
     </>
   );
 }

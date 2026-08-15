@@ -20,8 +20,10 @@ const ORGANIZATION_JSON_LD = {
   numberOfEmployees: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 10 },
   address: {
     '@type': 'PostalAddress',
-    addressLocality: 'Miami',
-    addressRegion: 'FL',
+    streetAddress: '#571',
+    addressLocality: 'Nassau',
+    addressRegion: 'DE',
+    postalCode: '19969',
     addressCountry: 'US',
   },
   contactPoint: {

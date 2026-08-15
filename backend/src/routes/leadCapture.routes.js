@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { contact, consultation, newsletter, career, partnerInquiry } from '../controllers/leadCapture.controller.js';
+import { contact, consultation, newsletter, career, partnerInquiry, pricingEnquiry } from '../controllers/leadCapture.controller.js';
 import * as v from '../validators/leadCapture.validator.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { requireAuth, requireAdmin } from '../middleware/auth.middleware.js';
@@ -20,6 +20,14 @@ partnerInquiryRoutes.get('/', requireAuth, requireAdmin, partnerInquiry.list);
 partnerInquiryRoutes.get('/:id', requireAuth, requireAdmin, partnerInquiry.getById);
 partnerInquiryRoutes.patch('/:id', requireAuth, requireAdmin, partnerInquiry.update);
 partnerInquiryRoutes.delete('/:id', requireAuth, requireAdmin, partnerInquiry.remove);
+
+/* Pricing enquiry (per-plan "ask about this" form) */
+export const pricingEnquiryRoutes = Router();
+pricingEnquiryRoutes.post('/', leadLimiter, validate(v.pricingEnquirySchema), pricingEnquiry.submit);
+pricingEnquiryRoutes.get('/', requireAuth, requireAdmin, pricingEnquiry.list);
+pricingEnquiryRoutes.get('/:id', requireAuth, requireAdmin, pricingEnquiry.getById);
+pricingEnquiryRoutes.patch('/:id', requireAuth, requireAdmin, pricingEnquiry.update);
+pricingEnquiryRoutes.delete('/:id', requireAuth, requireAdmin, pricingEnquiry.remove);
 
 /* Consultation */
 export const consultationRoutes = Router();

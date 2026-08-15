@@ -11,7 +11,7 @@ import serviceRoutes from './service.routes.js';
 import { industryRoutes, portfolioRoutes, caseStudyRoutes } from './content.routes.js';
 import blogRoutes from './blog.routes.js';
 import { testimonialRoutes, reviewRoutes, faqRoutes } from './engagement.routes.js';
-import { contactRoutes, consultationRoutes, newsletterRoutes, careerRoutes, partnerInquiryRoutes } from './leadCapture.routes.js';
+import { contactRoutes, consultationRoutes, newsletterRoutes, careerRoutes, partnerInquiryRoutes, pricingEnquiryRoutes } from './leadCapture.routes.js';
 import orderRoutes from './order.routes.js';
 import paymentRoutes from './payment.routes.js';
 import couponRoutes from './coupon.routes.js';
@@ -62,6 +62,7 @@ router.use('/consultations', consultationRoutes);
 router.use('/newsletter', newsletterRoutes);
 router.use('/careers', careerRoutes);
 router.use('/partner-inquiries', partnerInquiryRoutes);
+router.use('/pricing-enquiries', pricingEnquiryRoutes);
 
 // Commerce
 router.use('/orders', orderRoutes);

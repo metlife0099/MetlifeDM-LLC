@@ -3,7 +3,15 @@ export const SITE = {
   legalName: 'MetlifeDM LLC',
   tagline: 'Digital marketing excellence for USA businesses',
   founded: 2024,
-  city: 'Miami, FL',
+  city: 'Nassau, DE',
+  address: {
+    line1: '#571',
+    city: 'Nassau',
+    state: 'DE',
+    zip: '19969',
+    country: 'US',
+    full: '#571, Nassau, DE 19969',
+  },
 };
 
 /**
@@ -59,17 +67,17 @@ export const NAV_MAIN = [
 
 export const NAV_FOOTER = [
   {
-    title: 'Services',
+    title: 'Solutions',
     links: [
-      { label: 'SEO', href: '/services?category=seo' },
-      { label: 'Google Ads', href: '/services?category=ppc' },
-      { label: 'Social Media', href: '/services?category=social_media' },
-      { label: 'Content Marketing', href: '/services?category=content_marketing' },
-      { label: 'Web Development', href: '/services?category=web_development' },
-      { label: 'AI Solutions', href: '/services?category=ai_solutions' },
+      { label: 'Growth Solutions', href: '/growth-solutions' },
+      { label: 'SEO & Search Growth', href: '/seo' },
+      { label: 'Google Ads & Paid Growth', href: '/google-ads' },
+      { label: 'Social Growth', href: '/social-growth' },
       { label: 'Customer Service', href: '/customer-service' },
+      { label: 'Projects', href: '/projects' },
       { label: 'The Diagnostic', href: '/diagnostic' },
-      { label: 'PASCO', href: '/pasco' },
+      { label: 'PASCO™', href: '/pasco' },
+      { label: 'Control™', href: '/control' },
     ],
   },
   {
@@ -77,7 +85,7 @@ export const NAV_FOOTER = [
     links: [
       { label: 'About', href: '/about' },
       { label: 'Case Studies', href: '/case-studies' },
-      { label: 'White-Label Partners', href: '/partners' },
+      { label: 'Agency Partners', href: '/partners' },
       { label: 'Careers', href: '/careers' },
       { label: 'Contact', href: '/contact' },
       { label: 'Book a Call', href: '/consultation' },

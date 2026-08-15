@@ -127,6 +127,10 @@ export const ENDPOINTS = {
     partner: (id) => `/admin/leads/partners/${id}`,
     updatePartner: (id) => `/admin/leads/partners/${id}`,
     deletePartner: (id) => `/admin/leads/partners/${id}`,
+    pricingEnquiries: '/admin/leads/pricing-enquiries',
+    pricingEnquiry: (id) => `/admin/leads/pricing-enquiries/${id}`,
+    updatePricingEnquiry: (id) => `/admin/leads/pricing-enquiries/${id}`,
+    deletePricingEnquiry: (id) => `/admin/leads/pricing-enquiries/${id}`,
   },
 
   /* ————— Campaigns ————— */

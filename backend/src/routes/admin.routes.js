@@ -24,7 +24,7 @@ import {
 } from '../controllers/content.controller.js';
 import * as blogCtrl from '../controllers/blog.controller.js';
 import { testimonial as testimonialCtrl, faq as faqCtrl } from '../controllers/engagement.controller.js';
-import { contact as contactCtrl, consultation as consultationCtrl, newsletter as newsletterCtrl, career as careerCtrl, partnerInquiry as partnerInquiryCtrl } from '../controllers/leadCapture.controller.js';
+import { contact as contactCtrl, consultation as consultationCtrl, newsletter as newsletterCtrl, career as careerCtrl, partnerInquiry as partnerInquiryCtrl, pricingEnquiry as pricingEnquiryCtrl } from '../controllers/leadCapture.controller.js';
 import * as orderCtrl from '../controllers/order.controller.js';
 import * as paymentCtrl from '../controllers/payment.controller.js';
 import * as couponCtrl from '../controllers/coupon.controller.js';
@@ -191,6 +191,12 @@ router.get('/leads/partners/:id', partnerInquiryCtrl.getById);
 router.put('/leads/partners/:id', partnerInquiryCtrl.update);
 router.patch('/leads/partners/:id', partnerInquiryCtrl.update);
 router.delete('/leads/partners/:id', partnerInquiryCtrl.remove);
+
+router.get('/leads/pricing-enquiries', pricingEnquiryCtrl.list);
+router.get('/leads/pricing-enquiries/:id', pricingEnquiryCtrl.getById);
+router.put('/leads/pricing-enquiries/:id', pricingEnquiryCtrl.update);
+router.patch('/leads/pricing-enquiries/:id', pricingEnquiryCtrl.update);
+router.delete('/leads/pricing-enquiries/:id', pricingEnquiryCtrl.remove);
 
 router.get('/leads/subscribers', newsletterCtrl.list);
 router.post('/leads/subscribers', newsletterCtrl.createOne);
