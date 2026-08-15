@@ -21,6 +21,7 @@ export const NAV_MAIN = [
       { label: 'Growth Solutions', href: '/growth-solutions', desc: 'Our main growth plans', icon: 'TrendingUp' },
       { label: 'SEO & Search Growth', href: '/seo', desc: 'Search-growth plans & diagnostic', icon: 'Search' },
       { label: 'Google Ads & Paid Growth', href: '/google-ads', desc: 'Paid-growth plans & diagnostic', icon: 'Target' },
+      { label: 'Social Growth', href: '/social-growth', desc: 'Audience-growth plans & diagnostic', icon: 'MessageCircle' },
       { label: 'Customer Service', href: '/customer-service', desc: 'Support systems built around you', icon: 'Headphones' },
       { label: 'Projects', href: '/projects', desc: 'Build it once, build it right', icon: 'Hammer' },
       { label: 'Pricing', href: '/pricing', desc: 'Full pricing reference', icon: 'Receipt' },

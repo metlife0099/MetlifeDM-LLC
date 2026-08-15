@@ -34,6 +34,7 @@ const FLAGSHIP_PAGES = {
   'professional-website-development-services': '/growth-solutions',
   'search-engine-optimization-seo': '/seo',
   'pay-per-click-ppc-advertising': '/google-ads',
+  'social-media-marketing-advertising': '/social-growth',
 };
 
 /* One-time diagnostic products are sold standalone in the database, but on
@@ -43,6 +44,7 @@ const FLAGSHIP_PAGES = {
 const DIAGNOSTIC_FOR = {
   'search-engine-optimization-seo': 'metlifedm-seo-diagnostic',
   'pay-per-click-ppc-advertising': 'metlifedm-paid-growth-diagnostic',
+  'social-media-marketing-advertising': 'metlifedm-social-growth-diagnostic',
 };
 const DIAGNOSTIC_SLUGS = new Set(Object.values(DIAGNOSTIC_FOR));
 
