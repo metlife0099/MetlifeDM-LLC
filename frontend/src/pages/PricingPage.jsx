@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import {
   Check, ShoppingBag, Star, ArrowUpRight, ShieldCheck, Sparkles, Ban, ChevronDown,
   Headphones, Puzzle,
-  Target, Megaphone, Cpu,
+  Target, Megaphone, Cpu, Stethoscope,
   TrendingUp, ChevronRight,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -26,6 +26,25 @@ const TRUST_POINTS = [
   { icon: ShieldCheck, label: 'Transparent, itemized pricing' },
   { icon: Sparkles, label: 'Senior strategist on every plan' },
 ];
+
+/* A few priced services have a richer, dedicated sales page (compare
+ * tables, diagnostics, guarantees) beyond the generic service detail page —
+ * link straight there instead when one exists. */
+const FLAGSHIP_PAGES = {
+  'professional-website-development-services': '/growth-solutions',
+  'search-engine-optimization-seo': '/seo',
+  'pay-per-click-ppc-advertising': '/google-ads',
+};
+
+/* One-time diagnostic products are sold standalone in the database, but on
+ * this page they read better as a compact add-on under the service they
+ * diagnose rather than as their own full-width card competing for attention
+ * next to the monthly plans — same treatment for both. */
+const DIAGNOSTIC_FOR = {
+  'search-engine-optimization-seo': 'metlifedm-seo-diagnostic',
+  'pay-per-click-ppc-advertising': 'metlifedm-paid-growth-diagnostic',
+};
+const DIAGNOSTIC_SLUGS = new Set(Object.values(DIAGNOSTIC_FOR));
 
 /* Customer Service, Projects, the Diagnostic, and White Label each have
  * their own dedicated page now (/customer-service, /projects, /diagnostic,
@@ -292,9 +311,9 @@ export default function PricingPage() {
             <div className="flex justify-center py-24">
               <Spinner size={28} className="text-ultra" />
             </div>
-          ) : services.length ? (
+          ) : services.filter((s) => !DIAGNOSTIC_SLUGS.has(s.slug)).length ? (
             <div className="space-y-10">
-              {services.map((service, si) => (
+              {services.filter((s) => !DIAGNOSTIC_SLUGS.has(s.slug)).map((service, si) => (
                 <motion.div
                   key={service._id}
                   initial={{ opacity: 0, y: 24 }}
@@ -319,8 +338,8 @@ export default function PricingPage() {
                       </div>
                     </div>
                     <div className="flex gap-3 shrink-0">
-                      <Button to={`/services/${service.slug}`} size="sm">
-                        Read more
+                      <Button to={FLAGSHIP_PAGES[service.slug] || `/services/${service.slug}`} size="sm">
+                        {FLAGSHIP_PAGES[service.slug] ? 'View full plans' : 'Read more'}
                         <ArrowUpRight size={14} strokeWidth={1.5} />
                       </Button>
                     </div>
@@ -353,6 +372,31 @@ export default function PricingPage() {
                       </Button>
                     </div>
                   )}
+
+                  {(() => {
+                    const diagnostic = services.find((s) => s.slug === DIAGNOSTIC_FOR[service.slug]);
+                    const diagPlan = diagnostic?.pricingPlans?.[0];
+                    if (!diagnostic || !diagPlan) return null;
+                    return (
+                      <div className="mt-6 pt-6 border-t border-hairline flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="w-10 h-10 shrink-0 grid place-items-center bg-sand text-ink">
+                            <Stethoscope size={16} strokeWidth={1.5} />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium">{diagPlan.name} <span className="text-slate font-normal">· one-time</span></div>
+                            <p className="text-slate text-xs mt-0.5 max-w-md leading-relaxed">{diagPlan.tagline}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 shrink-0">
+                          <span className="num-plate text-lg">{formatMoney(diagPlan.price)}</span>
+                          <Button size="sm" onClick={() => handleAddToCart(diagnostic, diagPlan)}>
+                            <ShoppingBag size={13} strokeWidth={1.5} /> Add
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </motion.div>
               ))}
             </div>

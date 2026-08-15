@@ -21,6 +21,7 @@ const ControlPage = lazy(() => import('@/pages/ControlPage.jsx'));
 const CustomerServicePage = lazy(() => import('@/pages/CustomerServicePage.jsx'));
 const ProjectsPage = lazy(() => import('@/pages/ProjectsPage.jsx'));
 const SeoPricingPage = lazy(() => import('@/pages/SeoPricingPage.jsx'));
+const GoogleAdsPricingPage = lazy(() => import('@/pages/GoogleAdsPricingPage.jsx'));
 const PortfolioPage = lazy(() => import('@/pages/PortfolioPage.jsx'));
 const PortfolioDetailsPage = lazy(() => import('@/pages/PortfolioDetailsPage.jsx'));
 const CaseStudiesPage = lazy(() => import('@/pages/CaseStudiesPage.jsx'));
@@ -118,6 +119,7 @@ export default function App() {
         <Route path="customer-service" element={withSuspense(CustomerServicePage, 'Customer Service')} />
         <Route path="projects" element={withSuspense(ProjectsPage, 'Projects')} />
         <Route path="seo" element={withSuspense(SeoPricingPage, 'SEO Pricing')} />
+        <Route path="google-ads" element={withSuspense(GoogleAdsPricingPage, 'Google Ads Pricing')} />
 
         {/* Work */}
         <Route path="portfolio" element={withSuspense(PortfolioPage, 'Portfolio')} />
