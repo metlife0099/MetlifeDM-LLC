@@ -9,9 +9,8 @@ import emailService from '../services/email.service.js';
 import logger from '../config/logger.js';
 import { notifyAdmins } from './notification.controller.js';
 
-const setRefreshCookie = (res, token, rememberMe = false) => {
-  const options = { ...refreshCookieOptions };
-  if (!rememberMe) delete options.maxAge;
+const setRefreshCookie = (res, token, sessionMaxAge) => {
+  const options = { ...refreshCookieOptions, maxAge: sessionMaxAge };
   return res.cookie(REFRESH_COOKIE_NAME, token, options);
 };
 const clearRefreshCookie = (res) => res.clearCookie(REFRESH_COOKIE_NAME, clearCookieOptions);
@@ -110,8 +109,9 @@ export const login = asyncHandler(async (req, res) => {
 
   await user.resetFailedAttempts();
 
-  const { accessToken, refreshToken } = await auth.issueTokens(user, req, Boolean(rememberMe));
-  setRefreshCookie(res, refreshToken, Boolean(rememberMe));
+  const { accessToken, refreshToken, sessionMaxAge } =
+    await auth.issueTokens(user, req, Boolean(rememberMe));
+  setRefreshCookie(res, refreshToken, sessionMaxAge);
 
   return ApiResponse.ok(
     res,
@@ -125,8 +125,8 @@ export const refresh = asyncHandler(async (req, res) => {
   const token = req.cookies?.[REFRESH_COOKIE_NAME];
   if (!token) throw ApiError.unauthorized('No refresh token provided');
 
-  const { accessToken, refreshToken, rememberMe } = await auth.rotateRefreshToken(token, req);
-  setRefreshCookie(res, refreshToken, rememberMe);
+  const { accessToken, refreshToken, sessionMaxAge } = await auth.rotateRefreshToken(token, req);
+  setRefreshCookie(res, refreshToken, sessionMaxAge);
 
   return ApiResponse.ok(res, { accessToken }, 'Token refreshed');
 });

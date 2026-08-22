@@ -18,10 +18,15 @@ import { parseDuration } from '../utils/cookies.js';
 import emailService from './email.service.js';
 import logger from '../config/logger.js';
 
-const REFRESH_MS = parseDuration(config.jwt.refresh.expiresIn);
+const STAFF_ROLES = new Set(['super_admin', 'admin', 'manager']);
 const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
 const isBackupHash = (value) => /^\$2[aby]\$/.test(value);
 export const isTwoFactorEnabled = () => config.features.twoFactorAuth;
+
+export const getRefreshSessionDuration = (role) =>
+  STAFF_ROLES.has(role)
+    ? config.jwt.refresh.adminExpiresIn
+    : config.jwt.refresh.expiresIn;
 
 /** Issue access + refresh tokens and persist the refresh hash. */
 export const issueTokens = async (user, req, rememberMe = Boolean(req?.body?.rememberMe)) => {
@@ -31,12 +36,14 @@ export const issueTokens = async (user, req, rememberMe = Boolean(req?.body?.rem
     email: user.email,
     ver: user.tokenVersion || 0,
   };
+  const sessionExpiresIn = getRefreshSessionDuration(user.role);
+  const sessionMaxAge = parseDuration(sessionExpiresIn);
   const accessToken = signAccessToken(payload);
   const refreshToken = signRefreshToken({
     sub: user._id.toString(),
     ver: user.tokenVersion || 0,
     jti: crypto.randomUUID(),
-  });
+  }, sessionExpiresIn);
 
   await User.findByIdAndUpdate(user._id, {
     $push: {
@@ -45,12 +52,12 @@ export const issueTokens = async (user, req, rememberMe = Boolean(req?.body?.rem
         ip: req?.ip,
         userAgent: req?.headers?.['user-agent'],
         rememberMe,
-        expiresAt: new Date(Date.now() + REFRESH_MS),
+        expiresAt: new Date(Date.now() + sessionMaxAge),
       },
     },
     $set: { lastLoginAt: new Date() },
   });
-  return { accessToken, refreshToken, rememberMe };
+  return { accessToken, refreshToken, rememberMe, sessionExpiresIn, sessionMaxAge };
 };
 
 /** Atomically consume the old refresh token before issuing its replacement. */

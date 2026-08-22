@@ -39,6 +39,7 @@ const envSchema = z.object({
   JWT_ACCESS_EXPIRES: z.string().default('15m'),
   JWT_REFRESH_SECRET: z.string().min(16),
   JWT_REFRESH_EXPIRES: z.string().default('7d'),
+  JWT_ADMIN_REFRESH_EXPIRES: z.string().default('2d'),
   JWT_EMAIL_VERIFY_SECRET: z.string().min(16),
   JWT_EMAIL_VERIFY_EXPIRES: z.string().default('1d'),
   JWT_PASSWORD_RESET_SECRET: z.string().min(16),
@@ -203,7 +204,11 @@ export const config = {
 
   jwt: {
     access: { secret: env.JWT_ACCESS_SECRET, expiresIn: env.JWT_ACCESS_EXPIRES },
-    refresh: { secret: env.JWT_REFRESH_SECRET, expiresIn: env.JWT_REFRESH_EXPIRES },
+    refresh: {
+      secret: env.JWT_REFRESH_SECRET,
+      expiresIn: env.JWT_REFRESH_EXPIRES,
+      adminExpiresIn: env.JWT_ADMIN_REFRESH_EXPIRES,
+    },
     emailVerify: { secret: env.JWT_EMAIL_VERIFY_SECRET, expiresIn: env.JWT_EMAIL_VERIFY_EXPIRES },
     passwordReset: { secret: env.JWT_PASSWORD_RESET_SECRET, expiresIn: env.JWT_PASSWORD_RESET_EXPIRES },
   },

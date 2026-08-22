@@ -4,6 +4,7 @@ import E from './endpoints.js';
 /* ————— AUTH ————— */
 export const authApi = {
   login: (data) => apiClient.post(E.auth.login, data).then(unwrap),
+  session: () => apiClient.get(E.auth.session).then(unwrap),
   logout: () => apiClient.post(E.auth.logout).then(unwrap),
   logoutAll: () => apiClient.post(E.auth.logoutAll).then(unwrap),
   refresh: () => apiClient.post(E.auth.refresh).then(unwrap),

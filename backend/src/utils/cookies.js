@@ -15,7 +15,6 @@ export const refreshCookieOptions = {
   sameSite: 'lax',
   ...(config.cookie.domain ? { domain: config.cookie.domain } : {}),
   path: `${config.server.apiPrefix}/${config.server.apiVersion}/auth`,
-  maxAge: parseDuration(config.jwt.refresh.expiresIn),
   signed: false,
 };
 

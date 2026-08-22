@@ -8,9 +8,9 @@ export const signAccessToken = (payload) =>
     audience: 'metlifedm-client',
   });
 
-export const signRefreshToken = (payload) =>
+export const signRefreshToken = (payload, expiresIn = config.jwt.refresh.expiresIn) =>
   jwt.sign(payload, config.jwt.refresh.secret, {
-    expiresIn: config.jwt.refresh.expiresIn,
+    expiresIn,
     issuer: 'metlifedm',
     audience: 'metlifedm-client',
   });

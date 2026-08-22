@@ -23,13 +23,31 @@ const clearStoredUser = () => {
 
 const doHydrate = (dispatch, queryClient) => {
   if (hydrationPromise) return hydrationPromise;
-  if (!getAccessToken()) return Promise.resolve();
 
   dispatch(setLoading(true));
 
-  hydrationPromise = authApi
-    .me()
+  hydrationPromise = Promise.resolve()
+    .then(async () => {
+      let token = getAccessToken();
+      if (!token) {
+        const session = await authApi.session();
+        if (!session?.hasSession) return null;
+        const refreshed = await authApi.refresh();
+        token = refreshed?.accessToken;
+        if (!token) return null;
+        // Keep the short-lived bearer token in this browser tab. The durable,
+        // HttpOnly refresh cookie restores the 2-day staff session next time.
+        setAccessToken(token, false);
+      }
+      return authApi.me();
+    })
     .then((res) => {
+      if (!res) {
+        clearStoredUser();
+        queryClient.clear();
+        dispatch(clearAuth());
+        return null;
+      }
       const me = res?.user || res;
       if (!me || !ADMIN_ROLES.includes(me.role)) {
         setAccessToken(null);
