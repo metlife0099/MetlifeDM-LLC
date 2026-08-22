@@ -20,6 +20,11 @@ dist-ssr
 .claude
 *.claude
 
+/tmp
+/tests
+*/tmp
+*/tests
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

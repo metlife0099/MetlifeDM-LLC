@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { MailCheck, Edit3, Send, Save, TestTube } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { PageHeader, FilterBar } from '@/components/ui/PageHeader.jsx';
+import { PageHeader } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
 import { StatusPill } from '@/components/ui/index.jsx';
 import { Drawer, Modal } from '@/components/ui/Modal.jsx';
@@ -26,7 +26,7 @@ export default function EmailTemplatesPage() {
     queryFn: () => settingsApi.listEmailTemplates(),
   });
 
-  const { register, handleSubmit, reset, formState: { isDirty } } = useForm();
+  const { register, handleSubmit, reset } = useForm();
 
   useEffect(() => {
     if (selected) {

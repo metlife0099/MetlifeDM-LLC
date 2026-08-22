@@ -33,13 +33,19 @@ export default function DataTable({
   selectable = false,
   selectedIds = [],
   onSelectionChange,
+  getRowLabel,
   className,
 }) {
   const totalPages = meta?.totalPages ?? meta?.pages;
+  const allRowsSelected = rows.length > 0 && rows.every((row) => selectedIds.includes(row[rowKey]));
   const toggleAll = () => {
     if (!onSelectionChange) return;
-    if (selectedIds.length === rows.length) onSelectionChange([]);
-    else onSelectionChange(rows.map((r) => r[rowKey]));
+    const pageIds = rows.map((row) => row[rowKey]);
+    if (allRowsSelected) {
+      onSelectionChange(selectedIds.filter((id) => !pageIds.includes(id)));
+    } else {
+      onSelectionChange([...new Set([...selectedIds, ...pageIds])]);
+    }
   };
 
   const toggleRow = (id) => {
@@ -61,8 +67,9 @@ export default function DataTable({
                 <th className="w-10 px-4 py-3">
                   <input
                     type="checkbox"
-                    checked={rows.length > 0 && selectedIds.length === rows.length}
+                    checked={allRowsSelected}
                     onChange={toggleAll}
+                    aria-label="Select all rows on this page"
                     className="w-4 h-4 accent-ultra"
                   />
                 </th>
@@ -77,9 +84,19 @@ export default function DataTable({
                     col.width,
                     col.headerClassName
                   )}
+                  aria-sort={
+                    col.sortable
+                      ? sort?.key === col.key
+                        ? sort.direction === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                      : undefined
+                  }
                 >
                   {col.sortable ? (
                     <button
+                      type="button"
                       onClick={() =>
                         onSortChange?.({
                           key: col.key,
@@ -132,7 +149,28 @@ export default function DataTable({
               rows.map((row, i) => (
                 <tr
                   key={row[rowKey] || i}
-                  onClick={onRowClick ? () => onRowClick(row) : undefined}
+                  onClick={
+                    onRowClick
+                      ? (event) => {
+                          if (event.target.closest('button, a, input, select, textarea')) return;
+                          onRowClick(row);
+                        }
+                      : undefined
+                  }
+                  onKeyDown={
+                    onRowClick
+                      ? (event) => {
+                          if (event.target !== event.currentTarget) return;
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            onRowClick(row);
+                          }
+                        }
+                      : undefined
+                  }
+                  role={onRowClick ? 'button' : undefined}
+                  tabIndex={onRowClick ? 0 : undefined}
+                  aria-label={onRowClick ? getRowLabel?.(row, i) || `Open row ${i + 1}` : undefined}
                   className={cn(
                     'border-b border-hairline row-hover',
                     onRowClick && 'cursor-pointer',
@@ -145,6 +183,7 @@ export default function DataTable({
                         type="checkbox"
                         checked={selectedIds.includes(row[rowKey])}
                         onChange={() => toggleRow(row[rowKey])}
+                        aria-label={`Select row ${i + 1}`}
                         className="w-4 h-4 accent-ultra"
                       />
                     </td>
@@ -171,7 +210,7 @@ export default function DataTable({
 
       {/* Pagination */}
       {meta && (meta.total > 0) && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-hairline text-mono text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-hairline text-mono text-xs">
           <div className="text-slate uppercase tracking-widest">
             Showing {(meta.page - 1) * meta.limit + 1}–{Math.min(meta.page * meta.limit, meta.total)}{' '}
             of {meta.total}
@@ -181,6 +220,7 @@ export default function DataTable({
               <select
                 value={meta.limit}
                 onChange={(e) => onLimitChange(Number(e.target.value))}
+                aria-label="Rows per page"
                 className="bg-surface border border-hairline-strong px-2 py-1 text-mono text-xs hover:border-slate transition-colors"
               >
                 {limitOptions.map((n) => (
@@ -191,6 +231,7 @@ export default function DataTable({
               </select>
             )}
             <button
+              type="button"
               onClick={() => onPageChange?.(meta.page - 1)}
               disabled={meta.page <= 1}
               className="p-1.5 border border-hairline-strong hover:border-ink disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
@@ -202,6 +243,7 @@ export default function DataTable({
               {meta.page} / {totalPages || 1}
             </span>
             <button
+              type="button"
               onClick={() => onPageChange?.(meta.page + 1)}
               disabled={meta.page >= totalPages}
               className="p-1.5 border border-hairline-strong hover:border-ink disabled:opacity-40 disabled:cursor-not-allowed transition-colors"

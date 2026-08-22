@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useDispatch } from 'react-redux';
-import { Heart, Trash2, ArrowUpRight, Bell, Check, ShieldCheck, KeyRound } from 'lucide-react';
+import { Trash2, ArrowUpRight, Bell, Check, ShieldCheck, KeyRound } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { userApi, notificationApi, authApi } from '@/api/index.js';
-import { addItem } from '@/store/index.js';
-import { getErrorMessage } from '@/api/client.js';
+import { addItem, clearUser } from '@/store/index.js';
+import { getErrorMessage, setAccessToken } from '@/api/client.js';
 import { DashHeader, DashEmpty } from '@/components/dashboard/DashHeader.jsx';
-import { Spinner, Card, Input, Badge } from '@/components/ui/index.jsx';
+import { QueryError, Spinner, Card, Input, Badge } from '@/components/ui/index.jsx';
 import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
@@ -21,7 +21,7 @@ import { formatMoney, timeAgo, cn } from '@/utils/format.js';
 export const WishlistPage = () => {
   const qc = useQueryClient();
   const dispatch = useDispatch();
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['wishlist'],
     queryFn: () => userApi.getWishlist(),
   });
@@ -47,10 +47,12 @@ export const WishlistPage = () => {
 
       {isLoading ? (
         <div className="flex justify-center py-24"><Spinner size={28} className="text-ultra" /></div>
+      ) : isError ? (
+        <QueryError title="Saved services could not be loaded." onRetry={refetch} />
       ) : items.length === 0 ? (
         <DashEmpty
           title="Nothing saved yet"
-          subtitle="Tap the heart icon on any service to save it here."
+          subtitle="Use the Save button on a service card or service page to keep it here."
           action={<Button to="/services">Browse services <ArrowUpRight size={14} strokeWidth={1.5} /></Button>}
         />
       ) : (
@@ -95,7 +97,7 @@ export const WishlistPage = () => {
 /* ================= NOTIFICATIONS ================= */
 export const NotificationsPage = () => {
   const qc = useQueryClient();
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['notifications'],
     queryFn: () => notificationApi.list({ limit: 50 }),
   });
@@ -132,6 +134,8 @@ export const NotificationsPage = () => {
 
       {isLoading ? (
         <div className="flex justify-center py-24"><Spinner size={28} className="text-ultra" /></div>
+      ) : isError ? (
+        <QueryError title="Notifications could not be loaded." onRetry={refetch} />
       ) : items.length === 0 ? (
         <DashEmpty title="No notifications" subtitle="You're all caught up." />
       ) : (
@@ -182,6 +186,9 @@ const passwordSchema = z
   });
 
 export const SecurityPage = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
   const [step2FA, setStep2FA] = useState('idle');
   const [qrData, setQrData] = useState(null);
   const [otp, setOtp] = useState('');
@@ -205,7 +212,13 @@ export const SecurityPage = () => {
 
   const logoutAll = useMutation({
     mutationFn: authApi.logoutAll,
-    onSuccess: () => toast.success('Signed out of all devices'),
+    onSuccess: () => {
+      setAccessToken(null);
+      qc.clear();
+      dispatch(clearUser());
+      toast.success('Signed out of all devices');
+      navigate('/login', { replace: true });
+    },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
 

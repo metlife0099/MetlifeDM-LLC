@@ -61,11 +61,21 @@ export const listPayments = asyncHandler(async (req, res) => {
 });
 
 export const refund = asyncHandler(async (req, res) => {
-  const { payment, refund: r } = await refundPayment({
+  const { payment, order, refund: stripeRefund } = await refundPayment({
     paymentId: req.params.id,
     amount: req.body.amount,
     reason: req.body.reason,
+    refundRequestId: req.body.idempotencyKey,
     actor: req.user._id,
   });
-  return ApiResponse.ok(res, { payment, refund: r }, 'Refund processed');
+  const refund = {
+    id: stripeRefund.id,
+    amount: stripeRefund.amount / 100,
+    status: stripeRefund.status,
+  };
+  return ApiResponse.ok(
+    res,
+    { order, payment, refund, stripeRefundId: stripeRefund.id },
+    stripeRefund.status === 'succeeded' ? 'Refund processed' : 'Refund submitted'
+  );
 });

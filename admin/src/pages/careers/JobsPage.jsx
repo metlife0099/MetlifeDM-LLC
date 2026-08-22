@@ -9,13 +9,13 @@ import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Breadcrumbs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
 import { StatusPill, Badge, Card, PageLoader } from '@/components/ui/index.jsx';
-import { Input, Textarea, Select, Switch, SearchInput } from '@/components/form/index.jsx';
+import { Input, Textarea, Select, SearchInput } from '@/components/form/index.jsx';
 import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import Button from '@/components/ui/Button.jsx';
 import { careersApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { useDebounce } from '@/hooks/index.js';
-import { formatDate, slugify, humanize } from '@/utils/format.js';
+import { slugify, humanize } from '@/utils/format.js';
 
 const DEPARTMENTS = ['engineering', 'marketing', 'design', 'sales', 'operations', 'content', 'seo', 'ppc', 'social', 'leadership', 'other'];
 const EMPLOYMENT_TYPES = ['full_time', 'part_time', 'contract', 'internship', 'temporary'];

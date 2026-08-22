@@ -5,11 +5,22 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay } from 'swiper/modules';
 import { ChevronDown, Star, ArrowUpRight, MessageCircleQuestion } from 'lucide-react';
 import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
-import { Card } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import { cn, formatMoney } from '@/utils/format.js';
 import { useInView } from '@/hooks/index.js';
 import 'swiper/css';
+import WishlistButton from '@/components/commerce/WishlistButton.jsx';
+import { billingCycleLabel } from '@/utils/commerce.js';
+
+const serviceStartingFee = (service) => {
+  const plans = service.pricingPlans || [];
+  if (plans.length === 0) return null;
+  const plan = plans.reduce((lowest, candidate) => (
+    Number(candidate.price) < Number(lowest.price) ? candidate : lowest
+  ));
+  const cadence = plan.billingCycle === 'one_time' ? ' one-time' : `/${billingCycleLabel(plan.billingCycle)}`;
+  return `${formatMoney(plan.price, plan.currency || 'USD')}${cadence}`;
+};
 
 /* ================== STATS ================== */
 export const StatsBand = ({ stats }) => (
@@ -27,7 +38,7 @@ export const StatsBand = ({ stats }) => (
 const StatCard = ({ stat, index }) => {
   const [ref, visible] = useInView({ threshold: 0.3 });
   return (
-    <div ref={ref} className="px-6 first:pl-0 last:pr-0 py-8 fade-up">
+    <div ref={ref} data-visible={visible} className="px-6 first:pl-0 last:pr-0 py-8 fade-up">
       <div className="text-eyebrow mb-3">{String(index + 1).padStart(2, '0')} / METRIC</div>
       <div className="text-display-lg text-ink num-plate leading-none">
         {stat.value}
@@ -286,7 +297,7 @@ export const ServicesGrid = ({ services = [], showAll = true }) => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-60px' }}
         transition={{ duration: 0.6, delay: (i % 6) * 0.08, ease: [0.22, 1, 0.36, 1] }}
-        className="group bg-ivory border border-hairline hover-lift hover:border-ink transition-colors duration-500 flex flex-col"
+        className="group relative bg-ivory border border-hairline hover-lift hover:border-ink transition-colors duration-500 flex flex-col"
       >
         <Link to={`/services/${s.slug}`} className="block img-zoom relative aspect-16/10 bg-sand overflow-hidden">
           {s.heroImage?.url ? (
@@ -302,6 +313,7 @@ export const ServicesGrid = ({ services = [], showAll = true }) => {
             </span>
           )}
         </Link>
+        <WishlistButton serviceId={s._id} className="absolute left-4 top-4 z-10" />
 
         <div className="p-6 md:p-8 flex flex-col flex-1">
           {s.category && (
@@ -316,9 +328,9 @@ export const ServicesGrid = ({ services = [], showAll = true }) => {
           <p className="text-slate text-sm mt-3 leading-relaxed line-clamp-3 flex-1">
             {s.shortDescription}
           </p>
-          {s.startingPrice != null && (
+          {serviceStartingFee(s) && (
             <div className="mt-5 pt-5 border-t border-hairline text-mono text-xs uppercase tracking-widest text-slate">
-              Starting at <span className="text-ink">{formatMoney(s.startingPrice)}</span>/mo
+              Starting at <span className="text-ink">{serviceStartingFee(s)}</span>
             </div>
           )}
           <div className="mt-6">

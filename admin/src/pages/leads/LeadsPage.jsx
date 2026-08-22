@@ -6,12 +6,12 @@ import { PageHeader, FilterBar, Tabs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
 import { StatusPill, Card, NewBadge, Badge } from '@/components/ui/index.jsx';
 import { Drawer, ConfirmDialog, Modal } from '@/components/ui/Modal.jsx';
-import { Select, SearchInput, Textarea, Input } from '@/components/form/index.jsx';
+import { Select, SearchInput, Input } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import { leadsApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { useDebounce } from '@/hooks/index.js';
-import { timeAgo, formatDate, truncate, formatNumber } from '@/utils/format.js';
+import { timeAgo, formatDate, truncate, formatNumber, humanize } from '@/utils/format.js';
 import { CONTACT_STATUSES, CONSULTATION_STATUSES, PARTNER_INQUIRY_STATUSES, AGENCY_TYPE_LABELS, PRICING_ENQUIRY_STATUSES, INQUIRER_TYPE_LABELS } from '@/utils/constants.js';
 
 /* ============================================================
@@ -163,8 +163,9 @@ export function ConsultationsPage() {
 
   const updateStatus = useMutation({
     mutationFn: ({ id, status }) => leadsApi.updateConsultation(id, { status }),
-    onSuccess: () => {
+    onSuccess: (updated) => {
       qc.invalidateQueries({ queryKey: ['admin', 'consultations'] });
+      setSelected((current) => current?._id === updated?._id ? { ...current, ...updated } : current);
       toast.success('Consultation updated');
     },
     onError: (e) => toast.error(getErrorMessage(e)),
@@ -197,9 +198,7 @@ export function ConsultationsPage() {
         tabs={
           <Tabs
             items={[
-              { value: 'requested', label: 'Requested' },
-              { value: 'confirmed', label: 'Confirmed' },
-              { value: 'completed', label: 'Completed' },
+              ...CONSULTATION_STATUSES,
               { value: '', label: 'All' },
             ]}
             active={status}
@@ -234,14 +233,25 @@ export function ConsultationsPage() {
                 {selected.company && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Company</div><div className="mt-1">{selected.company}</div></div>}
                 {selected.website && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Website</div><a href={selected.website} target="_blank" rel="noopener noreferrer" className="mt-1 hover:text-ultra">{selected.website}</a></div>}
                 {selected.budget && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Budget</div><div className="mt-1">{selected.budget}</div></div>}
-                {selected.timeline && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Timeline</div><div className="mt-1">{selected.timeline}</div></div>}
+                {selected.urgency && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Urgency</div><div className="mt-1">{humanize(selected.urgency)}</div></div>}
                 {selected.preferredDate && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Preferred date</div><div className="mt-1">{formatDate(selected.preferredDate, 'datetime')}</div></div>}
+                {selected.preferredTimeSlot && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Time slot</div><div className="mt-1">{selected.preferredTimeSlot} · {selected.timezone}</div></div>}
+                {selected.meetingType && <div><div className="text-mono text-xs text-slate uppercase tracking-widest">Meeting type</div><div className="mt-1">{humanize(selected.meetingType)}</div></div>}
               </div>
             </Card>
-            {selected.projectDescription && (
+            {(selected.projectGoals || selected.additionalNotes) && (
               <Card padding={false} className="p-5">
-                <div className="text-eyebrow mb-3">Project description</div>
-                <div className="text-sm whitespace-pre-line leading-relaxed">{selected.projectDescription}</div>
+                <div className="text-eyebrow mb-3">Project goals</div>
+                {selected.projectGoals && <div className="text-sm whitespace-pre-line leading-relaxed">{selected.projectGoals}</div>}
+                {selected.additionalNotes && <div className="text-sm text-slate whitespace-pre-line leading-relaxed mt-3">{selected.additionalNotes}</div>}
+              </Card>
+            )}
+            {selected.servicesInterested?.length > 0 && (
+              <Card padding={false} className="p-5">
+                <div className="text-eyebrow mb-3">Services interested in</div>
+                <div className="flex flex-wrap gap-2">
+                  {selected.servicesInterested.map((service) => <Badge key={service} tone="outline">{humanize(service)}</Badge>)}
+                </div>
               </Card>
             )}
             <Card padding={false} className="p-5">
@@ -557,7 +567,7 @@ function AddSubscribersModal({ open, onClose, onDone }) {
                     {file ? file.name : 'Click to choose a CSV or Excel file'}
                   </div>
                   <div className="text-mono text-xs text-slate mt-2">
-                    Needs a "name"/"full name" column and an "email" column
+                    Needs a &quot;name&quot;/&quot;full name&quot; column and an &quot;email&quot; column
                   </div>
                 </label>
               </div>

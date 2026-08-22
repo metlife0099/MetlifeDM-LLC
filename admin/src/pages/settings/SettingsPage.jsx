@@ -9,6 +9,7 @@ import { Input, Textarea } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import { settingsApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
+import SecuritySettings from './SecuritySettings.jsx';
 
 export default function SettingsPage() {
   const qc = useQueryClient();
@@ -36,7 +37,8 @@ export default function SettingsPage() {
   if (isLoading) return <PageLoader label="Loading settings" />;
 
   return (
-    <form onSubmit={handleSubmit((d) => save.mutate(d))}>
+    <>
+      <form onSubmit={handleSubmit((d) => save.mutate(d))}>
       <PageHeader
         eyebrow="System / Settings"
         title={<>General <span className="text-italic-fraunces text-ultra">settings</span></>}
@@ -106,6 +108,8 @@ export default function SettingsPage() {
           </div>
         </Card>
       </div>
-    </form>
+      </form>
+      <SecuritySettings />
+    </>
   );
 }

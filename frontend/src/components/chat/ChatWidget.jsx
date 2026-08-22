@@ -10,6 +10,7 @@ import { getAccessToken, getErrorMessage } from '@/api/client.js';
 import { getSocketUrl } from '@/utils/socket.js';
 import { cn } from '@/utils/format.js';
 import { Spinner } from '@/components/ui/index.jsx';
+import { useEscape } from '@/hooks/index.js';
 
 const guestId = () => {
   let id = localStorage.getItem('mdm_guest');
@@ -53,7 +54,22 @@ export default function ChatWidget() {
   const [chatStatus, setChatStatusRaw] = useState(() => localStorage.getItem('mdm_chat_status') || 'bot');
   const [switching, setSwitching] = useState(false);
   const bodyRef = useRef(null);
+  const triggerRef = useRef(null);
+  const closeRef = useRef(null);
+  const wasOpen = useRef(open);
   const enabled = import.meta.env.VITE_ENABLE_CHAT !== 'false';
+  useEscape(() => dispatch(toggleChat(false)), open);
+
+  useEffect(() => {
+    if (open) {
+      wasOpen.current = true;
+      const frame = window.requestAnimationFrame(() => closeRef.current?.focus());
+      return () => window.cancelAnimationFrame(frame);
+    }
+    if (wasOpen.current) triggerRef.current?.focus();
+    wasOpen.current = false;
+    return undefined;
+  }, [open]);
 
   // The customer can freely switch between AI and Admin (and back) at any
   // time before the conversation is resolved — only ignore a missing/falsy
@@ -133,7 +149,7 @@ export default function ChatWidget() {
       socket.off('chat:assigned', onAssigned);
       socket.disconnect();
     };
-  }, [chatId, open, enabled]);
+  }, [chatId, open, enabled, user]);
 
   /* Auto-scroll on new messages */
   useEffect(() => {
@@ -207,8 +223,11 @@ export default function ChatWidget() {
     <>
       {/* Floating trigger */}
       <button
+        ref={triggerRef}
         onClick={() => dispatch(toggleChat())}
         aria-label="Open chat"
+        aria-expanded={open}
+        aria-controls="support-chat-dialog"
         className={cn(
           'fixed bottom-6 right-6 z-40 w-14 h-14 grid place-items-center rounded-full transition-all duration-300',
           'bg-ink text-ivory hover:bg-ultra shadow-[0_16px_40px_-12px_rgba(10,23,48,0.5)] hover:scale-105',
@@ -223,6 +242,10 @@ export default function ChatWidget() {
       <AnimatePresence>
         {open && (
           <motion.div
+            id="support-chat-dialog"
+            role="dialog"
+            aria-modal="false"
+            aria-labelledby="support-chat-title"
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -243,13 +266,13 @@ export default function ChatWidget() {
                   {chatStatus === 'bot' ? <Sparkles size={16} strokeWidth={1.5} /> : <Headset size={16} strokeWidth={1.5} />}
                 </div>
                 <div>
-                  <div className="text-sm font-medium">{headerCopy.label}</div>
+                  <div id="support-chat-title" className="text-sm font-medium">{headerCopy.label}</div>
                   <div className="text-mono text-[0.65rem] uppercase tracking-widest text-ivory/50">
                     {headerCopy.sub}
                   </div>
                 </div>
               </div>
-              <button onClick={() => dispatch(toggleChat(false))} aria-label="Close">
+              <button ref={closeRef} onClick={() => dispatch(toggleChat(false))} aria-label="Close support chat">
                 <X size={18} strokeWidth={1.25} />
               </button>
             </div>
@@ -261,6 +284,7 @@ export default function ChatWidget() {
                   type="button"
                   onClick={askAI}
                   disabled={chatStatus === 'bot' || switching}
+                  aria-pressed={chatStatus === 'bot'}
                   className={cn(
                     'px-3 py-1.5 text-mono text-[0.65rem] uppercase tracking-widest rounded-full border transition-colors',
                     chatStatus === 'bot'
@@ -274,6 +298,7 @@ export default function ChatWidget() {
                   type="button"
                   onClick={askAdmin}
                   disabled={chatStatus !== 'bot' || switching}
+                  aria-pressed={chatStatus !== 'bot'}
                   className={cn(
                     'px-3 py-1.5 text-mono text-[0.65rem] uppercase tracking-widest rounded-full border transition-colors',
                     chatStatus !== 'bot'
@@ -287,7 +312,14 @@ export default function ChatWidget() {
             )}
 
             {/* Body */}
-            <div ref={bodyRef} className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 space-y-3 scrollbar-thin">
+            <div
+              ref={bodyRef}
+              role="log"
+              aria-live="polite"
+              aria-relevant="additions text"
+              aria-label="Support chat messages"
+              className="flex-1 overflow-y-auto overscroll-contain px-5 py-4 space-y-3 scrollbar-thin"
+            >
               {messages.map((m) => {
                 if (m.senderType === 'system') {
                   return (
@@ -325,9 +357,10 @@ export default function ChatWidget() {
                 );
               })}
               {sending && (
-                <div className="flex justify-start">
+                <div className="flex justify-start" role="status">
                   <div className="px-4 py-2.5 bg-white text-ink border border-hairline rounded-2xl rounded-bl-sm">
                     <Spinner size={14} className="text-ultra" />
+                    <span className="sr-only">Waiting for a reply</span>
                   </div>
                 </div>
               )}
@@ -337,6 +370,7 @@ export default function ChatWidget() {
             <div className="border-t border-hairline p-3 flex items-center gap-2 bg-ivory-soft">
               <input
                 type="text"
+                aria-label="Message"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && !sending && !isResolved && send()}

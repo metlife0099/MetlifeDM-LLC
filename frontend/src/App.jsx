@@ -5,6 +5,8 @@ import AuthLayout from '@/components/auth/AuthLayout.jsx';
 import DashboardLayout from '@/components/dashboard/DashboardLayout.jsx';
 import ProtectedRoute from '@/components/auth/ProtectedRoute.jsx';
 import { PageLoader } from '@/components/ui/index.jsx';
+import CookieBanner from '@/components/layout/CookieBanner.jsx';
+import AnalyticsConsent from '@/components/analytics/AnalyticsConsent.jsx';
 
 /* Eager: homepage */
 import HomePage from '@/pages/HomePage.jsx';
@@ -100,6 +102,7 @@ const withSuspense = (Component, label) => (
 
 export default function App() {
   return (
+    <>
     <Routes>
       {/* ==================== PUBLIC ==================== */}
       <Route element={<Layout />}>
@@ -190,5 +193,8 @@ export default function App() {
         <Route path="security" element={withSuspense(SecurityPage, 'Security')} />
       </Route>
     </Routes>
+    <AnalyticsConsent />
+    <CookieBanner />
+    </>
   );
 }

@@ -1,4 +1,4 @@
-import { Outlet, NavLink, Link, useLocation } from 'react-router-dom';
+import { Outlet, NavLink, Link } from 'react-router-dom';
 import { useState } from 'react';
 import {
   Home,
@@ -39,7 +39,6 @@ export default function DashboardLayout() {
   const { logout } = useAuth();
   const user = useSelector((s) => s.auth.user);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const location = useLocation();
   useScrollLock(mobileOpen);
 
   const { data: unread } = useQuery({
@@ -194,7 +193,7 @@ export default function DashboardLayout() {
         </AnimatePresence>
 
         {/* Main */}
-        <main className="min-h-screen">
+        <main id="main-content" tabIndex={-1} className="min-h-screen">
           <Container className="py-10 md:py-16 max-w-6xl">
             <Outlet />
           </Container>

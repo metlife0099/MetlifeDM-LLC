@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, Video, ArrowUpRight, Check } from 'lucide-react';
+import { Clock, Video, ArrowUpRight, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { Input, Textarea, Select, Checkbox } from '@/components/ui/index.jsx';
@@ -36,7 +36,8 @@ const consultationSchema = z.object({
   agreeTerms: z.literal(true, { errorMap: () => ({ message: 'Please accept the terms' }) }),
 });
 
-// Generate next 14 available business days
+// Offer convenient business-day preferences. These are not live availability;
+// the team confirms the final time after reviewing the request.
 const generateDates = () => {
   const dates = [];
   const today = new Date();
@@ -63,6 +64,13 @@ const MEETING_TYPES = [
   { value: 'phone', label: 'Phone', icon: Clock },
 ];
 
+const TIMEZONES = [
+  { value: 'America/New_York', label: 'Eastern Time' },
+  { value: 'America/Chicago', label: 'Central Time' },
+  { value: 'America/Denver', label: 'Mountain Time' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time' },
+];
+
 export default function ConsultationPage() {
   const dates = generateDates();
   const [selectedDate, setSelectedDate] = useState(dates[0].toISOString().split('T')[0]);
@@ -79,6 +87,7 @@ export default function ConsultationPage() {
   } = useForm({
     resolver: zodResolver(consultationSchema),
     defaultValues: {
+      preferredDate: selectedDate,
       timezone: 'America/New_York',
       durationMinutes: 30,
       meetingType: 'google_meet',
@@ -88,12 +97,20 @@ export default function ConsultationPage() {
   });
 
   const services = watch('servicesInterested') || [];
+  const timezone = watch('timezone');
 
   const mutation = useMutation({
     mutationFn: leadsApi.bookConsultation,
     onSuccess: () => {
-      toast.success("Consultation booked. Check your email for confirmation.");
-      reset();
+      toast.success('Consultation request received. We will confirm availability by email.');
+      reset({
+        preferredDate: selectedDate,
+        timezone: 'America/New_York',
+        durationMinutes: 30,
+        meetingType: 'google_meet',
+        urgency: 'exploring',
+        servicesInterested: [],
+      });
       setSelectedTime('');
     },
     onError: (e) => toast.error(getErrorMessage(e)),
@@ -135,8 +152,8 @@ export default function ConsultationPage() {
   return (
     <>
       <Seo
-        title="Book a consultation"
-        description="Book a free 30-minute strategy call with MetlifeDM's senior strategists. No pitch — just a plan."
+        title="Request a consultation"
+        description="Request a free 30-minute strategy call with MetlifeDM and share the times that work best for you."
         keywords="free marketing consultation, book a growth strategy call, marketing audit consultation, free SEO consultation, digital marketing strategy call"
       />
 
@@ -146,22 +163,22 @@ export default function ConsultationPage() {
           alt="A strategy conversation"
         />
         <Container className="relative z-10">
-          <Eyebrow number="00" light>Consultation / 30-minute strategy call</Eyebrow>
+          <Eyebrow number="00" light>Consultation / 30-minute call request</Eyebrow>
           <h1 className="text-display-hero mt-8 max-w-4xl text-ivory">
-            Book a strategy call.<br />
-            <span className="text-italic-fraunces text-ultra-soft">No pitch. Just a plan.</span>
+            Request a strategy call.<br />
+            <span className="text-italic-fraunces text-ultra-soft">We&apos;ll confirm the time.</span>
           </h1>
           <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
-            A senior strategist reviews your funnel, benchmarks your competitors, and gives you 3 actionable next steps — for free, in 30 minutes.
+            Tell us what you want to discuss and choose a preferred window. We&apos;ll review the request and confirm an available time by email.
           </p>
 
           {/* What to expect */}
           <div className="mt-14 grid gap-px bg-hairline border border-hairline md:grid-cols-4">
             {[
               { icon: '01', title: 'Send brief', body: 'Fill out the form. Takes 2 minutes.' },
-              { icon: '02', title: 'Get calendar invite', body: 'Confirmation & Meet link within 1 hour.' },
-              { icon: '03', title: 'Have the call', body: '30-min diagnostic with a senior strategist.' },
-              { icon: '04', title: 'Get a plan', body: '3 concrete next steps you can execute today.' },
+              { icon: '02', title: 'Availability review', body: 'We check your preferred date and time.' },
+              { icon: '03', title: 'Get confirmation', body: 'We email the final time and meeting details.' },
+              { icon: '04', title: 'Have the call', body: 'Discuss goals, constraints, and useful next steps.' },
             ].map((s) => (
               <div key={s.icon} className="bg-ivory p-6">
                 <div className="num-plate text-slate text-xs mb-3">{s.icon}</div>
@@ -265,7 +282,8 @@ export default function ConsultationPage() {
             {/* Right: scheduling */}
             <div className="lg:sticky lg:top-32 lg:self-start space-y-8">
               <div>
-                <Eyebrow number="03">Pick a date</Eyebrow>
+                <Eyebrow number="03">Preferred date</Eyebrow>
+                <p className="mt-3 text-xs leading-relaxed text-slate">Dates shown are request options, not live calendar availability.</p>
                 <div className="mt-6 grid grid-cols-5 gap-2">
                   {dates.map((d) => {
                     const iso = d.toISOString().split('T')[0];
@@ -299,7 +317,7 @@ export default function ConsultationPage() {
               </div>
 
               <div>
-                <Eyebrow number="04">Pick a time (EST)</Eyebrow>
+                <Eyebrow number="04">Preferred time</Eyebrow>
                 <div className="mt-6 grid grid-cols-3 gap-2">
                   {TIME_SLOTS.map((t) => (
                     <button
@@ -321,6 +339,12 @@ export default function ConsultationPage() {
                   <div className="text-mono text-xs text-danger mt-2">{errors.preferredTimeSlot.message}</div>
                 )}
               </div>
+
+              <Select
+                label="Time zone"
+                {...register('timezone')}
+                options={TIMEZONES}
+              />
 
               <div>
                 <Eyebrow number="05">Meeting type</Eyebrow>
@@ -353,13 +377,13 @@ export default function ConsultationPage() {
                 >
                   <div className="text-mono text-xs uppercase tracking-widest text-ultra mb-3 flex items-center gap-2">
                     <Check size={12} strokeWidth={2} />
-                    Selected
+                    Requested window
                   </div>
                   <div className="text-display-sm">
                     {formatDate(selectedDate, 'long')}
                   </div>
                   <div className="text-mono text-sm text-ink mt-2">
-                    {selectedTime} EST · 30 minutes · {MEETING_TYPES.find((m) => m.value === meetingType)?.label}
+                    {selectedTime} {TIMEZONES.find((item) => item.value === timezone)?.label} · 30 minutes · {MEETING_TYPES.find((m) => m.value === meetingType)?.label}
                   </div>
                 </motion.div>
               )}
@@ -381,7 +405,7 @@ export default function ConsultationPage() {
                 className="w-full"
                 disabled={mutation.isPending}
               >
-                {mutation.isPending ? 'Booking…' : 'Confirm consultation'}
+                {mutation.isPending ? 'Sending…' : 'Submit consultation request'}
                 <ArrowUpRight size={16} strokeWidth={1.5} />
               </Button>
             </div>

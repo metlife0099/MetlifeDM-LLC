@@ -10,17 +10,23 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
-import { Spinner } from '@/components/ui/index.jsx';
+import { QueryError, Spinner } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { contentApi } from '@/api/index.js';
 import PricingEnquiryModal from '@/components/sections/PricingEnquiryModal.jsx';
 import { addItem } from '@/store/index.js';
-import { formatMoney } from '@/utils/format.js';
-import { cn } from '@/utils/format.js';
+import { billingCycleLabel } from '@/utils/commerce.js';
+import { cn, formatMoney } from '@/utils/format.js';
 
 const ADS_SLUG = 'pay-per-click-ppc-advertising';
 const DIAGNOSTIC_SLUG = 'metlifedm-paid-growth-diagnostic';
+
+const formatPlanFee = (plan) => {
+  if (!plan) return 'Contact us';
+  const cadence = plan.billingCycle === 'one_time' ? ' one-time' : `/${billingCycleLabel(plan.billingCycle)}`;
+  return `${formatMoney(plan.price, plan.currency || 'USD')}${cadence}`;
+};
 
 /* ---- Hero — the paid-growth journey, at a glance ---- */
 const HERO_CHAIN = [
@@ -79,7 +85,6 @@ const AD_SPEND = {
 const ENTERPRISE_CARD = {
   name: 'Paid Growth Enterprise',
   tagline: 'Custom strategy. Custom infrastructure. Custom investment.',
-  startingFrom: 2500,
   ctaLabel: 'Talk to Sales',
   features: [
     'Multi-country campaigns', 'Multi-location campaigns', 'Large campaign structures',
@@ -134,22 +139,14 @@ const THE_DIFFERENCE = [
   { them: 'Your campaign is running.', us: 'Is the system producing profitable opportunities?' },
 ];
 
-/* ---- Final pricing recap ---- */
-const FINAL_PRICING = [
-  { plan: 'Ads Foundation', fee: '$399/mo', spend: '$500–$2,500' },
-  { plan: 'Ads Growth', fee: '$699/mo', spend: '$2,500–$10,000', popular: true },
-  { plan: 'Ads Partnership', fee: '$1,299/mo', spend: '$10,000+' },
-  { plan: 'Paid Growth Enterprise', fee: 'Custom', spend: '$25,000+' },
-  { plan: 'Paid Growth Diagnostic', fee: '$199 one-time', spend: '—' },
-];
-
 /**
  * One Ads plan card — collapsed feature list (teaser + expand), plus the
  * "Best for", "Focus", and "Recommended ad spend" context specific to
  * paid-growth plans (ad spend is always separate from the management fee).
  */
-function AdsPlanCard({ name, price, priceLabel, tagline, features, isPopular, ctaLabel, onAction }) {
+function AdsPlanCard({ name, price, priceLabel, billingCycle, tagline, features, isPopular, ctaLabel, onAction }) {
   const [expanded, setExpanded] = useState(false);
+  const quoteOnly = billingCycle === 'custom' || price == null;
   const teaserCount = 3;
   const teaser = features.slice(0, teaserCount).join(' → ');
   const remaining = features.length - teaserCount;
@@ -180,10 +177,12 @@ function AdsPlanCard({ name, price, priceLabel, tagline, features, isPopular, ct
 
       <div className="mt-6 flex items-baseline gap-2">
         <span className={cn('text-display-md num-plate', isPopular ? 'text-ivory' : 'text-ink')}>
-          {price ? formatMoney(price) : priceLabel}
+          {quoteOnly ? priceLabel || 'Custom quote' : formatMoney(price)}
         </span>
         <span className={cn('text-mono text-xs uppercase', isPopular ? 'text-ivory/60' : 'text-slate')}>
-          {price ? '/ month, management' : `management, from ${formatMoney(ENTERPRISE_CARD.startingFrom)}/mo`}
+          {quoteOnly
+            ? 'management scope priced by proposal'
+            : billingCycle === 'one_time' ? 'one-time management fee' : `/ ${billingCycleLabel(billingCycle)}, management`}
         </span>
       </div>
 
@@ -247,8 +246,8 @@ function AdsPlanCard({ name, price, priceLabel, tagline, features, isPopular, ct
         className="mt-8 w-full"
         size="md"
       >
-        {price && <ShoppingBag size={14} strokeWidth={1.5} />}
-        {ctaLabel}
+        {!quoteOnly && <ShoppingBag size={14} strokeWidth={1.5} />}
+        {quoteOnly ? 'Get a quote' : ctaLabel || 'Add to cart'}
       </Button>
     </div>
   );
@@ -258,7 +257,7 @@ export default function GoogleAdsPricingPage() {
   const dispatch = useDispatch();
   const [enquiryOpen, setEnquiryOpen] = useState(false);
 
-  const { data: adsData, isLoading } = useQuery({
+  const { data: adsData, isLoading, isError, refetch } = useQuery({
     queryKey: ['services', 'ads-pricing', ADS_SLUG],
     queryFn: () => contentApi.getServiceBySlug(ADS_SLUG),
   });
@@ -272,8 +271,26 @@ export default function GoogleAdsPricingPage() {
   });
   const diagnosticService = diagData?.service;
   const diagnosticPlan = diagnosticService?.pricingPlans?.[0];
+  const finalPricing = [
+    ...plans.map((plan) => ({
+      plan: plan.name,
+      fee: formatPlanFee(plan),
+      spend: AD_SPEND[plan.name] || 'Discuss with a strategist',
+      popular: plan.isPopular,
+    })),
+    ...(!plans.some((plan) => plan.name === ENTERPRISE_CARD.name)
+      ? [{ plan: ENTERPRISE_CARD.name, fee: 'Custom quote', spend: AD_SPEND[ENTERPRISE_CARD.name] }]
+      : []),
+    ...(diagnosticPlan
+      ? [{ plan: diagnosticPlan.name || 'Paid Growth Diagnostic', fee: formatPlanFee(diagnosticPlan), spend: 'Not applicable' }]
+      : []),
+  ];
 
   const handleAddToCart = (service, plan) => {
+    if (plan.billingCycle === 'custom') {
+      setEnquiryOpen(true);
+      return;
+    }
     dispatch(addItem({ service, plan, quantity: 1 }));
     toast.success(`${plan.name} added to cart`);
   };
@@ -469,6 +486,8 @@ export default function GoogleAdsPricingPage() {
             <div className="flex justify-center py-24">
               <Spinner size={28} className="text-ultra" />
             </div>
+          ) : isError ? (
+            <QueryError title="Current Google Ads plans are temporarily unavailable." onRetry={refetch} />
           ) : (
             <div className="mt-16 grid gap-6 lg:grid-cols-4">
               {plans.map((plan, i) => (
@@ -482,6 +501,7 @@ export default function GoogleAdsPricingPage() {
                   <AdsPlanCard
                     name={plan.name}
                     price={plan.price}
+                    billingCycle={plan.billingCycle}
                     tagline={plan.tagline}
                     features={(plan.features || []).map((f) => f.label)}
                     isPopular={plan.isPopular}
@@ -499,7 +519,7 @@ export default function GoogleAdsPricingPage() {
                 <AdsPlanCard
                   name={ENTERPRISE_CARD.name}
                   price={null}
-                  priceLabel="Custom"
+                  priceLabel="Custom quote"
                   tagline={ENTERPRISE_CARD.tagline}
                   features={ENTERPRISE_CARD.features}
                   isPopular={false}
@@ -576,7 +596,7 @@ export default function GoogleAdsPricingPage() {
                         className={cn('text-center py-4 px-4 align-bottom min-w-[9rem]', plan.isPopular && 'bg-sand')}
                       >
                         <div className="text-ink text-base font-medium">{plan.name}</div>
-                        <div className="text-slate text-xs mt-1">{formatMoney(plan.price)}/mo</div>
+                        <div className="text-slate text-xs mt-1">{formatPlanFee(plan)}</div>
                         {plan.isPopular && (
                           <div className="inline-flex items-center gap-1 mt-1.5 text-mono text-[0.6rem] uppercase tracking-widest text-ultra">
                             <Star size={9} strokeWidth={0} className="fill-current" /> Most popular
@@ -780,12 +800,13 @@ export default function GoogleAdsPricingPage() {
               </p>
 
               <div className="mt-10 flex items-baseline gap-2">
-                <span className="text-display-md num-plate">{diagnosticPlan ? formatMoney(diagnosticPlan.price) : '$199'}</span>
+                <span className="text-display-md num-plate">
+                  {diagnosticPlan ? formatMoney(diagnosticPlan.price, diagnosticPlan.currency || 'USD') : 'Current price unavailable'}
+                </span>
                 <span className="text-mono text-xs uppercase text-slate">one-time</span>
               </div>
               <p className="text-slate text-sm mt-3 max-w-md leading-relaxed">
-                Move forward with an Ads Growth ($699+) engagement, and your $199 diagnostic fee is credited toward
-                your first month.
+                Any follow-on service credit will be stated explicitly in your written proposal; it is not assumed at checkout.
               </p>
 
               <Button
@@ -891,11 +912,11 @@ export default function GoogleAdsPricingPage() {
                 <tr>
                   <th className="text-left py-3 text-mono text-xs uppercase tracking-widest text-slate font-normal border-b border-hairline">Plan</th>
                   <th className="text-left py-3 px-4 text-mono text-xs uppercase tracking-widest text-slate font-normal border-b border-hairline">Management fee</th>
-                  <th className="text-left py-3 text-mono text-xs uppercase tracking-widest text-slate font-normal border-b border-hairline">Recommended ad spend</th>
+                  <th className="text-left py-3 text-mono text-xs uppercase tracking-widest text-slate font-normal border-b border-hairline">Suggested media budget</th>
                 </tr>
               </thead>
               <tbody>
-                {FINAL_PRICING.map((row) => (
+                {finalPricing.map((row) => (
                   <tr key={row.plan} className="border-b border-hairline">
                     <td className="py-3.5 text-ink text-sm flex items-center gap-1.5">
                       {row.plan}
@@ -908,7 +929,7 @@ export default function GoogleAdsPricingPage() {
               </tbody>
             </table>
           </motion.div>
-          <p className="text-slate text-xs text-center mt-6">Google ad spend is separate.</p>
+          <p className="text-slate text-xs text-center mt-6">Suggested media budgets are paid directly to Google and are separate from MetlifeDM service fees.</p>
         </Container>
       </Section>
 

@@ -4,45 +4,43 @@ import { Helmet } from 'react-helmet-async';
 import AnnouncementBar from './AnnouncementBar.jsx';
 import Navbar from './Navbar.jsx';
 import Footer from './Footer.jsx';
-import CookieBanner from './CookieBanner.jsx';
 import ChatWidget from '@/components/chat/ChatWidget.jsx';
-
-// Sitewide Organization schema — renders on every page so search engines
-// can resolve the MetlifeDM entity regardless of which page they land on.
-const ORGANIZATION_JSON_LD = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  '@id': 'https://metlifedm.com/#organization',
-  name: 'MetlifeDM LLC',
-  url: 'https://metlifedm.com',
-  logo: 'https://metlifedm.com/icons/icon-512.png',
-  foundingDate: '2024',
-  numberOfEmployees: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 10 },
-  address: {
-    '@type': 'PostalAddress',
-    streetAddress: '#571',
-    addressLocality: 'Nassau',
-    addressRegion: 'DE',
-    postalCode: '19969',
-    addressCountry: 'US',
-  },
-  contactPoint: {
-    '@type': 'ContactPoint',
-    contactType: 'customer service',
-    email: 'metlifedm4u@gmail.com',
-    areaServed: 'US',
-  },
-  sameAs: [
-    'https://twitter.com/metlifedm',
-    'https://linkedin.com/company/metlifedm',
-    'https://instagram.com/metlifedm',
-    'https://facebook.com/metlifedm',
-    'https://youtube.com/@metlifedm',
-  ],
-};
+import { usePublicSettings } from '@/providers/PublicSettingsProvider.jsx';
 
 export default function Layout() {
   const { pathname } = useLocation();
+  const settings = usePublicSettings();
+  const siteUrl = (import.meta.env.VITE_SITE_URL || 'https://metlifedm.com').replace(/\/$/, '');
+  const address = settings.contact.addresses.find((item) => item.isPrimary) || settings.contact.addresses[0];
+  const fallbackOrganization = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    '@id': `${siteUrl}/#organization`,
+    name: settings.business.registeredName,
+    url: siteUrl,
+    logo: settings.site.logo.startsWith('http') ? settings.site.logo : `${siteUrl}${settings.site.logo}`,
+    ...(settings.business.established && { foundingDate: String(settings.business.established) }),
+    ...(address && {
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: [address.line1, address.line2].filter(Boolean).join(', '),
+        addressLocality: address.city,
+        addressRegion: address.state,
+        postalCode: address.zip,
+        addressCountry: address.country || 'US',
+      },
+    }),
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer service',
+      email: settings.contact.supportEmail,
+      ...(settings.contact.phone && { telephone: settings.contact.phone }),
+      areaServed: 'US',
+    },
+    sameAs: Object.values(settings.social).filter(Boolean),
+  };
+  const organizationJsonLd = settings.seo.organizationSchema || fallbackOrganization;
+  const serializedOrganization = JSON.stringify(organizationJsonLd).replace(/</g, '\\u003c');
 
   // Scroll to top on route change
   useEffect(() => {
@@ -52,16 +50,15 @@ export default function Layout() {
   return (
     <div className="min-h-screen flex flex-col bg-ivory">
       <Helmet>
-        <script type="application/ld+json">{JSON.stringify(ORGANIZATION_JSON_LD)}</script>
+        <script type="application/ld+json">{serializedOrganization}</script>
       </Helmet>
       <AnnouncementBar />
       <Navbar />
-      <main className="flex-1">
+      <main id="main-content" tabIndex={-1} className="flex-1">
         <Outlet />
       </main>
       <Footer />
-      <CookieBanner />
-      <ChatWidget />
+      {settings.features.chatbotEnabled && import.meta.env.VITE_ENABLE_CHAT !== 'false' && <ChatWidget />}
     </div>
   );
 }

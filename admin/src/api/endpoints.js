@@ -151,6 +151,7 @@ export const ENDPOINTS = {
     update: (id) => `/admin/orders/${id}`,
     updateStatus: (id) => `/admin/orders/${id}/status`,
     refund: (id) => `/admin/orders/${id}/refund`,
+    manageSubscription: (id) => `/orders/${id}/subscription`,
   },
   payments: {
     list: '/admin/payments',

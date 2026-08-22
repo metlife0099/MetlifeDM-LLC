@@ -13,9 +13,15 @@ import {
 } from '@/components/sections/index.jsx';
 import { BrandStory, HowWeWork, SolutionsNotServices, PlatformShowcase, BuilderFeatures, WhyUsTimeline } from '@/components/home/index.jsx';
 import { contentApi } from '@/api/index.js';
+import { QueryError, Spinner } from '@/components/ui/index.jsx';
 
 export default function HomePage() {
-  const { data: featuredServices = [] } = useQuery({
+  const {
+    data: featuredServices = [],
+    isLoading: servicesLoading,
+    isError: servicesError,
+    refetch: retryServices,
+  } = useQuery({
     queryKey: ['services', 'home'],
     // Show the top services by display order — not gated behind the separate
     // "Featured" toggle, so newly added services show up here immediately.
@@ -66,7 +72,12 @@ export default function HomePage() {
           areaServed: 'US',
           foundingDate: '2024',
           numberOfEmployees: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 10 },
-          sameAs: [],
+          sameAs: [
+            'https://x.com/MetlifeDM_LLC',
+            'https://linkedin.com/company/metlifedm-llc-digital-marketing',
+            'https://www.instagram.com/metlifedm.llc/',
+            'https://www.facebook.com/profile.php?id=61591351247538',
+          ],
         }}
       />
 
@@ -185,10 +196,14 @@ export default function HomePage() {
               All services <ArrowRight size={14} strokeWidth={1.5} />
             </Button>
           </div>
-          {featuredServices.length > 0 ? (
+          {servicesLoading ? (
+            <div className="flex justify-center py-20" role="status"><Spinner size={28} className="text-ultra" /><span className="sr-only">Loading services</span></div>
+          ) : servicesError ? (
+            <QueryError title="Services are temporarily unavailable." onRetry={retryServices} />
+          ) : featuredServices.length > 0 ? (
             <ServicesGrid services={featuredServices} />
           ) : (
-            <div className="text-slate text-sm">Loading services…</div>
+            <div className="text-slate text-sm">No services are published yet.</div>
           )}
         </Container>
       </Section>
@@ -225,7 +240,7 @@ export default function HomePage() {
                 Clients don&apos;t hire us twice by accident.
               </p>
               <p className="text-ivory/70 mt-6 max-w-md leading-relaxed">
-                94% client retention. Senior strategists who stay on your account for years, not months.
+                Long-term partnerships are earned through clear scopes, visible work, and honest reporting.
               </p>
             </motion.div>
           </Container>

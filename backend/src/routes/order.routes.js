@@ -12,12 +12,21 @@ router.use(requireAuth);
 router.post('/', validate(v.createOrderSchema), c.createOrder);
 router.get('/mine', c.listMyOrders);
 router.get('/:id', c.getOrder);
+router.post('/:id/payment-intent', c.resumePayment);
 router.post('/:id/confirm-payment', c.confirmPayment);
+router.post('/:id/subscription/cancel', c.cancelSubscription);
+router.post('/:id/subscription/resume', c.resumeSubscription);
 router.post('/:id/cancel', c.cancelOrder);
 
 // Admin
 router.get('/', requireAdmin, c.listOrders);
 router.patch('/:id/status', requireAdmin, validate(v.updateOrderStatusSchema), c.updateStatus);
 router.patch('/:id/assign', requireAdmin, c.assignOrder);
+router.patch(
+  '/:id/subscription',
+  requireAdmin,
+  validate(v.manageSubscriptionSchema),
+  c.adminManageSubscription
+);
 
 export default router;

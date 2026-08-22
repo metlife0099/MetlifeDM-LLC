@@ -7,6 +7,11 @@ import { TICKET_STATUS } from '../utils/constants.js';
 import emailService from '../services/email.service.js';
 import { notify, notifyAdmins } from './notification.controller.js';
 
+const withoutInternalReplies = (ticket) => {
+  const value = ticket.toObject ? ticket.toObject() : ticket;
+  return { ...value, replies: (value.replies || []).filter((reply) => !reply.isInternal) };
+};
+
 export const create = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
   const ticket = await Ticket.create({
@@ -30,7 +35,7 @@ export const create = asyncHandler(async (req, res) => {
 export const listMine = asyncHandler(async (req, res) => {
   const opts = getPaginationOptions(req.query);
   const { items, meta } = await paginate(Ticket, { customer: req.user._id }, opts);
-  return ApiResponse.ok(res, items, 'My tickets', meta);
+  return ApiResponse.ok(res, items.map(withoutInternalReplies), 'My tickets', meta);
 });
 
 export const listAll = asyncHandler(async (req, res) => {
@@ -55,7 +60,7 @@ export const get = asyncHandler(async (req, res) => {
   const isOwner = ticket.customer?._id.toString() === req.user._id.toString();
   const isAdmin = ['admin', 'super_admin', 'manager'].includes(req.user.role);
   if (!isOwner && !isAdmin) throw ApiError.forbidden();
-  return ApiResponse.ok(res, { ticket }, 'Ticket');
+  return ApiResponse.ok(res, { ticket: isAdmin ? ticket : withoutInternalReplies(ticket) }, 'Ticket');
 });
 
 export const reply = asyncHandler(async (req, res) => {
@@ -75,7 +80,7 @@ export const reply = asyncHandler(async (req, res) => {
   if (!ticket.firstResponseAt && isAdmin) ticket.firstResponseAt = new Date();
   await ticket.save();
 
-  if (isAdmin && ticket.customer) {
+  if (isAdmin && ticket.customer && !req.body.isInternal) {
     notify({
       recipient: ticket.customer,
       type: 'ticket',
@@ -90,11 +95,38 @@ export const reply = asyncHandler(async (req, res) => {
 });
 
 export const update = asyncHandler(async (req, res) => {
-  const ticket = await Ticket.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  if (req.body.assignedTo) {
+    const assignee = await User.findOne({
+      _id: req.body.assignedTo,
+      role: { $in: ['super_admin', 'admin', 'manager'] },
+      status: 'active',
+    });
+    if (!assignee) throw ApiError.badRequest('Assignee must be an active staff user');
+  }
+  const ticket = await Ticket.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true, runValidators: true }
+  );
   if (!ticket) throw ApiError.notFound('Ticket not found');
   if (req.body.status === TICKET_STATUS.RESOLVED && !ticket.resolvedAt) {
     ticket.resolvedAt = new Date();
     await ticket.save();
   }
   return ApiResponse.ok(res, { ticket }, 'Ticket updated');
+});
+
+export const addInternalNote = asyncHandler(async (req, res) => {
+  const ticket = await Ticket.findById(req.params.id);
+  if (!ticket) throw ApiError.notFound('Ticket not found');
+  const content = (req.body.content || req.body.note || '').trim();
+  if (!content || content.length > 10000) throw ApiError.badRequest('A valid internal note is required');
+  ticket.replies.push({
+    author: req.user._id,
+    authorType: 'agent',
+    content,
+    isInternal: true,
+  });
+  await ticket.save();
+  return ApiResponse.ok(res, { ticket }, 'Internal note added');
 });

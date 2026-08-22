@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, TrendingUp, TrendingDown, FileSearch } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
-import { Badge } from '@/components/ui/index.jsx';
+import { Badge, QueryError } from '@/components/ui/index.jsx';
 import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
@@ -32,7 +32,7 @@ function CaseStudySkeleton() {
 export default function CaseStudiesPage() {
   const [category, setCategory] = useState('');
 
-  const { data: items = [], isLoading } = useQuery({
+  const { data: items = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['case-studies', 'list', category],
     queryFn: () =>
       contentApi.listCaseStudies({ category: category || undefined, limit: 24 }).then((r) => r.data),
@@ -63,7 +63,7 @@ export default function CaseStudiesPage() {
             <span className="text-italic-fraunces text-ultra-soft">Numbered.</span>
           </h1>
           <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
-            Real client engagements, real KPIs, real revenue. Each case study includes the brief, the strategy, and the exact metric we moved.
+            Published engagement summaries with the brief, strategy, work delivered, and client-approved results where available.
           </p>
         </Container>
       </Section>
@@ -104,6 +104,8 @@ export default function CaseStudiesPage() {
             <div className="space-y-8">
               {Array.from({ length: 3 }).map((_, i) => <CaseStudySkeleton key={i} />)}
             </div>
+          ) : isError ? (
+            <QueryError title="Case studies are temporarily unavailable." onRetry={refetch} />
           ) : items.length === 0 ? (
             <div className="max-w-md mx-auto text-center py-20 border border-hairline bg-white px-8">
               <div className="w-14 h-14 mx-auto grid place-items-center bg-sand text-slate">

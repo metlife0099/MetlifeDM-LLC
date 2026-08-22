@@ -2,35 +2,32 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FileCheck, ExternalLink, Mail, Linkedin, Globe, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { PageHeader, FilterBar, Tabs } from '@/components/ui/PageHeader.jsx';
+import { PageHeader, Tabs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
-import { StatusPill, Badge, Card, NewBadge } from '@/components/ui/index.jsx';
+import { StatusPill, Card, NewBadge } from '@/components/ui/index.jsx';
 import { Drawer } from '@/components/ui/Modal.jsx';
-import { Select, SearchInput } from '@/components/form/index.jsx';
-import Button from '@/components/ui/Button.jsx';
+import { Select } from '@/components/form/index.jsx';
 import { careersApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
-import { useDebounce } from '@/hooks/index.js';
 import { timeAgo, formatDate } from '@/utils/format.js';
 import { APPLICATION_STATUSES } from '@/utils/constants.js';
 
 export default function ApplicationsPage() {
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('new');
+  const [status, setStatus] = useState('submitted');
   const [selected, setSelected] = useState(null);
-  const debounced = useDebounce(search, 300);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'applications', { page, debounced, status }],
-    queryFn: () => careersApi.listApplications({ page, search: debounced, status, limit: 25 }),
+    queryKey: ['admin', 'applications', { page, status }],
+    queryFn: () => careersApi.listApplications({ page, status, limit: 25 }),
   });
 
   const updateStatus = useMutation({
     mutationFn: ({ id, status }) => careersApi.updateApplication(id, { status }),
-    onSuccess: () => {
+    onSuccess: (updated) => {
       qc.invalidateQueries({ queryKey: ['admin', 'applications'] });
+      setSelected((current) => current?._id === updated?._id ? { ...current, ...updated } : current);
       toast.success('Status updated');
     },
     onError: (e) => toast.error(getErrorMessage(e)),
@@ -40,7 +37,7 @@ export default function ApplicationsPage() {
     {
       key: 'firstName', label: 'Candidate',
       render: (r) => (
-        <button onClick={() => setSelected(r)} className="text-left">
+        <button type="button" onClick={() => setSelected(r)} className="text-left">
           <div className="text-sm text-ink hover:text-ultra transition-colors">
             {r.firstName} {r.lastName}
           </div>
@@ -49,11 +46,11 @@ export default function ApplicationsPage() {
       ),
     },
     {
-      key: 'job', label: 'Applied for',
-      render: (r) => <span className="text-sm">{r.job?.title || '—'}</span>,
+      key: 'career', label: 'Applied for',
+      render: (r) => <span className="text-sm">{r.career?.title || r.jobTitle || '—'}</span>,
     },
-    { key: 'yearsExperience', label: 'Experience', render: (r) => <span className="text-mono text-xs">{r.yearsExperience ? `${r.yearsExperience} yr` : '—'}</span> },
-    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.status || 'new'} /> },
+    { key: 'yearsOfExperience', label: 'Experience', render: (r) => <span className="text-mono text-xs">{r.yearsOfExperience != null ? `${r.yearsOfExperience} yr` : '—'}</span> },
+    { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.status || 'submitted'} /> },
     { key: 'createdAt', label: 'Received', render: (r) => <span className="text-mono text-xs text-slate">{timeAgo(r.createdAt)}</span> },
   ];
 
@@ -62,17 +59,12 @@ export default function ApplicationsPage() {
       <PageHeader
         eyebrow="Careers / Applications"
         title={<>Job <span className="text-italic-fraunces text-ultra">applications</span></>}
-        subtitle="Review candidates. Every submission gets a decision within 5 business days."
+        subtitle="Review candidates and keep each application status current."
         actions={<NewBadge resourceType="application" />}
         tabs={
           <Tabs
             items={[
-              { value: 'new', label: 'New' },
-              { value: 'reviewing', label: 'Reviewing' },
-              { value: 'interview', label: 'Interview' },
-              { value: 'offer', label: 'Offer' },
-              { value: 'hired', label: 'Hired' },
-              { value: 'rejected', label: 'Rejected' },
+              ...APPLICATION_STATUSES,
               { value: '', label: 'All' },
             ]}
             active={status}
@@ -80,9 +72,6 @@ export default function ApplicationsPage() {
           />
         }
       />
-      <FilterBar>
-        <SearchInput value={search} onChange={setSearch} placeholder="Search candidates…" className="w-64" />
-      </FilterBar>
       <DataTable
         columns={columns} rows={data?.data || []} loading={isLoading}
         meta={data?.meta} onPageChange={setPage}
@@ -94,7 +83,7 @@ export default function ApplicationsPage() {
         open={!!selected}
         onClose={() => setSelected(null)}
         title={selected ? `${selected.firstName} ${selected.lastName}` : ''}
-        description={selected?.job?.title}
+        description={selected?.career?.title || selected?.jobTitle}
         width="lg"
       >
         {selected && (
@@ -113,15 +102,15 @@ export default function ApplicationsPage() {
                     {selected.phone}
                   </div>
                 )}
-                {selected.linkedIn && (
-                  <a href={selected.linkedIn} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-ultra">
+                {selected.linkedinUrl && (
+                  <a href={selected.linkedinUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-ultra">
                     <Linkedin size={13} strokeWidth={1.5} className="text-slate" />
                     LinkedIn
                     <ExternalLink size={11} strokeWidth={1.5} />
                   </a>
                 )}
-                {selected.portfolio && (
-                  <a href={selected.portfolio} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-ultra">
+                {selected.portfolioUrl && (
+                  <a href={selected.portfolioUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-ultra">
                     <Globe size={13} strokeWidth={1.5} className="text-slate" />
                     Portfolio
                     <ExternalLink size={11} strokeWidth={1.5} />
@@ -134,10 +123,10 @@ export default function ApplicationsPage() {
             <Card padding={false} className="p-5">
               <div className="text-eyebrow mb-3">Details</div>
               <div className="grid gap-3 sm:grid-cols-2 text-sm">
-                {selected.yearsExperience && (
+                {selected.yearsOfExperience != null && (
                   <div>
                     <div className="text-mono text-xs text-slate uppercase tracking-widest">Experience</div>
-                    <div className="mt-1">{selected.yearsExperience} years</div>
+                    <div className="mt-1">{selected.yearsOfExperience} years</div>
                   </div>
                 )}
                 {selected.currentCompany && (
@@ -163,7 +152,7 @@ export default function ApplicationsPage() {
                   className="inline-flex items-center gap-2 text-sm hover:text-ultra"
                 >
                   <Download size={13} strokeWidth={1.5} />
-                  {selected.resume.filename || 'Download resume'}
+                  {selected.resume.name || 'Download resume'}
                 </a>
               </Card>
             )}
@@ -181,7 +170,7 @@ export default function ApplicationsPage() {
               <div className="text-eyebrow mb-3">Move to status</div>
               <Select
                 options={APPLICATION_STATUSES}
-                value={selected.status}
+                value={selected.status || 'submitted'}
                 onChange={(e) => updateStatus.mutate({ id: selected._id, status: e.target.value })}
               />
             </Card>

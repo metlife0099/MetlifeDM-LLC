@@ -16,7 +16,7 @@ import Button from '@/components/ui/Button.jsx';
 import { blogApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { useDebounce } from '@/hooks/index.js';
-import { formatDate, timeAgo, slugify } from '@/utils/format.js';
+import { timeAgo, slugify } from '@/utils/format.js';
 import { POST_STATUSES } from '@/utils/constants.js';
 
 /* ============================================================

@@ -67,8 +67,10 @@ export const createService = asyncHandler(async (req, res) => {
 });
 
 export const updateService = asyncHandler(async (req, res) => {
-  const service = await Service.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  const service = await Service.findById(req.params.id);
   if (!service) throw ApiError.notFound('Service not found');
+  service.set(req.body);
+  await service.save();
   await bust();
   return ApiResponse.ok(res, { service }, 'Service updated');
 });

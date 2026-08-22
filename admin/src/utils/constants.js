@@ -8,26 +8,27 @@ export const SITE = {
 export const ROLES = {
   SUPER_ADMIN: 'super_admin',
   ADMIN: 'admin',
-  STAFF: 'staff',
-  EDITOR: 'editor',
-  SUPPORT: 'support',
+  MANAGER: 'manager',
   CUSTOMER: 'customer',
 };
 
 export const ADMIN_ROLES = [
   ROLES.SUPER_ADMIN,
   ROLES.ADMIN,
-  ROLES.STAFF,
-  ROLES.EDITOR,
-  ROLES.SUPPORT,
+];
+
+// Managers cannot enter the /admin console, but the ticket API allows admins
+// to assign support work to active managers as well as other administrators.
+export const SUPPORT_STAFF_ROLES = [
+  ROLES.SUPER_ADMIN,
+  ROLES.ADMIN,
+  ROLES.MANAGER,
 ];
 
 export const ROLE_LABELS = {
   super_admin: 'Super Admin',
   admin: 'Admin',
-  staff: 'Staff',
-  editor: 'Editor',
-  support: 'Support',
+  manager: 'Manager',
   customer: 'Customer',
 };
 
@@ -118,9 +119,11 @@ export const ORDER_STATUSES = [
   { value: 'pending', label: 'Pending' },
   { value: 'processing', label: 'Processing' },
   { value: 'paid', label: 'Paid' },
+  { value: 'in_progress', label: 'In progress' },
   { value: 'completed', label: 'Completed' },
   { value: 'cancelled', label: 'Cancelled' },
   { value: 'refunded', label: 'Refunded' },
+  { value: 'failed', label: 'Failed' },
 ];
 
 export const TICKET_STATUSES = [
@@ -133,7 +136,7 @@ export const TICKET_STATUSES = [
 
 export const TICKET_PRIORITIES = [
   { value: 'low', label: 'Low' },
-  { value: 'medium', label: 'Medium' },
+  { value: 'normal', label: 'Normal' },
   { value: 'high', label: 'High' },
   { value: 'urgent', label: 'Urgent' },
 ];
@@ -164,6 +167,7 @@ export const CAMPAIGN_AUDIENCES = [
 export const CONSULTATION_STATUSES = [
   { value: 'requested', label: 'Requested' },
   { value: 'confirmed', label: 'Confirmed' },
+  { value: 'rescheduled', label: 'Rescheduled' },
   { value: 'completed', label: 'Completed' },
   { value: 'no_show', label: 'No show' },
   { value: 'cancelled', label: 'Cancelled' },
@@ -200,10 +204,11 @@ export const INQUIRER_TYPE_LABELS = {
 };
 
 export const APPLICATION_STATUSES = [
-  { value: 'new', label: 'New' },
+  { value: 'submitted', label: 'Submitted' },
   { value: 'reviewing', label: 'Reviewing' },
-  { value: 'interview', label: 'Interview' },
-  { value: 'offer', label: 'Offer' },
+  { value: 'shortlisted', label: 'Shortlisted' },
+  { value: 'interviewing', label: 'Interviewing' },
+  { value: 'offered', label: 'Offered' },
   { value: 'hired', label: 'Hired' },
   { value: 'rejected', label: 'Rejected' },
 ];

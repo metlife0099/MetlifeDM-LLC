@@ -10,15 +10,15 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
-import { Spinner } from '@/components/ui/index.jsx';
+import { QueryError, Spinner } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
 import PricingEnquiryModal from '@/components/sections/PricingEnquiryModal.jsx';
 import { contentApi } from '@/api/index.js';
 import { addItem } from '@/store/index.js';
-import { formatMoney } from '@/utils/format.js';
-import { cn } from '@/utils/format.js';
+import { billingCycleLabel, isPlanPurchasable } from '@/utils/commerce.js';
+import { cn, formatMoney } from '@/utils/format.js';
 
 const GROWTH_PATHS_SLUG = 'professional-website-development-services';
 
@@ -37,7 +37,7 @@ const SPECIALIZED_SOLUTIONS = [
   {
     icon: Headphones,
     name: 'Customer Service',
-    price: 'From $199/month',
+    price: 'Custom quote',
     tagline: 'Your customers. Your requirements. Your system.',
     tags: ['WhatsApp', 'Enquiries', 'Follow-up', 'Booking', 'Reviews', 'CRM'],
     ctaLabel: 'Build Customer Service',
@@ -55,7 +55,7 @@ const SPECIALIZED_SOLUTIONS = [
   {
     icon: Activity,
     name: 'Diagnostic',
-    price: 'Custom / Engagement Credit',
+    price: 'Priced by proposal',
     tagline: "Before we recommend anything, we find what's actually wrong.",
     tags: ['Visibility', 'Positioning', 'Trust', 'Website', 'Conversion'],
     tagStyle: 'chain',
@@ -118,7 +118,11 @@ function IncludedPlanCard({ plan }) {
       )}
     >
       <h3 className="text-display-sm">{plan.name}</h3>
-      <p className="text-slate text-xs mt-2">{formatMoney(plan.price)} / mo</p>
+      <p className="text-slate text-xs mt-2">
+        {plan.billingCycle === 'custom'
+          ? 'Custom quote · priced by proposal'
+          : <>{formatMoney(plan.price, plan.currency || 'USD')} {plan.billingCycle === 'one_time' ? 'one-time' : `/ ${billingCycleLabel(plan.billingCycle)}`}</>}
+      </p>
       <div className="mt-6 flex-1">
         {!expanded && (
           <p className="text-slate text-xs leading-relaxed">
@@ -153,7 +157,7 @@ export default function GrowthSolutionsPage() {
   const dispatch = useDispatch();
   const [enquiryOpen, setEnquiryOpen] = useState(false);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['services', 'growth-paths', GROWTH_PATHS_SLUG],
     queryFn: () => contentApi.getServiceBySlug(GROWTH_PATHS_SLUG),
   });
@@ -162,6 +166,10 @@ export default function GrowthSolutionsPage() {
   const comparisonTable = growthService?.comparisonTable || [];
 
   const handleAddToCart = (plan) => {
+    if (!isPlanPurchasable(plan)) {
+      setEnquiryOpen(true);
+      return;
+    }
     dispatch(addItem({ service: growthService, plan, quantity: 1 }));
     toast.success(`${plan.name} added to cart`);
   };
@@ -287,6 +295,8 @@ export default function GrowthSolutionsPage() {
             <div className="flex justify-center py-24">
               <Spinner size={28} className="text-ultra" />
             </div>
+          ) : isError ? (
+            <QueryError title="Current growth plans are temporarily unavailable." onRetry={refetch} />
           ) : (
             <div className="mt-16 grid gap-6 lg:grid-cols-3 max-w-5xl mx-auto">
               {plans.map((plan, i) => (
@@ -317,10 +327,14 @@ export default function GrowthSolutionsPage() {
                   )}
                   <div className="mt-6 flex items-baseline gap-2">
                     <span className={cn('text-display-md num-plate', plan.isPopular ? 'text-ivory' : 'text-ink')}>
-                      {formatMoney(plan.price)}
+                      {plan.billingCycle === 'custom'
+                        ? 'Custom quote'
+                        : formatMoney(plan.price, plan.currency || 'USD')}
                     </span>
                     <span className={cn('text-mono text-xs uppercase', plan.isPopular ? 'text-ivory/60' : 'text-slate')}>
-                      / month
+                      {plan.billingCycle === 'custom'
+                        ? 'priced by proposal'
+                        : plan.billingCycle === 'one_time' ? 'one-time' : `/ ${billingCycleLabel(plan.billingCycle)}`}
                     </span>
                   </div>
                   <Button
@@ -329,8 +343,10 @@ export default function GrowthSolutionsPage() {
                     className="mt-8 w-full"
                     size="md"
                   >
-                    <ShoppingBag size={14} strokeWidth={1.5} />
-                    {plan.ctaLabel || 'Add to cart'}
+                    {plan.billingCycle === 'custom'
+                      ? <ArrowUpRight size={14} strokeWidth={1.5} />
+                      : <ShoppingBag size={14} strokeWidth={1.5} />}
+                    {plan.billingCycle === 'custom' ? 'Get a quote' : plan.ctaLabel || 'Add to cart'}
                   </Button>
                 </motion.div>
               ))}

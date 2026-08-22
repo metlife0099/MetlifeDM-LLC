@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, Check, Star, ShoppingBag } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
-import { Badge, Spinner } from '@/components/ui/index.jsx';
+import { Badge, QueryError, Spinner } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner, FaqAccordion, ProcessTimeline } from '@/components/sections/index.jsx';
@@ -12,12 +12,14 @@ import { contentApi } from '@/api/index.js';
 import { addItem } from '@/store/index.js';
 import { formatMoney } from '@/utils/format.js';
 import toast from 'react-hot-toast';
+import WishlistButton from '@/components/commerce/WishlistButton.jsx';
+import { sanitizeRichText } from '@/utils/sanitizeHtml.js';
 
 export default function ServiceDetailsPage() {
   const { slug } = useParams();
   const dispatch = useDispatch();
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['service', slug],
     queryFn: () => contentApi.getServiceBySlug(slug),
     enabled: !!slug,
@@ -31,6 +33,9 @@ export default function ServiceDetailsPage() {
     );
   }
 
+  if (error && error.response?.status !== 404) {
+    return <Section spacing="xl"><Container><QueryError title="This service could not be loaded." onRetry={refetch} /></Container></Section>;
+  }
   if (error || !data?.service) {
     return (
       <Section spacing="xl">
@@ -120,6 +125,7 @@ export default function ServiceDetailsPage() {
                 <Button to="/consultation" variant="ghost" size="lg" className="border-ivory/30 text-ivory hover:bg-ivory hover:text-ink">
                   Book a call
                 </Button>
+                <WishlistButton serviceId={service._id} inverse />
               </div>
             </div>
             {/* Right stats card */}
@@ -160,7 +166,7 @@ export default function ServiceDetailsPage() {
               <Eyebrow number="01">Overview</Eyebrow>
               <div
                 className="prose prose-lg max-w-none text-lg text-ink leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: service.description }}
+                dangerouslySetInnerHTML={{ __html: sanitizeRichText(service.description) }}
               />
             </div>
           </Container>

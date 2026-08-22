@@ -1,5 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
+import { usePublicSettings } from '@/providers/PublicSettingsProvider.jsx';
 
 /**
  * <SEO />
@@ -25,35 +26,16 @@ import { useLocation } from 'react-router-dom';
  *   />
  */
 
-// ————— Fallback defaults —————
-const DEFAULTS = {
-  siteName: 'MetlifeDM',
-  siteUrl: import.meta.env.VITE_SITE_URL || 'https://metlifedm.com',
-  defaultTitle: 'MetlifeDM · Digital marketing built for USA businesses',
-  titleTemplate: '%s · MetlifeDM',
-  defaultDescription:
-    'Independent digital marketing agency. SEO, PPC, content, and web — measurable results for growing USA businesses.',
-  defaultOgImage: '/og/default.jpg',
-  twitterHandle: '@metlifedm',
-  locale: 'en_US',
-  themeColor: '#0A1730',
-  keywords: 'digital marketing, SEO agency, PPC, content marketing, USA',
-  verification: {
-    google: import.meta.env.VITE_GOOGLE_SITE_VERIFICATION || undefined,
-    bing: import.meta.env.VITE_BING_SITE_VERIFICATION || undefined,
-  },
-};
-
 export default function SEO({
   title,
-  description = DEFAULTS.defaultDescription,
+  description,
   canonical,
   ogImage,
   ogType = 'website',
   keywords,
   noindex = false,
   nofollow = false,
-  author = DEFAULTS.siteName,
+  author,
   publishedTime,
   modifiedTime,
   article,       // { section, tag[], author }
@@ -61,18 +43,30 @@ export default function SEO({
   verification,  // { google, bing, yandex, pinterest } — overrides the env-driven site defaults below
   children,
 }) {
-  const finalVerification = { ...DEFAULTS.verification, ...verification };
+  const settings = usePublicSettings();
+  const siteUrl = (import.meta.env.VITE_SITE_URL || 'https://metlifedm.com').replace(/\/$/, '');
+  const finalDescription = description || settings.seo.defaultMetaDescription;
+  const finalAuthor = author || settings.site.name;
+  const finalVerification = {
+    google: import.meta.env.VITE_GOOGLE_SITE_VERIFICATION || undefined,
+    bing: import.meta.env.VITE_BING_SITE_VERIFICATION || undefined,
+    ...verification,
+  };
   const location = useLocation();
-  const path = location.pathname + location.search;
-  const canonicalUrl = `${DEFAULTS.siteUrl}${canonical || location.pathname}`;
+  const canonicalPath = canonical || location.pathname;
+  const canonicalUrl = canonicalPath.startsWith('http')
+    ? canonicalPath
+    : `${siteUrl}${canonicalPath.startsWith('/') ? '' : '/'}${canonicalPath}`;
 
   const finalTitle = title
-    ? DEFAULTS.titleTemplate.replace('%s', title)
-    : DEFAULTS.defaultTitle;
+    ? `${title} · ${settings.site.name}`
+    : settings.seo.defaultMetaTitle;
 
   const finalOgImage = ogImage
-    ? (ogImage.startsWith('http') ? ogImage : `${DEFAULTS.siteUrl}${ogImage}`)
-    : `${DEFAULTS.siteUrl}${DEFAULTS.defaultOgImage}`;
+    ? (ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage.startsWith('/') ? '' : '/'}${ogImage}`)
+    : (settings.seo.defaultOgImage.startsWith('http')
+        ? settings.seo.defaultOgImage
+        : `${siteUrl}${settings.seo.defaultOgImage.startsWith('/') ? '' : '/'}${settings.seo.defaultOgImage}`);
 
   const robotsContent = [
     noindex ? 'noindex' : 'index',
@@ -87,30 +81,32 @@ export default function SEO({
       {/* ————— Standard ————— */}
       <html lang="en" />
       <title>{finalTitle}</title>
-      <meta name="description" content={description} />
+      <meta name="description" content={finalDescription} />
       {keywords && <meta name="keywords" content={keywords} />}
-      {!keywords && <meta name="keywords" content={DEFAULTS.keywords} />}
-      <meta name="author" content={author} />
+      {!keywords && settings.seo.defaultKeywords.length > 0 && (
+        <meta name="keywords" content={settings.seo.defaultKeywords.join(', ')} />
+      )}
+      <meta name="author" content={finalAuthor} />
       <meta name="robots" content={robotsContent} />
       <meta name="googlebot" content={robotsContent} />
       <link rel="canonical" href={canonicalUrl} />
 
       {/* ————— Theme & viewport ————— */}
-      <meta name="theme-color" content={DEFAULTS.themeColor} />
+      <meta name="theme-color" content="#0A1730" />
       <meta name="format-detection" content="telephone=no" />
       <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
 
       {/* ————— Open Graph ————— */}
       <meta property="og:type" content={ogType} />
-      <meta property="og:title" content={title || DEFAULTS.defaultTitle} />
-      <meta property="og:description" content={description} />
+      <meta property="og:title" content={finalTitle} />
+      <meta property="og:description" content={finalDescription} />
       <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:site_name" content={DEFAULTS.siteName} />
-      <meta property="og:locale" content={DEFAULTS.locale} />
+      <meta property="og:site_name" content={settings.site.name} />
+      <meta property="og:locale" content="en_US" />
       <meta property="og:image" content={finalOgImage} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content={title || DEFAULTS.defaultTitle} />
+      <meta property="og:image:alt" content={title || settings.seo.defaultMetaTitle} />
 
       {/* ————— Article-specific OG (blog posts) ————— */}
       {ogType === 'article' && publishedTime && (
@@ -130,12 +126,12 @@ export default function SEO({
 
       {/* ————— Twitter Cards ————— */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:site" content={DEFAULTS.twitterHandle} />
-      <meta name="twitter:creator" content={DEFAULTS.twitterHandle} />
-      <meta name="twitter:title" content={title || DEFAULTS.defaultTitle} />
-      <meta name="twitter:description" content={description} />
+      <meta name="twitter:site" content={settings.seo.twitterHandle} />
+      <meta name="twitter:creator" content={settings.seo.twitterHandle} />
+      <meta name="twitter:title" content={finalTitle} />
+      <meta name="twitter:description" content={finalDescription} />
       <meta name="twitter:image" content={finalOgImage} />
-      <meta name="twitter:image:alt" content={title || DEFAULTS.defaultTitle} />
+      <meta name="twitter:image:alt" content={title || settings.seo.defaultMetaTitle} />
 
       {/* ————— Search engine verification ————— */}
       {finalVerification.google && (

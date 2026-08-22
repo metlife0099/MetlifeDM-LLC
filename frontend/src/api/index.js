@@ -1,10 +1,12 @@
 import apiClient, { unwrap, unwrapMeta } from './client.js';
 import { ENDPOINTS as E } from './endpoints.js';
+import { buildCouponPreviewPayload } from '@/utils/commerce.js';
 
 /* ===================== AUTH ===================== */
 export const authApi = {
   register: (data) => apiClient.post(E.auth.register, data).then(unwrap),
   login: (data) => apiClient.post(E.auth.login, data).then(unwrap),
+  session: () => apiClient.get(E.auth.session).then(unwrap),
   refresh: () => apiClient.post(E.auth.refresh).then(unwrap),
   logout: () => apiClient.post(E.auth.logout).then(unwrap),
   logoutAll: () => apiClient.post(E.auth.logoutAll).then(unwrap),
@@ -84,15 +86,24 @@ export const leadsApi = {
 
 /* ===================== COMMERCE ===================== */
 export const commerceApi = {
-  createOrder: (data) => apiClient.post(E.orders.create, data).then(unwrap),
+  createOrder: (data, idempotencyKey) => apiClient.post(
+    E.orders.create,
+    data,
+    { headers: idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : undefined }
+  ).then(unwrap),
   listMyOrders: (params) => apiClient.get(E.orders.mine, { params }).then(unwrapMeta),
   getOrder: (id) => apiClient.get(E.orders.byId(id)).then(unwrap),
+  resumeOrderPayment: (id) => apiClient.post(E.orders.resumePayment(id)).then(unwrap),
   confirmPayment: (id) => apiClient.post(E.orders.confirmPayment(id)).then(unwrap),
+  cancelSubscription: (id) => apiClient.post(E.orders.cancelSubscription(id)).then(unwrap),
+  resumeSubscription: (id) => apiClient.post(E.orders.resumeSubscription(id)).then(unwrap),
   cancelOrder: (id) => apiClient.post(E.orders.cancel(id)).then(unwrap),
   listMyPayments: (params) => apiClient.get(E.payments.mine, { params }).then(unwrapMeta),
   getPayment: (id) => apiClient.get(E.payments.byId(id)).then(unwrap),
   downloadInvoice: (id) => apiClient.get(E.payments.invoice(id), { responseType: 'blob' }),
-  validateCoupon: (code, subtotal) => apiClient.post(E.coupons.validate, { code, subtotal }).then(unwrap),
+  validateCoupon: (code, items) => apiClient
+    .post(E.coupons.validate, buildCouponPreviewPayload(code, items))
+    .then(unwrap),
 };
 
 /* ===================== CHAT + TICKETS ===================== */

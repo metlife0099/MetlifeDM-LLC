@@ -23,7 +23,8 @@ const registerSchema = z
       .min(8, 'At least 8 characters')
       .regex(/[A-Z]/, 'Include an uppercase letter')
       .regex(/[a-z]/, 'Include a lowercase letter')
-      .regex(/[0-9]/, 'Include a number'),
+      .regex(/[0-9]/, 'Include a number')
+      .regex(/[^A-Za-z0-9]/, 'Include a special character'),
     confirmPassword: z.string(),
     agreeTerms: z.literal(true, { errorMap: () => ({ message: 'Please accept the terms' }) }),
     subscribeNewsletter: z.boolean().optional(),
@@ -38,6 +39,7 @@ const strengthCheck = (pwd = '') => ({
   upper: /[A-Z]/.test(pwd),
   lower: /[a-z]/.test(pwd),
   number: /[0-9]/.test(pwd),
+  special: /[^A-Za-z0-9]/.test(pwd),
 });
 
 export default function RegisterPage() {
@@ -75,15 +77,12 @@ export default function RegisterPage() {
       acceptTerms: data.agreeTerms,
     };
 
-    console.log("REGISTER PAYLOAD:", payload);
-
     await registerApi(payload);
 
     toast.success("Account created. Please verify your email.");
 
     navigate(`/verify-email?email=${encodeURIComponent(data.email)}`);
   } catch (e) {
-    console.error(e);
     toast.error(getErrorMessage(e));
   } finally {
     setSubmitting(false);
@@ -134,7 +133,7 @@ export default function RegisterPage() {
           {password && (
             <div className="mt-3">
               <div className="flex gap-1 mb-2">
-                {[0, 1, 2, 3].map((i) => (
+                {[0, 1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
                     className={`h-1 flex-1 transition-colors ${
@@ -155,6 +154,7 @@ export default function RegisterPage() {
                   Uppercase: strength.upper,
                   Lowercase: strength.lower,
                   Number: strength.number,
+                  'Special character': strength.special,
                 }).map(([label, ok]) => (
                   <div key={label} className={`flex items-center gap-1 ${ok ? 'text-success' : 'text-slate'}`}>
                     <Check size={10} strokeWidth={ok ? 2 : 1} className={ok ? 'opacity-100' : 'opacity-30'} />

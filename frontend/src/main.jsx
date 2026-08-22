@@ -8,21 +8,30 @@ import { Toaster } from 'react-hot-toast';
 import App from './App.jsx';
 import { store } from '@/store/index.js';
 import QueryProvider from '@/providers/QueryProvider.jsx';
+import PublicSettingsProvider from '@/providers/PublicSettingsProvider.jsx';
 import SmoothScrollProvider from '@/providers/SmoothScrollProvider.jsx';
 import ErrorBoundary from '@/components/ui/ErrorBoundary.jsx';
 
 import './index.css';
 
-createRoot(document.getElementById('root')).render(
+const rootElement = document.getElementById('root');
+if (rootElement.dataset.staticShell !== undefined) {
+  rootElement.replaceChildren();
+  rootElement.removeAttribute('data-static-shell');
+}
+
+createRoot(rootElement).render(
   <StrictMode>
     <ErrorBoundary>
       <HelmetProvider>
         <ReduxProvider store={store}>
           <QueryProvider>
-            <BrowserRouter>
-              <SmoothScrollProvider>
-                <App />
-                <Toaster
+            <PublicSettingsProvider>
+              <BrowserRouter>
+                <a href="#main-content" className="skip-link">Skip to main content</a>
+                <SmoothScrollProvider>
+                  <App />
+                  <Toaster
                   position="bottom-center"
                   toastOptions={{
                     style: {
@@ -36,9 +45,10 @@ createRoot(document.getElementById('root')).render(
                     success: { iconTheme: { primary: '#1547FF', secondary: '#F5F1E8' } },
                     error: { iconTheme: { primary: '#DC2626', secondary: '#F5F1E8' } },
                   }}
-                />
-              </SmoothScrollProvider>
-            </BrowserRouter>
+                  />
+                </SmoothScrollProvider>
+              </BrowserRouter>
+            </PublicSettingsProvider>
           </QueryProvider>
         </ReduxProvider>
       </HelmetProvider>

@@ -138,6 +138,8 @@ export const ordersApi = {
   updateStatus: (id, status, note) =>
     apiClient.patch(E.orders.updateStatus(id), { status, note }).then(unwrap),
   refund: (id, data) => apiClient.post(E.orders.refund(id), data).then(unwrap),
+  manageSubscription: (id, data) =>
+    apiClient.patch(E.orders.manageSubscription(id), data).then(unwrap),
 };
 
 export const paymentsApi = {

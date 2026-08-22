@@ -2,21 +2,14 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Star, Quote } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
-import { Spinner } from '@/components/ui/index.jsx';
+import { QueryError, Spinner } from '@/components/ui/index.jsx';
 import Seo from '@/components/seo/Seo.jsx';
-import { CtaBanner, StatsBand } from '@/components/sections/index.jsx';
+import { CtaBanner } from '@/components/sections/index.jsx';
 import { contentApi } from '@/api/index.js';
 import { cn } from '@/utils/format.js';
 
-const STATS = [
-  { value: '4.9', label: 'Average rating', suffix: '★' },
-  { value: '10+', label: 'Real projects completed' },
-  { value: '95%', label: 'Retention rate' },
-  { value: '2-10', label: 'Team members', suffix: '' },
-];
-
 export default function TestimonialsPage() {
-  const { data: testimonials = [], isLoading } = useQuery({
+  const { data: testimonials = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['testimonials', 'all'],
     queryFn: () => contentApi.listTestimonials({ limit: 50 }).then((r) => r.data || r),
   });
@@ -41,12 +34,10 @@ export default function TestimonialsPage() {
             <span className="text-italic-fraunces text-ultra-soft">own words.</span>
           </h1>
           <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
-            No paraphrasing, no cropping. Every quote below comes from a real US business owner who agreed to be named — with the metric we moved for them attached.
+            Published client feedback appears with the attribution and project context each client approved for display.
           </p>
         </Container>
       </Section>
-
-      <StatsBand stats={STATS} />
 
       <Section tone="ivory" spacing="lg" divider={false}>
         <Container>
@@ -54,6 +45,8 @@ export default function TestimonialsPage() {
             <div className="flex justify-center py-24">
               <Spinner size={28} className="text-ultra" />
             </div>
+          ) : isError ? (
+            <QueryError title="Testimonials are temporarily unavailable." onRetry={refetch} />
           ) : testimonials.length === 0 ? (
             <div className="text-center py-24 text-slate">No testimonials yet.</div>
           ) : (

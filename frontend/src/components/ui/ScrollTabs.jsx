@@ -32,7 +32,6 @@ export default function ScrollTabs({ children, className, trackClassName }) {
       window.removeEventListener('resize', measure);
       ro.disconnect();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [measure, children]);
 
   const scroll = (dir) => trackRef.current?.scrollBy({ left: dir * 280, behavior: 'smooth' });

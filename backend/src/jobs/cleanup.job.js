@@ -1,6 +1,52 @@
 import cron from 'node-cron';
-import { User, Notification, AuditLog, Campaign } from '../models/index.js';
+import { User, Notification, AuditLog, Campaign, Order } from '../models/index.js';
 import logger from '../config/logger.js';
+import { cancelOrderPayment } from '../services/stripe.service.js';
+import { releaseCouponReservation } from '../services/coupon.service.js';
+import { ORDER_STATUS } from '../utils/constants.js';
+
+/**
+ * Cancel the provider object before releasing a timed-out coupon reservation.
+ * A failed Stripe cancellation intentionally leaves the reservation in place:
+ * capacity must never be reallocated while the old intent remains payable.
+ */
+export const expireAbandonedCheckouts = async (now = new Date()) => {
+  const orders = await Order.find({
+    paymentExpiresAt: { $lte: now },
+    status: { $in: [ORDER_STATUS.PENDING, ORDER_STATUS.FAILED] },
+  }).limit(100);
+  let expired = 0;
+  for (const order of orders) {
+    try {
+      await cancelOrderPayment(order);
+      const result = await Order.updateOne(
+        {
+          _id: order._id,
+          paymentExpiresAt: { $lte: now },
+          status: { $in: [ORDER_STATUS.PENDING, ORDER_STATUS.FAILED] },
+        },
+        {
+          $set: { status: ORDER_STATUS.FAILED },
+          $unset: { paymentExpiresAt: 1, paymentSetupLock: 1 },
+          $push: {
+            statusHistory: {
+              status: ORDER_STATUS.FAILED,
+              note: 'Checkout expired; start payment again to continue',
+              at: now,
+            },
+          },
+        }
+      );
+      if (result.modifiedCount) {
+        await releaseCouponReservation(order);
+        expired += 1;
+      }
+    } catch (error) {
+      logger.error(`Could not expire checkout ${order.orderNumber}: ${error.message}`);
+    }
+  }
+  return expired;
+};
 
 /**
  * Campaign sends run out-of-request in-process (no job queue). If the
@@ -31,6 +77,15 @@ export const recoverInterruptedCampaigns = async (staleAfterMs = 30 * 60 * 1000)
  * - Interrupted campaign sends stuck in 'sending'
  */
 export const startCleanupJob = () => {
+  cron.schedule('*/5 * * * *', async () => {
+    try {
+      const expired = await expireAbandonedCheckouts();
+      if (expired) logger.info(`Expired ${expired} abandoned checkout(s)`);
+    } catch (error) {
+      logger.error(`Checkout expiration failed: ${error.message}`);
+    }
+  });
+
   cron.schedule('0 3 * * *', async () => {
     try {
       const cutoff30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);

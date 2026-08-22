@@ -28,6 +28,8 @@ import { getPaginationOptions, paginate } from '../utils/pagination.js';
 import { ORDER_STATUS, PAYMENT_STATUS, USER_STATUS } from '../utils/constants.js';
 import emailService from '../services/email.service.js';
 import logger from '../config/logger.js';
+import { refundPayment } from '../services/stripe.service.js';
+import { revokeAllTokens } from '../services/auth.service.js';
 
 /* ────────────────────────────────────────────────────────────
  * Helpers
@@ -286,18 +288,35 @@ export const userUpdateRole = asyncHandler(async (req, res) => {
     throw ApiError.forbidden('Only super admins can change roles');
   }
   const { role } = req.body;
-  const u = await User.findByIdAndUpdate(req.params.id, { role }, { new: true }).select('-password');
+  if (req.user._id.toString() === req.params.id && role !== 'super_admin') {
+    throw ApiError.badRequest('You cannot demote your own account');
+  }
+  const u = await User.findByIdAndUpdate(
+    req.params.id,
+    { role },
+    { new: true, runValidators: true }
+  ).select('-password');
   if (!u) throw ApiError.notFound('User not found');
+  await revokeAllTokens(u._id);
   return ApiResponse.ok(res, u, 'Role updated');
 });
 
 export const userSuspend = asyncHandler(async (req, res) => {
+  const target = await User.findById(req.params.id);
+  if (!target) throw ApiError.notFound('User not found');
+  if (target._id.toString() === req.user._id.toString()) {
+    throw ApiError.badRequest('You cannot suspend your own account');
+  }
+  if (target.role === 'super_admin' && req.user.role !== 'super_admin') {
+    throw ApiError.forbidden('Only a super admin can suspend a super admin');
+  }
   const u = await User.findByIdAndUpdate(
     req.params.id,
     { status: USER_STATUS.SUSPENDED, suspensionReason: req.body.reason || 'Suspended by admin' },
-    { new: true }
+    { new: true, runValidators: true }
   ).select('-password');
   if (!u) throw ApiError.notFound('User not found');
+  await revokeAllTokens(u._id);
   return ApiResponse.ok(res, u, 'User suspended');
 });
 
@@ -305,7 +324,7 @@ export const userActivate = asyncHandler(async (req, res) => {
   const u = await User.findByIdAndUpdate(
     req.params.id,
     { status: USER_STATUS.ACTIVE, suspensionReason: null },
-    { new: true }
+    { new: true, runValidators: true }
   ).select('-password');
   if (!u) throw ApiError.notFound('User not found');
   return ApiResponse.ok(res, u, 'User activated');
@@ -372,21 +391,33 @@ export const testEmail = asyncHandler(async (req, res) => {
  * ORDERS · refund helper
  * ──────────────────────────────────────────────────────────── */
 export const orderRefund = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(req.params.id).populate('payment');
   if (!order) throw ApiError.notFound('Order not found');
-  order.status = ORDER_STATUS.REFUNDED;
-  order.refundedAt = new Date();
-  order.refundReason = req.body.reason;
-  order.refundedAmount = req.body.amount || order.total;
-  order.timeline = order.timeline || [];
-  order.timeline.push({
-    event: 'Refund issued',
-    note: req.body.reason,
-    at: new Date(),
-    by: req.user._id,
+  const payment = order.payment || await Payment.findOne({ order: order._id }).sort({ paidAt: -1 });
+  if (!payment) throw ApiError.badRequest('No payment is linked to this order');
+
+  const result = await refundPayment({
+    paymentId: payment._id,
+    amount: req.body.amount,
+    reason: req.body.reason,
+    refundRequestId: req.body.idempotencyKey,
+    actor: req.user._id,
   });
-  await order.save();
-  return ApiResponse.ok(res, order, 'Refund initiated');
+  const refund = {
+    id: result.refund.id,
+    amount: result.refund.amount / 100,
+    status: result.refund.status,
+  };
+  return ApiResponse.ok(
+    res,
+    {
+      order: result.order,
+      payment: result.payment,
+      refund,
+      stripeRefundId: result.refund.id,
+    },
+    result.refund.status === 'succeeded' ? 'Refund processed' : 'Refund submitted'
+  );
 });
 
 /* ────────────────────────────────────────────────────────────
@@ -395,12 +426,11 @@ export const orderRefund = asyncHandler(async (req, res) => {
 export const ticketReply = asyncHandler(async (req, res) => {
   const t = await Ticket.findById(req.params.id);
   if (!t) throw ApiError.notFound('Ticket not found');
-  t.messages = t.messages || [];
-  t.messages.push({
+  t.replies.push({
     author: req.user._id,
+    authorType: 'agent',
     content: req.body.content,
     isInternal: !!req.body.isInternal,
-    createdAt: new Date(),
   });
   await t.save();
   return ApiResponse.ok(res, t, 'Reply sent');
@@ -410,17 +440,26 @@ export const ticketUpdateStatus = asyncHandler(async (req, res) => {
   const t = await Ticket.findByIdAndUpdate(
     req.params.id,
     { status: req.body.status },
-    { new: true }
+    { new: true, runValidators: true }
   );
   if (!t) throw ApiError.notFound('Ticket not found');
   return ApiResponse.ok(res, t, 'Status updated');
 });
 
 export const ticketAssign = asyncHandler(async (req, res) => {
+  const assigneeId = req.body.assigneeId || null;
+  if (assigneeId) {
+    const assignee = await User.findOne({
+      _id: assigneeId,
+      role: { $in: ['super_admin', 'admin', 'manager'] },
+      status: USER_STATUS.ACTIVE,
+    });
+    if (!assignee) throw ApiError.badRequest('Assignee must be an active staff user');
+  }
   const t = await Ticket.findByIdAndUpdate(
     req.params.id,
-    { assignedTo: req.body.assigneeId || null },
-    { new: true }
+    { assignedTo: assigneeId },
+    { new: true, runValidators: true }
   ).populate('assignedTo', 'firstName lastName email');
   if (!t) throw ApiError.notFound('Ticket not found');
   return ApiResponse.ok(res, t, 'Ticket assigned');
@@ -429,11 +468,11 @@ export const ticketAssign = asyncHandler(async (req, res) => {
 export const ticketAddNote = asyncHandler(async (req, res) => {
   const t = await Ticket.findById(req.params.id);
   if (!t) throw ApiError.notFound('Ticket not found');
-  t.notes = t.notes || [];
-  t.notes.push({
+  t.replies.push({
     author: req.user._id,
+    authorType: 'agent',
     content: req.body.note,
-    createdAt: new Date(),
+    isInternal: true,
   });
   await t.save();
   return ApiResponse.ok(res, t, 'Note added');

@@ -46,10 +46,12 @@ export const wishlistSchema = z.object({ serviceId: objectId });
 export const adminUpdateUserSchema = z.object({
   role: z.enum(Object.values(USER_ROLES)).optional(),
   status: z.enum(Object.values(USER_STATUS)).optional(),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  phone: z.string().optional(),
+  firstName: z.string().trim().min(2).max(60).optional(),
+  lastName: z.string().trim().min(2).max(60).optional(),
+  phone: z.string().trim().max(30).optional(),
 });
+
+export const roleUpdateSchema = z.object({ role: z.enum(Object.values(USER_ROLES)) });
 
 export const listQuerySchema = z.object({
   page: z.coerce.number().optional(),

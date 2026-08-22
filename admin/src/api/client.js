@@ -8,17 +8,30 @@ const KEYS = {
   USER: 'mdm_admin_user',
 };
 
-let accessToken =
+const storedLocalToken =
   typeof window !== 'undefined' ? localStorage.getItem(KEYS.ACCESS) : null;
+const storedSessionToken =
+  typeof window !== 'undefined' ? sessionStorage.getItem(KEYS.ACCESS) : null;
+let accessToken = storedLocalToken || storedSessionToken;
+let accessTokenPersistent = !!storedLocalToken;
 
-export const setAccessToken = (t) => {
+export const setAccessToken = (t, persistent) => {
   accessToken = t;
   if (typeof window === 'undefined') return;
-  if (t) localStorage.setItem(KEYS.ACCESS, t);
-  else localStorage.removeItem(KEYS.ACCESS);
+  if (typeof persistent === 'boolean') accessTokenPersistent = persistent;
+  if (t) {
+    const target = accessTokenPersistent ? localStorage : sessionStorage;
+    const other = accessTokenPersistent ? sessionStorage : localStorage;
+    target.setItem(KEYS.ACCESS, t);
+    other.removeItem(KEYS.ACCESS);
+  } else {
+    localStorage.removeItem(KEYS.ACCESS);
+    sessionStorage.removeItem(KEYS.ACCESS);
+  }
 };
 
 export const getAccessToken = () => accessToken;
+export const isAccessTokenPersistent = () => accessTokenPersistent;
 
 /* ————— Axios instance ————— */
 export const apiClient = axios.create({
@@ -67,6 +80,7 @@ apiClient.interceptors.response.use(
       } catch {
         setAccessToken(null);
         localStorage.removeItem(KEYS.USER);
+        sessionStorage.removeItem(KEYS.USER);
         window.dispatchEvent(new Event('admin:logout'));
         return Promise.reject(error);
       }

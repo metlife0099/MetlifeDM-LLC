@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, ImageOff } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
-import { Badge } from '@/components/ui/index.jsx';
+import { Badge, QueryError } from '@/components/ui/index.jsx';
 import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
@@ -20,7 +20,7 @@ function ItemSkeleton() {
 export default function PortfolioPage() {
   const [category, setCategory] = useState('');
 
-  const { data: items = [], isLoading } = useQuery({
+  const { data: items = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['portfolio', 'list', category],
     queryFn: () =>
       contentApi.listPortfolio({ category: category || undefined, limit: 24 }).then((r) => r.data),
@@ -51,7 +51,7 @@ export default function PortfolioPage() {
             <span className="text-italic-fraunces text-ultra-soft">worth the receipt.</span>
           </h1>
           <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
-            A cross-section of websites, ad creative, and full brand systems we&apos;ve shipped since day one. Every one has real KPIs attached.
+            A cross-section of websites, ad creative, and brand systems, with project context and approved outcomes where available.
           </p>
         </Container>
       </Section>
@@ -93,6 +93,8 @@ export default function PortfolioPage() {
             <div className="grid gap-10 md:grid-cols-2">
               {Array.from({ length: 4 }).map((_, i) => <ItemSkeleton key={i} />)}
             </div>
+          ) : isError ? (
+            <QueryError title="Portfolio work is temporarily unavailable." onRetry={refetch} />
           ) : items.length === 0 ? (
             <div className="max-w-md mx-auto text-center py-20 border border-hairline bg-white px-8">
               <div className="w-14 h-14 mx-auto grid place-items-center bg-sand text-slate">

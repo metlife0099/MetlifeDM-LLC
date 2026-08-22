@@ -9,8 +9,9 @@ const router = Router();
 
 router.post('/register', authLimiter, validate(v.registerSchema), c.register);
 router.post('/login', authLimiter, validate(v.loginSchema), c.login);
-router.post('/refresh', validate(v.refreshSchema), c.refresh);
-router.post('/logout', requireAuth, c.logout);
+router.get('/session', c.session);
+router.post('/refresh', authLimiter, validate(v.refreshSchema), c.refresh);
+router.post('/logout', authLimiter, c.logout);
 router.post('/logout-all', requireAuth, c.logoutAll);
 
 router.post('/verify-email', validate(v.verifyEmailSchema), c.verifyEmail);

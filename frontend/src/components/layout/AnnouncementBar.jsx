@@ -6,7 +6,7 @@ import { TICKER_ITEMS } from '@/utils/constants.js';
 export default function AnnouncementBar() {
   const dispatch = useDispatch();
   const dismissed = useSelector((s) => s.ui.announcementDismissed);
-  if (dismissed) return null;
+  if (dismissed || import.meta.env.VITE_ENABLE_ANNOUNCEMENT === 'false') return null;
 
   return (
     <div className="relative bg-ink text-ivory overflow-hidden">

@@ -9,17 +9,23 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
-import { Spinner } from '@/components/ui/index.jsx';
+import { QueryError, Spinner } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { contentApi } from '@/api/index.js';
 import PricingEnquiryModal from '@/components/sections/PricingEnquiryModal.jsx';
 import { addItem } from '@/store/index.js';
-import { formatMoney } from '@/utils/format.js';
-import { cn } from '@/utils/format.js';
+import { billingCycleLabel } from '@/utils/commerce.js';
+import { cn, formatMoney } from '@/utils/format.js';
 
 const SEO_SLUG = 'search-engine-optimization-seo';
 const DIAGNOSTIC_SLUG = 'metlifedm-seo-diagnostic';
+
+const formatPlanFee = (plan) => {
+  if (!plan) return 'View current plans';
+  const cadence = plan.billingCycle === 'one_time' ? ' one-time' : `/${billingCycleLabel(plan.billingCycle)}`;
+  return `${formatMoney(plan.price, plan.currency || 'USD')}${cadence}`;
+};
 
 /* ---- Page-level narrative content, keyed by plan name — the plan's price/
  * features/tagline live in the database (admin-editable); "best for" and
@@ -40,7 +46,6 @@ const FOCUS = {
 const ENTERPRISE_CARD = {
   name: 'Search Enterprise',
   tagline: 'Custom strategy. Custom infrastructure. Custom investment.',
-  startingFrom: 2500,
   ctaLabel: 'Talk to Sales',
   features: [
     'National SEO', 'International SEO', 'Multi-location SEO', 'E-commerce SEO', 'SaaS SEO',
@@ -61,10 +66,10 @@ const DIFFERENTIATOR_CHAIN = [
 
 /* ---- Which one is right for me? ---- */
 const SELF_SELECTION = [
-  { situation: "My website exists, but I'm not really being found.", plan: 'Search Foundation', price: '$399', href: '#pricing' },
-  { situation: "We're getting some visibility, but we need more qualified traffic and enquiries.", plan: 'Search Growth', price: '$699', href: '#pricing', popular: true },
-  { situation: 'Organic search is strategically important to our business and we want a serious long-term system.', plan: 'Search Partnership', price: '$1,299', href: '#pricing' },
-  { situation: 'We’re operating across multiple markets, locations or a large website.', plan: 'Search Enterprise', price: 'Custom', href: '#pricing' },
+  { situation: "My website exists, but I'm not really being found.", plan: 'Search Foundation', href: '#pricing' },
+  { situation: "We're getting some visibility, but we need more qualified traffic and enquiries.", plan: 'Search Growth', href: '#pricing', popular: true },
+  { situation: 'Organic search is strategically important to our business and we want a serious long-term system.', plan: 'Search Partnership', href: '#pricing' },
+  { situation: 'We’re operating across multiple markets, locations or a large website.', plan: 'Search Enterprise', href: '#pricing' },
 ];
 
 /* ---- The MetlifeDM SEO Diagnostic — what it analyzes ---- */
@@ -126,8 +131,9 @@ const AGENCY_COMPARISON = [
  * the pattern established across the site's other pricing cards, plus the
  * "Best for" and "Focus" context this page's plans specifically need.
  */
-function SeoPlanCard({ name, price, priceLabel, tagline, features, isPopular, ctaLabel, onAction }) {
+function SeoPlanCard({ name, price, priceLabel, billingCycle, tagline, features, isPopular, ctaLabel, onAction }) {
   const [expanded, setExpanded] = useState(false);
+  const quoteOnly = billingCycle === 'custom' || price == null;
   const teaserCount = 3;
   const teaser = features.slice(0, teaserCount).join(' → ');
   const remaining = features.length - teaserCount;
@@ -157,10 +163,12 @@ function SeoPlanCard({ name, price, priceLabel, tagline, features, isPopular, ct
 
       <div className="mt-6 flex items-baseline gap-2">
         <span className={cn('text-display-md num-plate', isPopular ? 'text-ivory' : 'text-ink')}>
-          {price ? formatMoney(price) : priceLabel}
+          {quoteOnly ? priceLabel || 'Custom quote' : formatMoney(price)}
         </span>
         <span className={cn('text-mono text-xs uppercase', isPopular ? 'text-ivory/60' : 'text-slate')}>
-          {price ? '/ month' : `starting from ${formatMoney(ENTERPRISE_CARD.startingFrom)}/mo`}
+          {quoteOnly
+            ? 'scoped to your requirements'
+            : billingCycle === 'one_time' ? 'one-time' : `/ ${billingCycleLabel(billingCycle)}`}
         </span>
       </div>
 
@@ -218,8 +226,8 @@ function SeoPlanCard({ name, price, priceLabel, tagline, features, isPopular, ct
         className="mt-8 w-full"
         size="md"
       >
-        {price && <ShoppingBag size={14} strokeWidth={1.5} />}
-        {ctaLabel}
+        {!quoteOnly && <ShoppingBag size={14} strokeWidth={1.5} />}
+        {quoteOnly ? 'Get a quote' : ctaLabel || 'Add to cart'}
       </Button>
     </div>
   );
@@ -229,7 +237,7 @@ export default function SeoPricingPage() {
   const dispatch = useDispatch();
   const [enquiryOpen, setEnquiryOpen] = useState(false);
 
-  const { data: seoData, isLoading } = useQuery({
+  const { data: seoData, isLoading, isError, refetch } = useQuery({
     queryKey: ['services', 'seo-pricing', SEO_SLUG],
     queryFn: () => contentApi.getServiceBySlug(SEO_SLUG),
   });
@@ -245,6 +253,10 @@ export default function SeoPricingPage() {
   const diagnosticPlan = diagnosticService?.pricingPlans?.[0];
 
   const handleAddToCart = (service, plan) => {
+    if (plan.billingCycle === 'custom') {
+      setEnquiryOpen(true);
+      return;
+    }
     dispatch(addItem({ service, plan, quantity: 1 }));
     toast.success(`${plan.name} added to cart`);
   };
@@ -326,6 +338,8 @@ export default function SeoPricingPage() {
             <div className="flex justify-center py-24">
               <Spinner size={28} className="text-ultra" />
             </div>
+          ) : isError ? (
+            <QueryError title="Current SEO plans are temporarily unavailable." onRetry={refetch} />
           ) : (
             <div className="mt-16 grid gap-6 lg:grid-cols-4">
               {plans.map((plan, i) => (
@@ -339,6 +353,7 @@ export default function SeoPricingPage() {
                   <SeoPlanCard
                     name={plan.name}
                     price={plan.price}
+                    billingCycle={plan.billingCycle}
                     tagline={plan.tagline}
                     features={(plan.features || []).map((f) => f.label)}
                     isPopular={plan.isPopular}
@@ -356,7 +371,7 @@ export default function SeoPricingPage() {
                 <SeoPlanCard
                   name={ENTERPRISE_CARD.name}
                   price={null}
-                  priceLabel="Custom"
+                  priceLabel="Custom quote"
                   tagline={ENTERPRISE_CARD.tagline}
                   features={ENTERPRISE_CARD.features}
                   isPopular={false}
@@ -455,7 +470,7 @@ export default function SeoPricingPage() {
                         className={cn('text-center py-4 px-4 align-bottom min-w-[9rem]', plan.isPopular && 'bg-sand')}
                       >
                         <div className="text-ink text-base font-medium">{plan.name}</div>
-                        <div className="text-slate text-xs mt-1">{formatMoney(plan.price)}/mo</div>
+                        <div className="text-slate text-xs mt-1">{formatPlanFee(plan)}</div>
                         {plan.isPopular && (
                           <div className="inline-flex items-center gap-1 mt-1.5 text-mono text-[0.6rem] uppercase tracking-widest text-ultra">
                             <Star size={9} strokeWidth={0} className="fill-current" /> Most popular
@@ -546,7 +561,8 @@ export default function SeoPricingPage() {
                     {s.popular && <Star size={10} strokeWidth={0} className="fill-current text-ultra-soft" />}
                   </div>
                   <div className="text-ultra-soft text-xs mt-1 flex items-center gap-1 justify-end">
-                    {s.price} <ArrowUpRight size={11} strokeWidth={1.5} className="group-hover:translate-x-0.5 transition-transform" />
+                    {formatPlanFee(plans.find((plan) => plan.name === s.plan))}{' '}
+                    <ArrowUpRight size={11} strokeWidth={1.5} className="group-hover:translate-x-0.5 transition-transform" />
                   </div>
                 </div>
               </motion.a>
@@ -577,12 +593,13 @@ export default function SeoPricingPage() {
               </p>
 
               <div className="mt-10 flex items-baseline gap-2">
-                <span className="text-display-md num-plate">{diagnosticPlan ? formatMoney(diagnosticPlan.price) : '$199'}</span>
+                <span className="text-display-md num-plate">
+                  {diagnosticPlan ? formatMoney(diagnosticPlan.price, diagnosticPlan.currency || 'USD') : 'Current price unavailable'}
+                </span>
                 <span className="text-mono text-xs uppercase text-slate">one-time</span>
               </div>
               <p className="text-slate text-sm mt-3 max-w-md leading-relaxed">
-                Move forward with a Search Growth ($699+) engagement, and your $199 diagnostic fee is credited
-                toward your first month.
+                Any follow-on service credit will be stated explicitly in your written proposal; it is not assumed at checkout.
               </p>
 
               <Button

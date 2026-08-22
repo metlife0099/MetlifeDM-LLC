@@ -4,9 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { MapPin, Clock, ArrowUpRight, Briefcase } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
-import { Spinner, Badge } from '@/components/ui/index.jsx';
+import { QueryError, Spinner } from '@/components/ui/index.jsx';
 import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
-import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
 import { leadsApi } from '@/api/index.js';
@@ -35,7 +34,7 @@ const VALUES = [
 export default function CareersPage() {
   const [dept, setDept] = useState('all');
 
-  const { data: jobs = [], isLoading } = useQuery({
+  const { data: jobs = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['careers', 'list', dept],
     queryFn: () =>
       leadsApi
@@ -115,6 +114,8 @@ export default function CareersPage() {
 
           {isLoading ? (
             <div className="flex justify-center py-24"><Spinner size={28} className="text-ultra" /></div>
+          ) : isError ? (
+            <QueryError title="Open roles could not be loaded." onRetry={refetch} />
           ) : jobs.length === 0 ? (
             <div className="text-center py-24">
               <Briefcase size={32} strokeWidth={1} className="text-slate mx-auto mb-4" />

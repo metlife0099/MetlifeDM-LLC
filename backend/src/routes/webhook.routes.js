@@ -1,5 +1,4 @@
-import { Router } from 'express';
-import express from 'express';
+import { Router, raw } from 'express';
 import asyncHandler from '../utils/asyncHandler.js';
 import ApiResponse from '../utils/ApiResponse.js';
 import ApiError from '../utils/ApiError.js';
@@ -12,7 +11,7 @@ const router = Router();
 
 router.post(
   '/stripe',
-  express.raw({ type: 'application/json' }),
+  raw({ type: 'application/json' }),
   asyncHandler(async (req, res) => {
     const signature = req.headers['stripe-signature'];
     if (!signature) throw ApiError.badRequest('Missing Stripe signature');

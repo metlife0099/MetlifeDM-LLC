@@ -6,10 +6,11 @@
   "description": "MetlifeDM LLC — Public Marketing Site (React 19 + Vite 6 + Tailwind v4)",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/generate-static-pages.mjs",
     "preview": "vite preview",
-    "lint": "eslint . --ext .js,.jsx",
-    "lint:fix": "eslint . --ext .js,.jsx --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "node --test --test-isolation=none",
     "format": "prettier --write \"src/**/*.{js,jsx,css}\""
   },
   "dependencies": {
@@ -22,6 +23,7 @@
     "@tanstack/react-query-devtools": "^5.62.16",
     "axios": "^1.7.9",
     "clsx": "^2.1.1",
+    "dompurify": "^3.2.6",
     "framer-motion": "^11.15.0",
     "gsap": "^3.12.5",
     "lottie-react": "^2.4.0",

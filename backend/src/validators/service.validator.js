@@ -1,8 +1,36 @@
 import { z } from 'zod';
 
-export const serviceCreateSchema = z.object({
+const currencyAmount = z.number().nonnegative().max(999999.99).refine(
+  (value) => Math.abs(value * 100 - Math.round(value * 100)) < 1e-8,
+  'Amount must have at most two decimal places'
+);
+
+const optionalStripeId = (prefix) => z.preprocess(
+  (value) => (value === '' || value === null ? undefined : value),
+  z.string().regex(new RegExp(`^${prefix}_[A-Za-z0-9]+$`), `Invalid Stripe ${prefix} ID`).optional()
+);
+
+const pricingPlanSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  tagline: z.string().max(200).optional(),
+  price: currencyAmount,
+  compareAtPrice: currencyAmount.optional(),
+  currency: z.string().trim().transform((value) => value.toUpperCase())
+    .refine((value) => value === 'USD', 'Only USD plans can be published for online checkout')
+    .optional(),
+  billingCycle: z.enum(['one_time', 'monthly', 'quarterly', 'yearly', 'custom']).optional(),
+  stripePriceId: optionalStripeId('price'),
+  stripeProductId: optionalStripeId('prod'),
+  features: z.array(z.object({ label: z.string(), included: z.boolean().optional() })).optional(),
+  isPopular: z.boolean().optional(),
+  ctaLabel: z.string().max(80).optional(),
+  deliveryTimeDays: z.number().int().nonnegative().optional(),
+  revisions: z.number().int().nonnegative().optional(),
+});
+
+const serviceFields = z.object({
   title: z.string().min(3).max(140),
-  subtitle: z.string().optional(),
+  subtitle: z.string().max(200).optional(),
   shortDescription: z.string().min(10).max(320),
   description: z.string().min(20),
   category: z.enum([
@@ -19,19 +47,7 @@ export const serviceCreateSchema = z.object({
   process: z.array(z.object({ order: z.number(), title: z.string(), description: z.string().optional(), icon: z.string().optional(), duration: z.string().optional() })).optional(),
   deliverables: z.array(z.string()).optional(),
   faqs: z.array(z.object({ question: z.string(), answer: z.string(), order: z.number().optional() })).optional(),
-  pricingPlans: z.array(z.object({
-    name: z.string(),
-    tagline: z.string().optional(),
-    price: z.number().nonnegative(),
-    compareAtPrice: z.number().optional(),
-    currency: z.string().optional(),
-    billingCycle: z.enum(['one_time', 'monthly', 'quarterly', 'yearly', 'custom']).optional(),
-    features: z.array(z.object({ label: z.string(), included: z.boolean().optional() })).optional(),
-    isPopular: z.boolean().optional(),
-    ctaLabel: z.string().optional(),
-    deliveryTimeDays: z.number().optional(),
-    revisions: z.number().optional(),
-  })).optional(),
+  pricingPlans: z.array(pricingPlanSchema).max(20).optional(),
   comparisonTable: z.array(z.object({
     feature: z.string(),
     values: z.array(z.string()).optional(),
@@ -48,4 +64,19 @@ export const serviceCreateSchema = z.object({
   }).optional(),
 });
 
-export const serviceUpdateSchema = serviceCreateSchema.partial();
+const requireStripePricesWhenPublished = (data, context) => {
+  if (data.isPublished === false || !data.pricingPlans) return;
+  data.pricingPlans.forEach((plan, index) => {
+    const recurring = !['one_time', 'custom'].includes(plan.billingCycle || 'monthly');
+    if (recurring && !plan.stripePriceId) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['pricingPlans', index, 'stripePriceId'],
+        message: 'Published recurring plans require a Stripe price ID',
+      });
+    }
+  });
+};
+
+export const serviceCreateSchema = serviceFields.superRefine(requireStripePricesWhenPublished);
+export const serviceUpdateSchema = serviceFields.partial().superRefine(requireStripePricesWhenPublished);

@@ -256,8 +256,8 @@ const PLATFORMS = [
 
 const PLATFORM_STATS = [
   { value: '10+', label: 'Projects delivered' },
-  { value: '98%', label: 'Satisfaction' },
-  { value: '24/7', label: 'Support' },
+  { value: 'Mobile', label: 'Responsive by default' },
+  { value: 'Scoped', label: 'Support & maintenance' },
 ];
 
 export const PlatformShowcase = () => (
@@ -344,7 +344,7 @@ export const PlatformShowcase = () => (
 
 /* ================== 3. BUILDER FEATURES (bento) ================== */
 const BUILDER_FEATURES = [
-  { icon: LayoutTemplate, title: 'WordPress-like CMS', desc: 'Create beautiful, content-rich websites with our easy-to-use content management system.' },
+  { icon: LayoutTemplate, title: 'Content management', desc: 'Choose an established CMS or a custom editing workflow that fits your team.' },
   { icon: ShoppingCart, title: 'E-commerce Solutions', desc: 'Build powerful online stores with shopping carts, payment gateways, and inventory management.' },
   { icon: Code2, title: 'Custom Development', desc: 'Tailored solutions designed specifically for your unique business requirements.' },
   { icon: Smartphone, title: 'Mobile Responsive', desc: 'Fully responsive designs that look perfect on any device, from desktop to mobile.' },
@@ -352,25 +352,25 @@ const BUILDER_FEATURES = [
   { icon: Search, title: 'SEO Optimized', desc: 'Websites built with SEO best practices to help you rank higher in search results.' },
 ];
 
-const BUILDER_CHECKLIST = ['Pre-designed templates', 'Customizable components', 'Real-time preview'];
+const BUILDER_CHECKLIST = ['Structured discovery', 'Collaborative design reviews', 'Private staging preview'];
 
 export const BuilderFeatures = () => (
   <Section tone="ivory" spacing="lg">
     <Container>
       <div className="max-w-2xl mb-14">
-        <Eyebrow number="06">Website builder</Eyebrow>
+        <Eyebrow number="06">Website delivery</Eyebrow>
         <h2 className="text-display-lg mt-4">
-          Unleash a jaw-dropping<br />
-          website <span className="text-italic-fraunces text-ultra">with ease.</span>
+          A website built around<br />
+          your <span className="text-italic-fraunces text-ultra">actual workflow.</span>
         </h2>
         <p className="text-slate text-lg mt-6 leading-relaxed">
-          Our platform makes website creation as simple as WordPress and Shopify, but with the power of custom
-          development.
+          We design and build client websites with established platforms or custom development. This is a managed
+          service, not a self-serve website-builder product.
         </p>
       </div>
 
       <div className="space-y-6">
-        {/* Highlighted drag & drop builder card */}
+        {/* Highlighted delivery-workflow card */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -382,10 +382,9 @@ export const BuilderFeatures = () => (
             <div className="w-12 h-12 grid place-items-center bg-ultra text-ivory mb-6">
               <Wand2 size={20} strokeWidth={1.5} />
             </div>
-            <h3 className="text-display-sm">Drag &amp; Drop Website Builder</h3>
+            <h3 className="text-display-sm">Collaborative website build</h3>
             <p className="text-ivory/70 text-sm mt-3 leading-relaxed max-w-sm">
-              Create stunning websites without writing a single line of code. Our intuitive interface makes web
-              design accessible to everyone.
+              We handle implementation while your team reviews structure, design, and content at clear checkpoints.
             </p>
             <ul className="mt-6 space-y-2.5">
               {BUILDER_CHECKLIST.map((t) => (
@@ -397,14 +396,14 @@ export const BuilderFeatures = () => (
             </ul>
           </div>
 
-          {/* Mock builder UI */}
+          {/* Illustrative project-delivery preview */}
           <div className="border border-ivory/15 bg-ivory/5 rounded-sm overflow-hidden">
             <div className="flex items-center gap-1.5 px-4 py-3 border-b border-ivory/10">
               <span className="w-2 h-2 rounded-full bg-ivory/30" />
               <span className="w-2 h-2 rounded-full bg-ivory/30" />
               <span className="w-2 h-2 rounded-full bg-ivory/30" />
               <span className="ml-3 text-mono text-[0.6rem] text-ivory/40 uppercase tracking-widest">
-                Website Builder Interface
+                Project delivery preview
               </span>
             </div>
             <div className="grid grid-cols-4 gap-2.5 p-5">

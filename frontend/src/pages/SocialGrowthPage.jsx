@@ -11,17 +11,23 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
-import { Spinner } from '@/components/ui/index.jsx';
+import { QueryError, Spinner } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { contentApi } from '@/api/index.js';
 import PricingEnquiryModal from '@/components/sections/PricingEnquiryModal.jsx';
 import { addItem } from '@/store/index.js';
-import { formatMoney } from '@/utils/format.js';
-import { cn } from '@/utils/format.js';
+import { billingCycleLabel } from '@/utils/commerce.js';
+import { cn, formatMoney } from '@/utils/format.js';
 
 const SOCIAL_SLUG = 'social-media-marketing-advertising';
 const DIAGNOSTIC_SLUG = 'metlifedm-social-growth-diagnostic';
+
+const formatPlanFee = (plan) => {
+  if (!plan) return 'Contact us';
+  const cadence = plan.billingCycle === 'one_time' ? ' one-time' : `/${billingCycleLabel(plan.billingCycle)}`;
+  return `${formatMoney(plan.price, plan.currency || 'USD')}${cadence}`;
+};
 
 /* ---- Hero — the journey social should actually drive ---- */
 const HERO_CHAIN = [
@@ -62,7 +68,6 @@ const FOCUS = {
 const ENTERPRISE_CARD = {
   name: 'Social Enterprise',
   tagline: 'Custom strategy. Custom creative. Custom infrastructure.',
-  startingFrom: 2500,
   ctaLabel: 'Talk to Sales',
   features: [
     'Multiple brands', 'Multiple countries', 'Multiple platforms', 'High-volume content',
@@ -130,21 +135,13 @@ const DONT_PROMISE = [
   'Posting just to “stay active”', 'Random trends that damage brand positioning',
 ];
 
-/* ---- Final pricing recap ---- */
-const FINAL_PRICING = [
-  { plan: 'Social Foundation', fee: '$349/mo' },
-  { plan: 'Social Growth', fee: '$599/mo', popular: true },
-  { plan: 'Social Partnership', fee: '$1,199/mo' },
-  { plan: 'Social Enterprise', fee: 'Custom — from $2,500/mo' },
-  { plan: 'Social Growth Diagnostic', fee: '$149 one-time' },
-];
-
 /**
  * One Social Growth plan card — collapsed feature list (teaser + expand),
  * plus the "Best for" and "Focus" context this page's plans need.
  */
-function SocialPlanCard({ name, price, priceLabel, tagline, features, isPopular, ctaLabel, onAction }) {
+function SocialPlanCard({ name, price, priceLabel, billingCycle, tagline, features, isPopular, ctaLabel, onAction }) {
   const [expanded, setExpanded] = useState(false);
+  const quoteOnly = billingCycle === 'custom' || price == null;
   const teaserCount = 3;
   const teaser = features.slice(0, teaserCount).join(' → ');
   const remaining = features.length - teaserCount;
@@ -174,10 +171,12 @@ function SocialPlanCard({ name, price, priceLabel, tagline, features, isPopular,
 
       <div className="mt-6 flex items-baseline gap-2">
         <span className={cn('text-display-md num-plate', isPopular ? 'text-ivory' : 'text-ink')}>
-          {price ? formatMoney(price) : priceLabel}
+          {quoteOnly ? priceLabel || 'Custom quote' : formatMoney(price)}
         </span>
         <span className={cn('text-mono text-xs uppercase', isPopular ? 'text-ivory/60' : 'text-slate')}>
-          {price ? '/ month' : `starting from ${formatMoney(ENTERPRISE_CARD.startingFrom)}/mo`}
+          {quoteOnly
+            ? 'scoped to your requirements'
+            : billingCycle === 'one_time' ? 'one-time' : `/ ${billingCycleLabel(billingCycle)}`}
         </span>
       </div>
 
@@ -235,8 +234,8 @@ function SocialPlanCard({ name, price, priceLabel, tagline, features, isPopular,
         className="mt-8 w-full"
         size="md"
       >
-        {price && <ShoppingBag size={14} strokeWidth={1.5} />}
-        {ctaLabel}
+        {!quoteOnly && <ShoppingBag size={14} strokeWidth={1.5} />}
+        {quoteOnly ? 'Get a quote' : ctaLabel || 'Add to cart'}
       </Button>
     </div>
   );
@@ -246,7 +245,7 @@ export default function SocialGrowthPage() {
   const dispatch = useDispatch();
   const [enquiryOpen, setEnquiryOpen] = useState(false);
 
-  const { data: socialData, isLoading } = useQuery({
+  const { data: socialData, isLoading, isError, refetch } = useQuery({
     queryKey: ['services', 'social-pricing', SOCIAL_SLUG],
     queryFn: () => contentApi.getServiceBySlug(SOCIAL_SLUG),
   });
@@ -260,8 +259,25 @@ export default function SocialGrowthPage() {
   });
   const diagnosticService = diagData?.service;
   const diagnosticPlan = diagnosticService?.pricingPlans?.[0];
+  const finalPricing = [
+    ...plans.map((plan) => ({
+      plan: plan.name,
+      fee: formatPlanFee(plan),
+      popular: plan.isPopular,
+    })),
+    ...(!plans.some((plan) => plan.name === ENTERPRISE_CARD.name)
+      ? [{ plan: ENTERPRISE_CARD.name, fee: 'Custom quote' }]
+      : []),
+    ...(diagnosticPlan
+      ? [{ plan: diagnosticPlan.name || 'Social Growth Diagnostic', fee: formatPlanFee(diagnosticPlan) }]
+      : []),
+  ];
 
   const handleAddToCart = (service, plan) => {
+    if (plan.billingCycle === 'custom') {
+      setEnquiryOpen(true);
+      return;
+    }
     dispatch(addItem({ service, plan, quantity: 1 }));
     toast.success(`${plan.name} added to cart`);
   };
@@ -436,6 +452,8 @@ export default function SocialGrowthPage() {
             <div className="flex justify-center py-24">
               <Spinner size={28} className="text-ultra" />
             </div>
+          ) : isError ? (
+            <QueryError title="Current social growth plans are temporarily unavailable." onRetry={refetch} />
           ) : (
             <div className="mt-16 grid gap-6 lg:grid-cols-4">
               {plans.map((plan, i) => (
@@ -449,6 +467,7 @@ export default function SocialGrowthPage() {
                   <SocialPlanCard
                     name={plan.name}
                     price={plan.price}
+                    billingCycle={plan.billingCycle}
                     tagline={plan.tagline}
                     features={(plan.features || []).map((f) => f.label)}
                     isPopular={plan.isPopular}
@@ -466,7 +485,7 @@ export default function SocialGrowthPage() {
                 <SocialPlanCard
                   name={ENTERPRISE_CARD.name}
                   price={null}
-                  priceLabel="Custom"
+                  priceLabel="Custom quote"
                   tagline={ENTERPRISE_CARD.tagline}
                   features={ENTERPRISE_CARD.features}
                   isPopular={false}
@@ -517,7 +536,7 @@ export default function SocialGrowthPage() {
                         className={cn('text-center py-4 px-4 align-bottom min-w-[9rem]', plan.isPopular && 'bg-sand')}
                       >
                         <div className="text-ink text-base font-medium">{plan.name}</div>
-                        <div className="text-slate text-xs mt-1">{formatMoney(plan.price)}/mo</div>
+                        <div className="text-slate text-xs mt-1">{formatPlanFee(plan)}</div>
                         {plan.isPopular && (
                           <div className="inline-flex items-center gap-1 mt-1.5 text-mono text-[0.6rem] uppercase tracking-widest text-ultra">
                             <Star size={9} strokeWidth={0} className="fill-current" /> Most popular
@@ -765,12 +784,13 @@ export default function SocialGrowthPage() {
               </p>
 
               <div className="mt-10 flex items-baseline gap-2">
-                <span className="text-display-md num-plate text-ivory">{diagnosticPlan ? formatMoney(diagnosticPlan.price) : '$149'}</span>
+                <span className="text-display-md num-plate text-ivory">
+                  {diagnosticPlan ? formatMoney(diagnosticPlan.price, diagnosticPlan.currency || 'USD') : 'Current price unavailable'}
+                </span>
                 <span className="text-mono text-xs uppercase text-ivory/50">one-time</span>
               </div>
               <p className="text-ivory/60 text-sm mt-3 max-w-md leading-relaxed">
-                Move forward with a Social Growth ($599+) engagement, and your $149 diagnostic fee is credited
-                toward your first month.
+                Any follow-on service credit will be stated explicitly in your written proposal; it is not assumed at checkout.
               </p>
 
               <Button
@@ -873,7 +893,7 @@ export default function SocialGrowthPage() {
                 </tr>
               </thead>
               <tbody>
-                {FINAL_PRICING.map((row) => (
+                {finalPricing.map((row) => (
                   <tr key={row.plan} className="border-b border-ivory/10">
                     <td className="py-3.5 text-ivory text-sm flex items-center gap-1.5">
                       {row.plan}

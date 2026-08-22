@@ -8,7 +8,6 @@ import {
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
-import { formatMoney } from '@/utils/format.js';
 import PricingEnquiryModal from '@/components/sections/PricingEnquiryModal.jsx';
 
 /* ---- Customer Operations ---- */
@@ -46,7 +45,7 @@ export default function CustomerServicePage() {
     <>
       <Seo
         title="Customer Service — Built Around Your Business"
-        description="MetlifeDM designs and runs the customer service operation your business needs — WhatsApp, enquiries, follow-up, booking, reviews, retention, and CRM — starting from $199/month."
+        description="MetlifeDM designs and runs the customer service operation your business needs — WhatsApp, enquiries, follow-up, booking, reviews, retention, and CRM — with scope-based pricing."
         keywords="customer service outsourcing, WhatsApp business management, customer support services, lead follow-up service, CRM management service, customer service agency, outsourced customer support USA"
         jsonLd={{
           '@context': 'https://schema.org',
@@ -56,7 +55,6 @@ export default function CustomerServicePage() {
           description: 'A custom-built customer service operation covering WhatsApp management, enquiries, follow-up, booking, reviews, retention, and CRM.',
           provider: { '@type': 'Organization', name: 'MetlifeDM LLC', url: 'https://metlifedm.com' },
           areaServed: 'US',
-          offers: { '@type': 'Offer', price: 199, priceCurrency: 'USD' },
         }}
       />
 
@@ -182,9 +180,9 @@ export default function CustomerServicePage() {
             className="max-w-xl mx-auto text-center"
           >
             <Eyebrow className="justify-center">Pricing</Eyebrow>
-            <div className="mt-6 flex items-baseline justify-center gap-2">
-              <span className="text-display-md num-plate">{formatMoney(199)}</span>
-              <span className="text-mono text-xs uppercase text-slate">/ month, starting from</span>
+            <div className="mt-6 flex flex-col items-center justify-center gap-2">
+              <span className="text-display-md">Custom quote</span>
+              <span className="text-mono text-xs uppercase text-slate">based on your operating scope</span>
             </div>
             <div className="mt-8 pt-8 border-t border-hairline">
               <div className="text-mono text-xs uppercase tracking-widest text-slate mb-4">Custom based on</div>

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
-  BarChart, Bar, PieChart, Pie, Cell, Legend, Area, AreaChart,
+  ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid,
+  BarChart, Bar, PieChart, Pie, Cell, Area, AreaChart,
 } from 'recharts';
 import { TrendingUp, DollarSign, ShoppingBag, Users, MousePointerClick } from 'lucide-react';
 import { PageHeader } from '@/components/ui/PageHeader.jsx';
@@ -46,7 +46,7 @@ export default function AnalyticsPage() {
   const revSeries = revenue?.series || [];
   const trafficSources = traffic?.sources || [];
   const funnel = conversions?.funnel || [];
-  const topServices = services?.data || [];
+  const topServices = Array.isArray(services) ? services : (services?.data || []);
 
   const tooltipStyle = {
     background: '#0A1730',

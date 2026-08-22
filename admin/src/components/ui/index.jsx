@@ -87,6 +87,7 @@ export const Spinner = ({ size = 16, className }) => (
     height={size}
     viewBox="0 0 24 24"
     fill="none"
+    aria-hidden="true"
   >
     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="2" />
     <path
@@ -100,7 +101,7 @@ export const Spinner = ({ size = 16, className }) => (
 
 /* ————— Page loader ————— */
 export const PageLoader = ({ label = 'Loading' }) => (
-  <div className="grid place-items-center min-h-[50vh]">
+  <div className="grid place-items-center min-h-[50vh]" role="status" aria-live="polite">
     <div className="text-center">
       <Spinner size={28} className="text-ultra mx-auto" />
       <div className="text-eyebrow mt-6">{label}</div>
@@ -128,7 +129,7 @@ export const Skeleton = ({ className }) => (
 );
 
 /* ————— KPI ————— */
-export const Kpi = ({ label, value, delta, deltaLabel, icon: Icon, tone = 'default' }) => {
+export const Kpi = ({ label, value, delta, deltaLabel, icon: Icon }) => {
   const deltaColor =
     delta == null
       ? 'text-slate'

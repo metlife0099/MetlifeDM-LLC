@@ -15,7 +15,12 @@ const loginSchema = z.object({
   email: z.string().email('Enter a valid email'),
   password: z.string().min(1, 'Enter your password'),
   rememberMe: z.boolean().optional(),
-  twoFactorToken: z.string().optional(),
+  twoFactorCode: z
+    .string()
+    .trim()
+    .regex(/^(?:\d{6}|[A-Za-z0-9]{8})$/, 'Enter a 6-digit code or 8-character backup code')
+    .optional()
+    .or(z.literal('')),
 });
 
 export default function LoginPage() {
@@ -105,11 +110,12 @@ export default function LoginPage() {
             <Input
               label="Authentication code"
               type="text"
-              inputMode="numeric"
-              maxLength={6}
-              placeholder="123456"
-              {...register('twoFactorToken')}
-              error={errors.twoFactorToken?.message}
+              inputMode="text"
+              autoComplete="one-time-code"
+              maxLength={8}
+              placeholder="123456 or backup code"
+              {...register('twoFactorCode')}
+              error={errors.twoFactorCode?.message}
             />
           </div>
         )}

@@ -10,14 +10,22 @@ export const apiClient = axios.create({
 });
 
 /* ---------------------------------------------------------------
- * Access token management (in-memory + localStorage fallback)
+ * Access token management
  * ------------------------------------------------------------- */
-let accessToken = localStorage.getItem('mdm_access') || null;
+// Access tokens remain in memory. A page reload restores the session through
+// the HttpOnly refresh cookie, keeping bearer tokens out of script-readable
+// persistent storage. Remove values left behind by older builds.
+try {
+  window.localStorage.removeItem('mdm_access');
+  window.sessionStorage.removeItem('mdm_access');
+} catch {
+  // Storage can be unavailable; token operation still works in memory.
+}
+
+let accessToken = null;
 
 export const setAccessToken = (token) => {
-  accessToken = token;
-  if (token) localStorage.setItem('mdm_access', token);
-  else localStorage.removeItem('mdm_access');
+  accessToken = token || null;
 };
 export const getAccessToken = () => accessToken;
 

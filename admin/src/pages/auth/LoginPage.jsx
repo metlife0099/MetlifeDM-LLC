@@ -15,7 +15,10 @@ const schema = z.object({
   email: z.string().email('Enter a valid email'),
   password: z.string().min(1, 'Enter your password'),
   rememberMe: z.boolean().optional(),
-  twoFactorToken: z.string().optional(),
+  twoFactorCode: z
+    .string()
+    .regex(/^(?:\d{6}|[A-Fa-f0-9]{8})$/, 'Enter a six-digit code or eight-character backup code')
+    .optional(),
 });
 
 export default function LoginPage() {
@@ -73,7 +76,7 @@ export default function LoginPage() {
               <span className="text-italic-fraunces text-ultra">back.</span>
             </h1>
             <p className="text-slate mt-6 mb-10">
-              Log in to the admin console. Only staff accounts have access.
+              Log in to the admin console. Only authorized admin accounts have access.
             </p>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -115,12 +118,14 @@ export default function LoginPage() {
                     <span className="text-mono text-xs uppercase tracking-widest text-ultra">Two-factor required</span>
                   </div>
                   <Input
-                    label="Authentication code"
+                    label="Authentication or backup code"
                     type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    placeholder="123456"
-                    {...register('twoFactorToken')}
+                    required
+                    autoComplete="one-time-code"
+                    maxLength={8}
+                    placeholder="123456 or A1B2C3D4"
+                    {...register('twoFactorCode')}
+                    error={errors.twoFactorCode?.message}
                   />
                 </div>
               )}
@@ -155,16 +160,16 @@ export default function LoginPage() {
             <span className="text-italic-fraunces text-ultra-soft">every operator decision.</span>
           </h2>
           <p className="mt-8 text-ivory/60 max-w-md leading-relaxed">
-            Content, orders, tickets, leads, and analytics — all live, all searchable, all cross-linked. Built for the team that ships every day.
+            Manage content, orders, support, leads, and reporting from one secure workspace.
           </p>
           <div className="mt-12 grid grid-cols-2 gap-x-6 gap-y-3 text-mono text-xs uppercase tracking-widest max-w-lg">
             {[
-              'Full CRUD · every content type',
-              '2FA · staff-role guarded',
-              'Realtime · ticket alerts',
-              'Stripe · orders & refunds',
-              'Cloudinary · media library',
-              'Audit log · every action',
+              'Content and publishing',
+              'Admin-role guarded',
+              'Support notifications',
+              'Order and refund tools',
+              'Managed media library',
+              'Operational analytics',
             ].map((t) => (
               <div key={t} className="text-ivory/50">
                 <span className="text-ultra-soft mr-2">·</span>
@@ -175,7 +180,7 @@ export default function LoginPage() {
         </div>
         <div className="text-mono text-xs text-ivory/40 flex items-center gap-2">
           <span className="w-1 h-1 bg-ultra-soft rounded-full" />
-          All systems operational
+          Secure admin workspace
         </div>
       </div>
     </div>

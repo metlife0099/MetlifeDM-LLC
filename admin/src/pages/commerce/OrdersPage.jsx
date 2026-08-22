@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ShoppingBag, ArrowLeft, RefreshCcw, User, Download, CreditCard, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { PageHeader, FilterBar, Breadcrumbs, Tabs } from '@/components/ui/PageHeader.jsx';
+import { PageHeader, FilterBar, Breadcrumbs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
-import { StatusPill, Card, PageLoader, Badge, NewBadge } from '@/components/ui/index.jsx';
-import { Modal } from '@/components/ui/Modal.jsx';
+import { StatusPill, Card, PageLoader, NewBadge } from '@/components/ui/index.jsx';
+import { ConfirmDialog, Modal } from '@/components/ui/Modal.jsx';
 import { Select, SearchInput, Textarea, Input } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import { ordersApi, paymentsApi } from '@/api/index.js';
@@ -14,6 +14,11 @@ import { getErrorMessage } from '@/api/client.js';
 import { useDebounce } from '@/hooks/index.js';
 import { formatMoney, formatDate, timeAgo, downloadBlob } from '@/utils/format.js';
 import { ORDER_STATUSES } from '@/utils/constants.js';
+import {
+  createIdempotencyKey,
+  getManualOrderTransitions,
+  getRefundSummary,
+} from '@/utils/commerce.js';
 
 /* ============================================================
  * ORDERS LIST
@@ -63,8 +68,8 @@ export function OrdersListPage() {
         actions={<NewBadge resourceType="order" />}
       />
       <FilterBar>
-        <SearchInput value={search} onChange={setSearch} placeholder="Search by order # or email…" className="w-72" />
-        <Select className="w-40" options={[{ value: '', label: 'All statuses' }, ...ORDER_STATUSES]} value={status} onChange={(e) => setStatus(e.target.value)} />
+        <SearchInput value={search} onChange={(value) => { setSearch(value); setPage(1); }} placeholder="Search by order number…" className="w-72" />
+        <Select className="w-40" options={[{ value: '', label: 'All statuses' }, ...ORDER_STATUSES]} value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} />
       </FilterBar>
       <DataTable
         columns={columns} rows={data?.data || []} loading={isLoading}
@@ -82,12 +87,13 @@ export function OrdersListPage() {
  * ============================================================ */
 export function OrderDetailsPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const qc = useQueryClient();
   const [refundOpen, setRefundOpen] = useState(false);
+  const [refundIdempotencyKey, setRefundIdempotencyKey] = useState('');
   const [refundAmount, setRefundAmount] = useState('');
   const [refundReason, setRefundReason] = useState('');
   const [statusNote, setStatusNote] = useState('');
+  const [subscriptionAction, setSubscriptionAction] = useState(null);
   const [downloadingInvoice, setDownloadingInvoice] = useState(false);
 
   const { data: order, isLoading } = useQuery({
@@ -107,15 +113,45 @@ export function OrderDetailsPage() {
   });
 
   const refund = useMutation({
-    mutationFn: () => ordersApi.refund(id, { amount: Number(refundAmount) || undefined, reason: refundReason }),
-    onSuccess: () => {
+    mutationFn: (payload) => ordersApi.refund(id, payload),
+    onSuccess: (result) => {
       qc.invalidateQueries({ queryKey: ['admin', 'order', id] });
-      toast.success('Refund initiated');
+      qc.invalidateQueries({ queryKey: ['admin', 'orders'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'payments'] });
+      const processorReference =
+        result?.refund?.id ||
+        result?.refund?.stripeRefundId ||
+        result?.stripeRefundId ||
+        result?.payment?.stripeRefundId;
+      if (processorReference) {
+        toast.success(`Refund confirmed · ${processorReference}`);
+      } else {
+        toast('Refund request accepted, but no processor reference was returned. Verify it before notifying the customer.', { icon: '⚠️' });
+      }
       setRefundOpen(false);
+      setRefundIdempotencyKey('');
       setRefundAmount('');
       setRefundReason('');
     },
     onError: (e) => toast.error(getErrorMessage(e)),
+  });
+
+  const manageSubscription = useMutation({
+    mutationFn: (action) => ordersApi.manageSubscription(
+      id,
+      action === 'resume'
+        ? { action: 'resume' }
+        : { action: 'cancel', atPeriodEnd: action === 'period_end' }
+    ),
+    onSuccess: (_, action) => {
+      qc.invalidateQueries({ queryKey: ['admin', 'order', id] });
+      qc.invalidateQueries({ queryKey: ['admin', 'orders'] });
+      if (action === 'resume') toast.success('Stripe subscription resumed');
+      else if (action === 'period_end') toast.success('Stripe cancellation scheduled for period end');
+      else toast.success('Stripe subscription cancelled immediately');
+      setSubscriptionAction(null);
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
   });
 
   const downloadInvoice = async () => {
@@ -134,7 +170,56 @@ export function OrderDetailsPage() {
   if (isLoading) return <PageLoader label="Loading order" />;
   if (!order) return null;
 
-  const canRefund = ['paid', 'completed'].includes(order.status);
+  const { refundableAmount } = getRefundSummary(order);
+  const requestedRefundAmount = refundAmount === '' ? refundableAmount : Number(refundAmount);
+  const refundAmountValid = Number.isFinite(requestedRefundAmount)
+    && requestedRefundAmount > 0
+    && requestedRefundAmount <= refundableAmount;
+  const refundReasonValid = refundReason.trim().length >= 3;
+  const canRefund = ['succeeded', 'partially_refunded'].includes(order.payment?.status)
+    && !['cancelled', 'refunded'].includes(order.status)
+    && refundableAmount > 0;
+  const allowedStatusValues = getManualOrderTransitions(order.status);
+  const statusOptions = [
+    {
+      value: order.status,
+      label: `${ORDER_STATUSES.find(({ value }) => value === order.status)?.label || order.status} (current)`,
+      disabled: true,
+    },
+    ...ORDER_STATUSES.filter(({ value }) => allowedStatusValues.includes(value)),
+  ];
+  const subscription = order.subscription || (order.stripeSubscriptionId
+    ? {
+        id: order.stripeSubscriptionId,
+        status: order.subscriptionStatus,
+        cancelAtPeriodEnd: order.cancelAtPeriodEnd,
+        currentPeriodEnd: order.currentPeriodEnd,
+      }
+    : null);
+  const subscriptionManageable = ['active', 'trialing', 'past_due'].includes(subscription?.status);
+
+  const openRefundDialog = () => {
+    setRefundAmount('');
+    setRefundReason('');
+    setRefundIdempotencyKey('');
+    setRefundOpen(true);
+  };
+
+  const closeRefundDialog = () => {
+    if (refund.isPending) return;
+    setRefundOpen(false);
+    setRefundIdempotencyKey('');
+  };
+
+  const submitRefund = () => {
+    const idempotencyKey = refundIdempotencyKey || createIdempotencyKey();
+    if (!refundIdempotencyKey) setRefundIdempotencyKey(idempotencyKey);
+    refund.mutate({
+      amount: refundAmount === '' ? undefined : Number(refundAmount),
+      reason: refundReason.trim(),
+      idempotencyKey,
+    });
+  };
 
   return (
     <>
@@ -151,7 +236,7 @@ export function OrderDetailsPage() {
           <>
             <Button variant="ghost" to="/commerce/orders" icon={ArrowLeft}>Back</Button>
             {canRefund && (
-              <Button variant="danger_ghost" icon={RefreshCcw} onClick={() => setRefundOpen(true)}>Refund</Button>
+              <Button variant="danger_ghost" icon={RefreshCcw} onClick={openRefundDialog}>Refund</Button>
             )}
           </>
         }
@@ -319,43 +404,157 @@ export function OrderDetailsPage() {
             </div>
           </Card>
 
+          {subscription && (
+            <Card padding={false} className="p-5">
+              <div className="text-eyebrow mb-3">Stripe subscription</div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between gap-4">
+                  <span className="text-slate">Status</span>
+                  <StatusPill status={subscription.status || 'unknown'} />
+                </div>
+                <div className="flex justify-between gap-4">
+                  <span className="text-slate">Cancellation</span>
+                  <span>{subscription.cancelAtPeriodEnd ? 'Scheduled for period end' : 'Not scheduled'}</span>
+                </div>
+                {subscription.currentPeriodEnd && (
+                  <div className="flex justify-between gap-4">
+                    <span className="text-slate">Current period ends</span>
+                    <span className="text-mono text-xs">{formatDate(subscription.currentPeriodEnd, 'medium')}</span>
+                  </div>
+                )}
+                <div className="pt-2 border-t border-hairline">
+                  <div className="text-mono text-xs text-slate uppercase tracking-widest mb-1">Stripe subscription ID</div>
+                  <div className="text-mono text-xs break-all">{subscription.id}</div>
+                </div>
+              </div>
+              {subscriptionManageable && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {subscription.cancelAtPeriodEnd ? (
+                    <Button type="button" size="sm" variant="ghost" onClick={() => setSubscriptionAction('resume')}>
+                      Resume renewal
+                    </Button>
+                  ) : (
+                    <Button type="button" size="sm" variant="ghost" onClick={() => setSubscriptionAction('period_end')}>
+                      Cancel at period end
+                    </Button>
+                  )}
+                  <Button type="button" size="sm" variant="danger_ghost" onClick={() => setSubscriptionAction('immediate')}>
+                    Cancel immediately
+                  </Button>
+                </div>
+              )}
+            </Card>
+          )}
+
           <Card padding={false} className="p-5">
             <div className="text-eyebrow mb-3">Update status</div>
-            <div className="space-y-3">
-              <Select
-                options={ORDER_STATUSES}
-                value={order.status}
-                onChange={(e) => updateStatus.mutate({ status: e.target.value })}
-              />
-              <Textarea
-                label="Note (optional)"
-                rows={2}
-                value={statusNote}
-                onChange={(e) => setStatusNote(e.target.value)}
-                placeholder="Add a note for the timeline"
-              />
-            </div>
+            {allowedStatusValues.length > 0 ? (
+              <div className="space-y-3">
+                <Select
+                  options={statusOptions}
+                  value={order.status}
+                  onChange={(e) => {
+                    if (e.target.value !== order.status) {
+                      updateStatus.mutate({ status: e.target.value });
+                    }
+                  }}
+                  disabled={updateStatus.isPending}
+                />
+                <Textarea
+                  label="Note (optional)"
+                  rows={2}
+                  value={statusNote}
+                  onChange={(e) => setStatusNote(e.target.value)}
+                  placeholder="Add a note for the timeline"
+                />
+                <p className="text-mono text-xs text-slate">
+                  Payment and refund states are changed only by their provider-backed workflows.
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-slate">
+                No manual transition is available from this state.
+              </p>
+            )}
           </Card>
         </aside>
       </div>
 
       <Modal
         open={refundOpen}
-        onClose={() => setRefundOpen(false)}
+        onClose={closeRefundDialog}
         title="Issue a refund"
-        description={`Refund a portion or all of ${formatMoney(order.total)}.`}
+        description={`Request a processor refund up to ${formatMoney(refundableAmount)}. Confirmation must include a processor reference.`}
         footer={
           <>
-            <Button variant="ghost" onClick={() => setRefundOpen(false)}>Cancel</Button>
-            <Button variant="danger" onClick={() => refund.mutate()} loading={refund.isPending}>Issue refund</Button>
+            <Button variant="ghost" onClick={closeRefundDialog} disabled={refund.isPending}>Cancel</Button>
+            <Button variant="danger" onClick={submitRefund} loading={refund.isPending} disabled={!refundAmountValid || !refundReasonValid}>Request refund</Button>
           </>
         }
       >
         <div className="space-y-4">
-          <Input label="Amount" prefix="$" type="number" placeholder={`Full: ${formatMoney(order.total)}`} value={refundAmount} onChange={(e) => setRefundAmount(e.target.value)} hint="Leave blank for full refund" />
-          <Textarea label="Reason" rows={2} value={refundReason} onChange={(e) => setRefundReason(e.target.value)} />
+          <Input
+            label="Amount"
+            prefix="$"
+            type="number"
+            min="0.01"
+            max={refundableAmount}
+            step="0.01"
+            placeholder={`Full: ${formatMoney(refundableAmount)}`}
+            value={refundAmount}
+            disabled={!!refundIdempotencyKey}
+            onChange={(e) => setRefundAmount(e.target.value)}
+            error={refundAmount !== '' && !refundAmountValid ? `Enter an amount up to ${formatMoney(refundableAmount)}` : undefined}
+            hint="Leave blank to request the full refundable amount"
+          />
+          <Textarea
+            label="Reason"
+            required
+            rows={2}
+            value={refundReason}
+            disabled={!!refundIdempotencyKey}
+            onChange={(e) => setRefundReason(e.target.value)}
+            error={refundReason !== '' && !refundReasonValid ? 'Enter at least three characters' : undefined}
+            hint="Required for the order audit trail and processor record"
+          />
+          {refundIdempotencyKey && !refund.isPending && (
+            <p className="text-mono text-xs text-slate">
+              Retry uses the same request key. Cancel and reopen to change the refund details.
+            </p>
+          )}
         </div>
       </Modal>
+
+      <ConfirmDialog
+        open={!!subscriptionAction}
+        onClose={() => {
+          if (!manageSubscription.isPending) setSubscriptionAction(null);
+        }}
+        onConfirm={() => manageSubscription.mutate(subscriptionAction)}
+        loading={manageSubscription.isPending}
+        title={
+          subscriptionAction === 'immediate'
+            ? 'Cancel Stripe subscription immediately?'
+            : subscriptionAction === 'resume'
+              ? 'Resume Stripe subscription renewal?'
+              : 'Schedule Stripe cancellation?'
+        }
+        description={
+          subscriptionAction === 'immediate'
+            ? 'This terminates recurring billing in Stripe immediately and does not issue a refund. This cannot be undone.'
+            : subscriptionAction === 'resume'
+              ? 'This removes the period-end cancellation in Stripe so the subscription can renew.'
+              : 'Stripe will keep the subscription active through its current billing period, then cancel it.'
+        }
+        confirmLabel={
+          subscriptionAction === 'immediate'
+            ? 'Cancel immediately'
+            : subscriptionAction === 'resume'
+              ? 'Resume renewal'
+              : 'Cancel at period end'
+        }
+        variant={subscriptionAction === 'immediate' ? 'danger' : 'primary'}
+      />
     </>
   );
 }

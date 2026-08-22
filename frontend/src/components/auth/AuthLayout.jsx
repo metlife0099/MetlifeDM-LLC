@@ -15,11 +15,11 @@ export default function AuthLayout() {
           {SITE.name}
           <span className="text-ultra">.</span>
         </Link>
-        <div className="flex-1 grid place-items-center py-14">
+        <main id="main-content" tabIndex={-1} className="flex-1 grid place-items-center py-14">
           <div className="w-full max-w-md">
             <Outlet />
           </div>
-        </div>
+        </main>
         <div className="text-mono text-xs text-slate">
           © {new Date().getFullYear()} {SITE.legalName}
         </div>

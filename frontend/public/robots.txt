@@ -44,7 +44,8 @@ Disallow: /api/*
 Disallow: /admin
 Disallow: /admin/*
 
-# Search and filter URLs — noindex but crawlable so links pass equity
+# Search and filter URLs — excluded to prevent duplicate crawl variants.
+# Canonical internal links should always point to the unfiltered route.
 Disallow: /*?search=
 Disallow: /*?category=
 Disallow: /*?tag=

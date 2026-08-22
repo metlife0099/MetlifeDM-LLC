@@ -110,7 +110,7 @@ You'll usually leave the integration keys blank in dev. In production:
 | Hotjar Site ID | Hotjar → Sites → paste the numeric ID |
 | Sentry DSN (public) | Sentry → Project → Client Keys → paste the DSN URL |
 
-**Sensitive keys** (Stripe secret, SMTP password, Cloudinary secret, OpenAI key) go in the **backend `.env`** — never in these fields, which are client-visible.
+**Sensitive keys** (Stripe secret, SMTP password, Cloudinary secret, Gemini key) go in the **backend `.env`** — never in these fields, which are client-visible.
 
 ---
 

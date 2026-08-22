@@ -1,1 +1,16 @@
-/*    /index.html   200
+/sitemap.xml  https://api.metlifedm.com/api/v1/seo/sitemap.xml  200!
+/robots.txt    https://api.metlifedm.com/api/v1/seo/robots.txt   200!
+
+# Dynamic CMS slugs and authenticated sub-routes remain client-rendered.
+/services/*       /index.html  200
+/portfolio/*      /index.html  200
+/case-studies/*   /index.html  200
+/industries/*     /index.html  200
+/blog/*           /index.html  200
+/careers/*        /index.html  200
+/dashboard        /index.html  200
+/dashboard/*      /index.html  200
+
+# Fixed routes are emitted as real HTML files during the production build.
+# Anything outside those files and the explicit dynamic families is a real 404.
+/*                  /404.html   404

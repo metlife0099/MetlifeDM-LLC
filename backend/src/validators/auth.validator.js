@@ -21,12 +21,10 @@ export const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
   password: z.string().min(1, 'Password required'),
   rememberMe: z.boolean().optional(),
-  twoFactorCode: z.string().length(6).optional(),
+  twoFactorCode: z.string().trim().regex(/^(?:\d{6}|[A-Fa-f0-9]{8})$/, 'Invalid 2FA code').optional(),
 });
 
-export const refreshSchema = z.object({
-  refreshToken: z.string().optional(),
-});
+export const refreshSchema = z.object({}).strict();
 
 export const forgotPasswordSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
@@ -51,5 +49,5 @@ export const enable2FASchema = z.object({
 });
 
 export const verify2FASchema = z.object({
-  code: z.string().length(6),
+  code: z.string().trim().regex(/^(?:\d{6}|[A-Fa-f0-9]{8})$/, 'Invalid 2FA code'),
 });

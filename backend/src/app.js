@@ -58,15 +58,28 @@ app.use(
 /* ---------------------------------------------------------------
  * CORS
  * ------------------------------------------------------------- */
+if (config.isProd && config.cors.origins.includes('*')) {
+  throw new Error('Wildcard CORS origin is not allowed with credentials in production');
+}
 const corsOptions = {
   origin: (origin, cb) => {
     if (!origin) return cb(null, true); // allow tools like curl / Postman
-    if (config.cors.origins.includes(origin) || config.cors.origins.includes('*')) return cb(null, true);
+    if (
+      config.cors.origins.includes(origin) ||
+      (!config.isProd && config.cors.origins.includes('*'))
+    ) return cb(null, true);
     return cb(new Error(`Origin ${origin} not allowed by CORS`));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-CSRF-Token', 'Stripe-Signature'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'Idempotency-Key',
+    'X-Requested-With',
+    'X-CSRF-Token',
+    'Stripe-Signature',
+  ],
   exposedHeaders: ['X-Total-Count', 'X-Cache'],
   maxAge: 86400,
 };
@@ -76,7 +89,10 @@ app.options('*', cors(corsOptions));
 /* ---------------------------------------------------------------
  * Stripe webhook — MUST come before body parsers (needs raw body)
  * ------------------------------------------------------------- */
-app.use(`${config.server.apiPrefix}/webhooks`, webhookRoutes);
+app.use(
+  `${config.server.apiPrefix}/${config.server.apiVersion}/webhooks`,
+  webhookRoutes
+);
 
 /* ---------------------------------------------------------------
  * Body parsing + cookies

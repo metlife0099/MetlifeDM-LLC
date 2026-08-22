@@ -7,6 +7,7 @@ export const ENDPOINTS = {
   auth: {
     register: '/auth/register',
     login: '/auth/login',
+    session: '/auth/session',
     refresh: '/auth/refresh',
     logout: '/auth/logout',
     logoutAll: '/auth/logout-all',
@@ -88,7 +89,10 @@ export const ENDPOINTS = {
     create: '/orders',
     mine: '/orders/mine',
     byId: (id) => `/orders/${id}`,
+    resumePayment: (id) => `/orders/${id}/payment-intent`,
     confirmPayment: (id) => `/orders/${id}/confirm-payment`,
+    cancelSubscription: (id) => `/orders/${id}/subscription/cancel`,
+    resumeSubscription: (id) => `/orders/${id}/subscription/resume`,
     cancel: (id) => `/orders/${id}/cancel`,
   },
   payments: {

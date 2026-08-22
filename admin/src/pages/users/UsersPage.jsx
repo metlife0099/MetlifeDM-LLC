@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Users, ArrowLeft, ShoppingBag, Mail, Shield, UserX, UserCheck } from 'lucide-react';
+import { Users, ArrowLeft, UserX, UserCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Breadcrumbs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
@@ -49,8 +49,6 @@ export function UsersListPage() {
       ),
     },
     { key: 'role', label: 'Role', render: (r) => <Badge tone={ADMIN_ROLES.includes(r.role) ? 'ultra' : 'outline'}>{ROLE_LABELS[r.role] || r.role}</Badge> },
-    { key: 'orderCount', label: 'Orders', align: 'right', render: (r) => <span className="text-mono text-sm">{r.orderCount || 0}</span> },
-    { key: 'lifetimeValue', label: 'LTV', align: 'right', render: (r) => <span className="text-mono text-sm num-plate">{formatMoney(r.lifetimeValue || 0)}</span> },
     { key: 'status', label: 'Status', render: (r) => <StatusPill status={r.status || 'active'} /> },
     { key: 'createdAt', label: 'Joined', render: (r) => <span className="text-mono text-xs text-slate">{timeAgo(r.createdAt)}</span> },
   ];
@@ -72,7 +70,9 @@ export function UsersListPage() {
         <Select className="w-40" options={[
           { value: '', label: 'All statuses' },
           { value: 'active', label: 'Active' },
+          { value: 'pending', label: 'Pending' },
           { value: 'suspended', label: 'Suspended' },
+          { value: 'deleted', label: 'Deleted' },
         ]} value={status} onChange={(e) => setStatus(e.target.value)} />
       </FilterBar>
       <DataTable
@@ -102,7 +102,7 @@ export function UserDetailsPage() {
 
   const { data: orders } = useQuery({
     queryKey: ['admin', 'user-orders', id],
-    queryFn: () => ordersApi.list({ customer: id, limit: 10 }),
+    queryFn: () => ordersApi.list({ customerId: id, limit: 10 }),
     enabled: !!user,
   });
 
@@ -241,7 +241,7 @@ export function UserDetailsPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate">Status</span>
-                <StatusPill status={isSuspended ? 'suspended' : 'active'} />
+                <StatusPill status={user.status || 'pending'} />
               </div>
             </div>
           </Card>

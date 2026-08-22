@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { testimonial, review, faq } from '../controllers/engagement.controller.js';
 import { requireAuth, requireAdmin } from '../middleware/auth.middleware.js';
+import { validate } from '../middleware/validate.middleware.js';
+import * as reviewValidators from '../validators/engagement.validator.js';
 
 /* Testimonials */
 export const testimonialRoutes = Router();
@@ -12,10 +14,10 @@ testimonialRoutes.delete('/:id', requireAuth, requireAdmin, testimonial.remove);
 /* Reviews */
 export const reviewRoutes = Router();
 reviewRoutes.get('/service/:serviceId', review.listByService);
-reviewRoutes.post('/', requireAuth, review.create);
+reviewRoutes.post('/', requireAuth, validate(reviewValidators.createReviewSchema), review.create);
 reviewRoutes.get('/admin', requireAuth, requireAdmin, review.listAdmin);
-reviewRoutes.patch('/:id/moderate', requireAuth, requireAdmin, review.moderate);
-reviewRoutes.post('/:id/reply', requireAuth, requireAdmin, review.reply);
+reviewRoutes.patch('/:id/moderate', requireAuth, requireAdmin, validate(reviewValidators.moderateReviewSchema), review.moderate);
+reviewRoutes.post('/:id/reply', requireAuth, requireAdmin, validate(reviewValidators.replyReviewSchema), review.reply);
 reviewRoutes.delete('/:id', requireAuth, requireAdmin, review.remove);
 
 /* FAQs */

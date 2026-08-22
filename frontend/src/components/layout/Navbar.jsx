@@ -10,11 +10,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toggleMobileMenu } from '@/store/index.js';
 import { selectCartCount } from '@/store/selectors.js';
-import { NAV_MAIN, SITE } from '@/utils/constants.js';
+import { NAV_MAIN } from '@/utils/constants.js';
 import { useScrollDirection, useScrollLock } from '@/hooks/index.js';
 import { useAuth } from '@/hooks/useAuth.js';
 import Button from '@/components/ui/Button.jsx';
 import { cn, initials } from '@/utils/format.js';
+import { usePublicSettings } from '@/providers/PublicSettingsProvider.jsx';
 
 // String -> component lookup for NAV_MAIN sub-item icons (constants.js stays
 // framework-agnostic, so icon names are strings there and resolved here).
@@ -216,6 +217,7 @@ function MobileNavGroup({ item, pathname, index }) {
 }
 
 export default function Navbar() {
+  const settings = usePublicSettings();
   const dispatch = useDispatch();
   const { pathname } = useLocation();
   const mobileOpen = useSelector((s) => s.ui.mobileMenuOpen);
@@ -263,9 +265,9 @@ export default function Navbar() {
         <div className="flex h-20 items-center justify-between gap-8">
           {/* Wordmark */}
           <Link to="/" className="flex items-center gap-2.5 group shrink-0" aria-label="Home">
-            <img src="/metlifedm-logo.png" alt="" className="h-9 w-auto" />
+            <img src={settings.site.logo} alt="" className="h-9 w-auto" />
             <span className={cn('text-display-sm font-medium transition-colors duration-500', floating ? 'text-ivory' : 'text-ink')}>
-              {SITE.name}
+              {settings.site.name}
               <span className={floating ? 'text-ultra-soft' : 'text-ultra'}>.</span>
             </span>
           </Link>

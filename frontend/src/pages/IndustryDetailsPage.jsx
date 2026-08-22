@@ -3,10 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, Check, AlertCircle } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
-import { Spinner } from '@/components/ui/index.jsx';
+import { QueryError, Spinner } from '@/components/ui/index.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner, ServicesGrid } from '@/components/sections/index.jsx';
 import { contentApi } from '@/api/index.js';
+import { sanitizeRichText } from '@/utils/sanitizeHtml.js';
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -72,7 +73,7 @@ function ChallengeRow({ challenge: c, index: i }) {
 
 export default function IndustryDetailsPage() {
   const { slug } = useParams();
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['industry', slug],
     queryFn: () => contentApi.getIndustryBySlug(slug),
     enabled: !!slug,
@@ -80,6 +81,9 @@ export default function IndustryDetailsPage() {
 
   if (isLoading) {
     return <div className="grid place-items-center min-h-[60vh]"><Spinner size={32} className="text-ultra" /></div>;
+  }
+  if (error && error.response?.status !== 404) {
+    return <Section spacing="xl"><Container><QueryError title="This industry could not be loaded." onRetry={refetch} /></Container></Section>;
   }
   if (error || !data?.industry) {
     return (
@@ -161,7 +165,7 @@ export default function IndustryDetailsPage() {
               <Eyebrow number="01">Overview</Eyebrow>
               <div
                 className="prose prose-lg max-w-3xl text-lg text-slate leading-relaxed mt-6"
-                dangerouslySetInnerHTML={{ __html: ind.description }}
+                dangerouslySetInnerHTML={{ __html: sanitizeRichText(ind.description) }}
               />
             </motion.div>
           </Container>

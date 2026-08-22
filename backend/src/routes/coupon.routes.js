@@ -13,7 +13,7 @@ router.post('/validate', optionalAuth, validate(v.validateCouponSchema), c.valid
 router.get('/', requireAuth, requireAdmin, c.listCoupons);
 router.post('/', requireAuth, requireAdmin, validate(v.createCouponSchema), c.createCoupon);
 router.get('/:id', requireAuth, requireAdmin, c.getCoupon);
-router.patch('/:id', requireAuth, requireAdmin, c.updateCoupon);
+router.patch('/:id', requireAuth, requireAdmin, validate(v.updateCouponSchema), c.updateCoupon);
 router.delete('/:id', requireAuth, requireAdmin, c.deleteCoupon);
 
 export default router;

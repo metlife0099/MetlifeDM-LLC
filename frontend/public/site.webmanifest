@@ -50,22 +50,6 @@
       "purpose": "any"
     }
   ],
-  "screenshots": [
-    {
-      "src": "/screenshots/home-wide.jpg",
-      "sizes": "1920x1080",
-      "type": "image/jpeg",
-      "form_factor": "wide",
-      "label": "MetlifeDM homepage"
-    },
-    {
-      "src": "/screenshots/home-narrow.jpg",
-      "sizes": "1080x1920",
-      "type": "image/jpeg",
-      "form_factor": "narrow",
-      "label": "MetlifeDM homepage (mobile)"
-    }
-  ],
   "shortcuts": [
     {
       "name": "Services",
@@ -75,9 +59,9 @@
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Book consultation",
+      "name": "Request consultation",
       "short_name": "Consult",
-      "description": "Book a free strategy call",
+      "description": "Request a strategy consultation",
       "url": "/consultation",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }

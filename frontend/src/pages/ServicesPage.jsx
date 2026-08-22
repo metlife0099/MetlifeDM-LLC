@@ -1,10 +1,9 @@
-import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
 import { ServicesGrid, CtaBanner } from '@/components/sections/index.jsx';
-import { Spinner } from '@/components/ui/index.jsx';
+import { QueryError, Spinner } from '@/components/ui/index.jsx';
 import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { contentApi } from '@/api/index.js';
@@ -15,7 +14,7 @@ export default function ServicesPage() {
   const [search, setSearch] = useSearchParams();
   const category = search.get('category') || '';
 
-  const { data: services = [], isLoading } = useQuery({
+  const { data: services = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['services', 'list', category],
     queryFn: () =>
       contentApi
@@ -89,6 +88,8 @@ export default function ServicesPage() {
         <Container>
           {isLoading ? (
             <div className="flex justify-center py-24"><Spinner size={28} className="text-ultra" /></div>
+          ) : isError ? (
+            <QueryError title="Services are temporarily unavailable." onRetry={refetch} />
           ) : services.length ? (
             <ServicesGrid services={services} showAll={false} />
           ) : (

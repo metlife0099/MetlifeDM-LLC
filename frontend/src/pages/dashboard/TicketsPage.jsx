@@ -1,23 +1,22 @@
-import { useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowUpRight, Send, MessageSquare } from 'lucide-react';
+import { ArrowUpRight, Send } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { ticketApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { DashHeader, DashEmpty } from '@/components/dashboard/DashHeader.jsx';
-import { Spinner, Badge, Input, Textarea, Select, Card } from '@/components/ui/index.jsx';
+import { QueryError, Spinner, Badge, Input, Textarea, Select, Card } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
-import { formatDate, timeAgo, cn, initials } from '@/utils/format.js';
+import { timeAgo, cn, initials } from '@/utils/format.js';
 
 /* ================= LIST ================= */
 export const TicketsListPage = () => {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['tickets', 'mine'],
     queryFn: () => ticketApi.listMine(),
   });
@@ -29,7 +28,7 @@ export const TicketsListPage = () => {
       <DashHeader
         eyebrow="Support / Tickets"
         title={<>Get <span className="text-italic-fraunces text-ultra">unstuck.</span></>}
-        subtitle="Open a ticket and a strategist will respond within one business day."
+        subtitle="Open a ticket so the support team can review your account or project question."
         actions={
           <Button to="/dashboard/tickets/new" size="md">
             New ticket <ArrowUpRight size={14} strokeWidth={1.5} />
@@ -39,6 +38,8 @@ export const TicketsListPage = () => {
 
       {isLoading ? (
         <div className="flex justify-center py-24"><Spinner size={28} className="text-ultra" /></div>
+      ) : isError ? (
+        <QueryError title="Support tickets could not be loaded." onRetry={refetch} />
       ) : tickets.length === 0 ? (
         <DashEmpty
           title="No tickets yet"
@@ -114,7 +115,7 @@ export const NewTicketPage = () => {
       <DashHeader
         eyebrow="Support / New ticket"
         title={<>What's on your <span className="text-italic-fraunces text-ultra">mind?</span></>}
-        subtitle="Tell us what's going on. We respond within one business day."
+        subtitle="Tell us what's going on and include the details needed to investigate."
         className="mt-4"
       />
 

@@ -1,12 +1,12 @@
-import { forwardRef, useState, useRef } from 'react';
+import { forwardRef, useId, useState, useRef } from 'react';
 import { Upload, X, Check, ChevronDown, Loader2 } from 'lucide-react';
 import { cn } from '@/utils/format.js';
 import { mediaApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 
 /* ————— Label ————— */
-export const Label = ({ children, required, className, ...props }) => (
-  <label
+export const Label = ({ children, required, className, as: Component = 'label', ...props }) => (
+  <Component
     className={cn(
       'block text-mono text-[0.65rem] uppercase tracking-widest text-slate mb-1.5',
       className
@@ -15,115 +15,192 @@ export const Label = ({ children, required, className, ...props }) => (
   >
     {children}
     {required && <span className="text-danger ml-0.5">*</span>}
-  </label>
+  </Component>
 );
 
 /* ————— Field wrapper ————— */
-const Field = ({ label, required, error, hint, children }) => (
+const Field = ({ label, required, error, hint, htmlFor, errorId, hintId, children }) => (
   <div>
-    {label && <Label required={required}>{label}</Label>}
+    {label && (
+      <Label as={htmlFor ? 'label' : 'div'} {...(htmlFor ? { htmlFor } : {})} required={required}>
+        {label}
+      </Label>
+    )}
     {children}
-    {error && <div className="text-mono text-xs text-danger mt-1.5">{error}</div>}
-    {!error && hint && <div className="text-mono text-xs text-slate mt-1.5">{hint}</div>}
+    {error && (
+      <div id={errorId} role="alert" className="text-mono text-xs text-danger mt-1.5">
+        {error}
+      </div>
+    )}
+    {!error && hint && (
+      <div id={hintId} className="text-mono text-xs text-slate mt-1.5">
+        {hint}
+      </div>
+    )}
   </div>
 );
 
 /* ————— Input ————— */
 export const Input = forwardRef(
-  ({ label, required, error, hint, className, prefix, suffix, ...props }, ref) => (
-    <Field label={label} required={required} error={error} hint={hint}>
-      <div className={cn(
-        'flex items-center border bg-surface transition-colors',
-        error ? 'border-danger' : 'border-hairline-strong hover:border-slate focus-within:border-ultra'
-      )}>
-        {prefix && (
-          <span className="pl-3 text-slate">{prefix}</span>
-        )}
-        <input
-          ref={ref}
-          className={cn(
-            'flex-1 px-3 py-2 text-sm bg-transparent placeholder:text-slate-soft focus:outline-none',
-            className
-          )}
-          {...props}
-        />
-        {suffix && <span className="pr-3 text-slate">{suffix}</span>}
-      </div>
-    </Field>
-  )
+  (
+    {
+      id,
+      label,
+      required,
+      error,
+      hint,
+      className,
+      prefix,
+      suffix,
+      'aria-describedby': describedBy,
+      ...props
+    },
+    ref
+  ) => {
+    const generatedId = useId();
+    const controlId = id || generatedId;
+    const errorId = `${controlId}-error`;
+    const hintId = `${controlId}-hint`;
+    const descriptionIds = [describedBy, error ? errorId : hint ? hintId : null]
+      .filter(Boolean)
+      .join(' ') || undefined;
+
+    return (
+      <Field
+        label={label}
+        required={required}
+        error={error}
+        hint={hint}
+        htmlFor={controlId}
+        errorId={errorId}
+        hintId={hintId}
+      >
+        <div className={cn(
+          'flex items-center border bg-surface transition-colors',
+          error ? 'border-danger' : 'border-hairline-strong hover:border-slate focus-within:border-ultra'
+        )}>
+          {prefix && <span className="pl-3 text-slate">{prefix}</span>}
+          <input
+            id={controlId}
+            ref={ref}
+            required={required}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={descriptionIds}
+            className={cn(
+              'flex-1 px-3 py-2 text-sm bg-transparent placeholder:text-slate-soft focus:outline-none',
+              className
+            )}
+            {...props}
+          />
+          {suffix && <span className="pr-3 text-slate">{suffix}</span>}
+        </div>
+      </Field>
+    );
+  }
 );
 Input.displayName = 'Input';
 
 /* ————— Textarea ————— */
 export const Textarea = forwardRef(
-  ({ label, required, error, hint, className, ...props }, ref) => (
-    <Field label={label} required={required} error={error} hint={hint}>
-      <textarea
-        ref={ref}
-        className={cn(
-          'w-full px-3 py-2 text-sm bg-surface border transition-colors placeholder:text-slate-soft focus:outline-none resize-none',
-          error ? 'border-danger' : 'border-hairline-strong hover:border-slate focus:border-ultra',
-          className
-        )}
-        rows={4}
-        {...props}
-      />
-    </Field>
-  )
+  ({ id, label, required, error, hint, className, 'aria-describedby': describedBy, ...props }, ref) => {
+    const generatedId = useId();
+    const controlId = id || generatedId;
+    const errorId = `${controlId}-error`;
+    const hintId = `${controlId}-hint`;
+    const descriptionIds = [describedBy, error ? errorId : hint ? hintId : null]
+      .filter(Boolean)
+      .join(' ') || undefined;
+
+    return (
+      <Field label={label} required={required} error={error} hint={hint} htmlFor={controlId} errorId={errorId} hintId={hintId}>
+        <textarea
+          id={controlId}
+          ref={ref}
+          required={required}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={descriptionIds}
+          className={cn(
+            'w-full px-3 py-2 text-sm bg-surface border transition-colors placeholder:text-slate-soft focus:outline-none resize-none',
+            error ? 'border-danger' : 'border-hairline-strong hover:border-slate focus:border-ultra',
+            className
+          )}
+          rows={4}
+          {...props}
+        />
+      </Field>
+    );
+  }
 );
 Textarea.displayName = 'Textarea';
 
 /* ————— Select ————— */
 export const Select = forwardRef(
-  ({ label, required, error, hint, options = [], className, ...props }, ref) => (
-    <Field label={label} required={required} error={error} hint={hint}>
-      <div className="relative">
-        <select
-          ref={ref}
-          className={cn(
-            'w-full appearance-none px-3 py-2 pr-9 text-sm bg-surface border transition-colors focus:outline-none',
-            error ? 'border-danger' : 'border-hairline-strong hover:border-slate focus:border-ultra',
-            className
-          )}
-          {...props}
-        >
-          {options.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-        <ChevronDown
-          size={14}
-          strokeWidth={1.5}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate pointer-events-none"
-        />
-      </div>
-    </Field>
-  )
+  ({ id, label, required, error, hint, options = [], className, 'aria-describedby': describedBy, ...props }, ref) => {
+    const generatedId = useId();
+    const controlId = id || generatedId;
+    const errorId = `${controlId}-error`;
+    const hintId = `${controlId}-hint`;
+    const descriptionIds = [describedBy, error ? errorId : hint ? hintId : null]
+      .filter(Boolean)
+      .join(' ') || undefined;
+
+    return (
+      <Field label={label} required={required} error={error} hint={hint} htmlFor={controlId} errorId={errorId} hintId={hintId}>
+        <div className="relative">
+          <select
+            id={controlId}
+            ref={ref}
+            required={required}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={descriptionIds}
+            className={cn(
+              'w-full appearance-none px-3 py-2 pr-9 text-sm bg-surface border transition-colors focus:outline-none',
+              error ? 'border-danger' : 'border-hairline-strong hover:border-slate focus:border-ultra',
+              className
+            )}
+            {...props}
+          >
+            {options.map((o) => (
+              <option key={o.value} value={o.value} disabled={o.disabled}>
+                {o.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={14}
+            strokeWidth={1.5}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate pointer-events-none"
+          />
+        </div>
+      </Field>
+    );
+  }
 );
 Select.displayName = 'Select';
 
 /* ————— Checkbox ————— */
 export const Checkbox = forwardRef(({ label, error, ...props }, ref) => (
-  <label className="inline-flex items-start gap-2.5 cursor-pointer select-none">
-    <span className="relative mt-0.5">
-      <input ref={ref} type="checkbox" className="peer sr-only" {...props} />
-      <span
-        className={cn(
-          'block w-4 h-4 border transition-colors',
-          'border-hairline-strong bg-surface peer-checked:bg-ultra peer-checked:border-ultra',
-          error && 'border-danger'
-        )}
-      />
-      <Check
-        size={12}
-        strokeWidth={3}
-        className="absolute inset-0 m-auto text-ivory opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"
-      />
-    </span>
-    {label && <span className="text-sm text-ink leading-tight">{label}</span>}
-  </label>
+  <div>
+    <label className="inline-flex items-start gap-2.5 cursor-pointer select-none">
+      <span className="relative mt-0.5">
+        <input ref={ref} type="checkbox" className="peer sr-only" aria-invalid={error ? true : undefined} {...props} />
+        <span
+          className={cn(
+            'block w-4 h-4 border transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-ultra peer-focus-visible:ring-offset-2',
+            'border-hairline-strong bg-surface peer-checked:bg-ultra peer-checked:border-ultra',
+            error && 'border-danger'
+          )}
+        />
+        <Check
+          size={12}
+          strokeWidth={3}
+          className="absolute inset-0 m-auto text-ivory opacity-0 peer-checked:opacity-100 transition-opacity pointer-events-none"
+        />
+      </span>
+      {label && <span className="text-sm text-ink leading-tight">{label}</span>}
+    </label>
+    {error && <div role="alert" className="text-mono text-xs text-danger mt-1.5">{error}</div>}
+  </div>
 ));
 Checkbox.displayName = 'Checkbox';
 
@@ -136,7 +213,7 @@ export const Switch = forwardRef(({ label, description, ...props }, ref) => (
     </div>
     <span className="relative shrink-0">
       <input ref={ref} type="checkbox" className="peer sr-only" {...props} />
-      <span className="block w-9 h-5 bg-hairline-strong peer-checked:bg-ultra transition-colors rounded-full" />
+      <span className="block w-9 h-5 bg-hairline-strong peer-checked:bg-ultra peer-focus-visible:ring-2 peer-focus-visible:ring-ultra peer-focus-visible:ring-offset-2 transition-colors rounded-full" />
       <span className="absolute top-0.5 left-0.5 w-4 h-4 bg-ivory rounded-full transition-transform peer-checked:translate-x-4" />
     </span>
   </label>
@@ -159,7 +236,7 @@ export const MultiSelect = ({
   };
   return (
     <Field label={label} required={required} error={error} hint={hint}>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-1.5" role="group" aria-label={label}>
         {options.map((o) => {
           const active = value.includes(o.value);
           return (
@@ -167,6 +244,7 @@ export const MultiSelect = ({
               key={o.value}
               type="button"
               onClick={() => toggle(o.value)}
+              aria-pressed={active}
               className={cn(
                 'px-3 py-1.5 text-mono text-xs uppercase tracking-widest border transition-colors',
                 active ? 'bg-ink text-ivory border-ink' : 'bg-surface text-ink border-hairline-strong hover:border-ink'
@@ -284,6 +362,14 @@ export const ImageUpload = ({ label, value, onChange, hint, error, folder = 'gen
   const handleFile = async (file) => {
     if (!file) return;
     setLocalError('');
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+      setLocalError('Choose a JPEG, PNG, WebP, or GIF image');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setLocalError('Image must be 5 MB or smaller');
+      return;
+    }
     setUploading(true);
     try {
       const fd = new FormData();
@@ -305,7 +391,7 @@ export const ImageUpload = ({ label, value, onChange, hint, error, folder = 'gen
       <input
         ref={ref}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/webp,image/gif"
         hidden
         onChange={(e) => {
           const file = e.target.files?.[0];
@@ -372,6 +458,7 @@ export const SearchInput = ({ value, onChange, placeholder = 'Search…', classN
   <div className={cn('relative', className)}>
     <input
       type="text"
+      aria-label={placeholder}
       value={value}
       onChange={(e) => onChange?.(e.target.value)}
       placeholder={placeholder}

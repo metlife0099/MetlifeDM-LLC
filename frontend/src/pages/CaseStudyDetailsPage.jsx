@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { AlertCircle, Compass, Lightbulb, TrendingUp, TrendingDown, ArrowUpRight, Quote, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
-import { Spinner, Badge } from '@/components/ui/index.jsx';
+import { QueryError, Spinner, Badge } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
@@ -30,7 +30,7 @@ const STORY_STEPS = [
 export default function CaseStudyDetailsPage() {
   const { slug } = useParams();
   const [downloading, setDownloading] = useState(false);
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['case-study', slug],
     queryFn: () => contentApi.getCaseStudyBySlug(slug),
     enabled: !!slug,
@@ -50,6 +50,9 @@ export default function CaseStudyDetailsPage() {
 
   if (isLoading) {
     return <div className="grid place-items-center min-h-[60vh]"><Spinner size={32} className="text-ultra" /></div>;
+  }
+  if (error && error.response?.status !== 404) {
+    return <Section spacing="xl"><Container><QueryError title="This case study could not be loaded." onRetry={refetch} /></Container></Section>;
   }
   if (error || !data?.caseStudy) {
     return (

@@ -5,6 +5,20 @@ import toast from 'react-hot-toast';
 import { getAccessToken } from '@/api/client.js';
 import { getSocketUrl } from '@/utils/socket.js';
 
+const RESOURCE_QUERY_KEYS = {
+  application: 'applications',
+  chat: 'chats',
+  comment: 'comments',
+  consultation: 'consultations',
+  contact: 'contacts',
+  order: 'orders',
+  partner_inquiry: 'partners',
+  pricing_enquiry: 'pricing-enquiries',
+  subscriber: 'subscribers',
+  ticket: 'tickets',
+  user: 'users',
+};
+
 /**
  * Opens a Socket.io connection authenticated with the current access token
  * and keeps notification-related react-query caches live. The backend joins
@@ -17,8 +31,9 @@ export function useNotificationSocket() {
   const socketRef = useRef(null);
 
   useEffect(() => {
+    if (import.meta.env.VITE_ENABLE_REALTIME === 'false') return undefined;
     const token = getAccessToken();
-    if (!token) return;
+    if (!token) return undefined;
 
     const socket = io(getSocketUrl(), {
       path: '/socket.io',
@@ -29,6 +44,9 @@ export function useNotificationSocket() {
 
     const onNew = (notif) => {
       qc.invalidateQueries({ queryKey: ['notifications'] });
+      const resourceKey = RESOURCE_QUERY_KEYS[notif?.resourceType];
+      if (resourceKey) qc.invalidateQueries({ queryKey: ['admin', resourceKey] });
+      qc.invalidateQueries({ queryKey: ['dashboard'] });
       toast(notif?.title || 'New notification', { icon: '🔔' });
     };
 

@@ -13,7 +13,7 @@ export default function ForbiddenPage() {
         </div>
         <div className="text-eyebrow mb-6">Error 403 · Access denied</div>
         <h1 className="text-display-hero">
-          You don't have<br />
+          You don&apos;t have<br />
           <span className="text-italic-fraunces text-ultra">access.</span>
         </h1>
         <p className="text-slate mt-8 max-w-md mx-auto leading-relaxed">

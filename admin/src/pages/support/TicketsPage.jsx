@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { LifeBuoy, ArrowLeft, Send, Paperclip, UserCircle, Bookmark } from 'lucide-react';
+import { LifeBuoy, ArrowLeft, Send, Bookmark } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Breadcrumbs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
@@ -11,8 +11,8 @@ import Button from '@/components/ui/Button.jsx';
 import { ticketsApi, usersApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { useDebounce } from '@/hooks/index.js';
-import { formatDate, timeAgo, initials, truncate, humanize } from '@/utils/format.js';
-import { TICKET_STATUSES, TICKET_PRIORITIES } from '@/utils/constants.js';
+import { formatDate, timeAgo, initials, humanize } from '@/utils/format.js';
+import { SUPPORT_STAFF_ROLES, TICKET_STATUSES, TICKET_PRIORITIES } from '@/utils/constants.js';
 
 /* ============================================================
  * LIST
@@ -22,14 +22,22 @@ export function TicketsListPage() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [priority, setPriority] = useState('');
+  const [assignedToMe, setAssignedToMe] = useState(false);
   const debounced = useDebounce(search, 300);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'tickets', { page, debounced, status, priority }],
-    queryFn: () => ticketsApi.list({ page, search: debounced, status, priority, limit: 25 }),
+    queryKey: ['admin', 'tickets', { page, debounced, status, priority, assignedToMe }],
+    queryFn: () => ticketsApi.list({
+      page,
+      search: debounced,
+      status,
+      priority,
+      assignedToMe: assignedToMe ? 'true' : undefined,
+      limit: 25,
+    }),
   });
 
-  const priorityTone = (p) => ({ urgent: 'danger', high: 'warn', medium: 'info', low: 'default' })[p] || 'default';
+  const priorityTone = (p) => ({ urgent: 'danger', high: 'warn', normal: 'info', low: 'default' })[p] || 'default';
 
   const columns = [
     {
@@ -53,7 +61,7 @@ export function TicketsListPage() {
         </div>
       ),
     },
-    { key: 'priority', label: 'Priority', render: (r) => <Badge tone={priorityTone(r.priority)}>{humanize(r.priority || 'medium')}</Badge> },
+    { key: 'priority', label: 'Priority', render: (r) => <Badge tone={priorityTone(r.priority)}>{humanize(r.priority || 'normal')}</Badge> },
     {
       key: 'assignedTo', label: 'Assigned',
       render: (r) => r.assignedTo ? (
@@ -73,9 +81,18 @@ export function TicketsListPage() {
         actions={<NewBadge resourceType="ticket" />}
       />
       <FilterBar>
-        <SearchInput value={search} onChange={setSearch} placeholder="Search tickets…" className="w-64" />
-        <Select className="w-40" options={[{ value: '', label: 'All statuses' }, ...TICKET_STATUSES]} value={status} onChange={(e) => setStatus(e.target.value)} />
-        <Select className="w-32" options={[{ value: '', label: 'All priorities' }, ...TICKET_PRIORITIES]} value={priority} onChange={(e) => setPriority(e.target.value)} />
+        <SearchInput value={search} onChange={(value) => { setSearch(value); setPage(1); }} placeholder="Search tickets…" className="w-64" />
+        <Select className="w-40" options={[{ value: '', label: 'All statuses' }, ...TICKET_STATUSES]} value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} />
+        <Select className="w-32" options={[{ value: '', label: 'All priorities' }, ...TICKET_PRIORITIES]} value={priority} onChange={(e) => { setPriority(e.target.value); setPage(1); }} />
+        <Select
+          className="w-40"
+          options={[
+            { value: '', label: 'All assignees' },
+            { value: 'mine', label: 'Assigned to me' },
+          ]}
+          value={assignedToMe ? 'mine' : ''}
+          onChange={(e) => { setAssignedToMe(e.target.value === 'mine'); setPage(1); }}
+        />
       </FilterBar>
       <DataTable
         columns={columns} rows={data?.data || []} loading={isLoading}
@@ -105,14 +122,27 @@ export function TicketDetailsPage() {
 
   const { data: staff = [] } = useQuery({
     queryKey: ['admin', 'staff'],
-    queryFn: () => usersApi.list({ roles: 'admin,staff,support', limit: 100 }),
-    select: (r) => r.data,
+    queryFn: async () => {
+      const lists = await Promise.all(SUPPORT_STAFF_ROLES.map(async (role) => {
+        const first = await usersApi.list({ role, status: 'active', page: 1, limit: 100 });
+        const totalPages = first.meta?.totalPages || 1;
+        if (totalPages <= 1) return first.data || [];
+        const remaining = await Promise.all(
+          Array.from({ length: totalPages - 1 }, (_, index) =>
+            usersApi.list({ role, status: 'active', page: index + 2, limit: 100 })
+          )
+        );
+        return [first, ...remaining].flatMap((result) => result.data || []);
+      }));
+      return [...new Map(lists.flat().map((user) => [user._id, user])).values()];
+    },
   });
 
   const sendReply = useMutation({
     mutationFn: (payload) => ticketsApi.reply(id, payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'ticket', id] });
+      qc.invalidateQueries({ queryKey: ['admin', 'tickets'] });
       toast.success('Reply sent');
       setReply('');
       setIsInternal(false);
@@ -124,6 +154,7 @@ export function TicketDetailsPage() {
     mutationFn: (status) => ticketsApi.updateStatus(id, status),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'ticket', id] });
+      qc.invalidateQueries({ queryKey: ['admin', 'tickets'] });
       toast.success('Status updated');
     },
     onError: (e) => toast.error(getErrorMessage(e)),
@@ -133,24 +164,27 @@ export function TicketDetailsPage() {
     mutationFn: (assigneeId) => ticketsApi.assign(id, assigneeId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'ticket', id] });
+      qc.invalidateQueries({ queryKey: ['admin', 'tickets'] });
       toast.success('Ticket assigned');
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
 
   const addNote = useMutation({
-    mutationFn: (n) => ticketsApi.addNote(id, n),
+    mutationFn: (n) => ticketsApi.reply(id, { content: n, isInternal: true }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'ticket', id] });
+      qc.invalidateQueries({ queryKey: ['admin', 'tickets'] });
       toast.success('Note added');
       setNote('');
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
 
+  const replyCount = ticket?.replies?.length || 0;
   useEffect(() => {
-    if (ticket) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [ticket?.messages?.length]);
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [replyCount]);
 
   if (isLoading) return <PageLoader label="Loading ticket" />;
   if (!ticket) return null;
@@ -179,8 +213,24 @@ export function TicketDetailsPage() {
           <Card padding={false} className="p-6">
             <div className="text-eyebrow mb-4">Conversation</div>
             <ul className="space-y-4">
-              {(ticket.messages || []).map((m, i) => {
-                const staff = m.author?.role && m.author.role !== 'customer';
+              {ticket.description && (
+                <li className="flex gap-3">
+                  <div className="w-8 h-8 grid place-items-center text-mono text-xs shrink-0 bg-sand text-ink">
+                    {initials(ticket.customerName || ticket.customer?.email || 'C')}
+                  </div>
+                  <div className="flex-1 max-w-[80%]">
+                    <div className="text-mono text-xs text-slate uppercase tracking-widest mb-1">
+                      {ticket.customerName || ticket.customer?.email || 'Customer'}
+                      <span className="ml-2">· {timeAgo(ticket.createdAt)}</span>
+                    </div>
+                    <div className="inline-block text-sm whitespace-pre-line leading-relaxed p-4 border bg-ivory-soft border-hairline">
+                      {ticket.description}
+                    </div>
+                  </div>
+                </li>
+              )}
+              {(ticket.replies || []).map((m, i) => {
+                const staff = m.authorType === 'agent' || (m.author?.role && m.author.role !== 'customer');
                 return (
                   <li key={m._id || i} className={`flex gap-3 ${staff ? 'flex-row-reverse' : ''}`}>
                     <div className={`w-8 h-8 grid place-items-center text-mono text-xs shrink-0 ${staff ? 'bg-ink text-ivory' : 'bg-sand text-ink'}`}>
@@ -190,7 +240,7 @@ export function TicketDetailsPage() {
                       <div className="text-mono text-xs text-slate uppercase tracking-widest mb-1">
                         {m.author?.firstName ? `${m.author.firstName} ${m.author.lastName || ''}` : m.author?.email || 'Customer'}
                         {m.isInternal && <Badge tone="warn" className="ml-2">Internal</Badge>}
-                        <span className="ml-2">· {timeAgo(m.createdAt)}</span>
+                        <span className="ml-2">· {timeAgo(m.at || m.createdAt)}</span>
                       </div>
                       <div className={`inline-block text-sm whitespace-pre-line leading-relaxed p-4 border ${
                         m.isInternal ? 'bg-warn-soft border-warn/30' : staff ? 'bg-ink text-ivory border-ink' : 'bg-ivory-soft border-hairline'
@@ -233,22 +283,6 @@ export function TicketDetailsPage() {
             </div>
           </Card>
 
-          {/* Internal notes */}
-          {ticket.notes?.length > 0 && (
-            <Card padding={false} className="p-6">
-              <div className="text-eyebrow mb-4">Internal notes</div>
-              <ul className="divide-editorial">
-                {ticket.notes.map((n, i) => (
-                  <li key={i} className="py-3">
-                    <div className="text-sm whitespace-pre-line">{n.content || n.note}</div>
-                    <div className="text-mono text-xs text-slate uppercase tracking-widest mt-2">
-                      {n.author?.firstName ? `${n.author.firstName} ${n.author.lastName || ''}` : 'Staff'} · {timeAgo(n.createdAt)}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </Card>
-          )}
         </div>
 
         {/* Sidebar */}
@@ -306,7 +340,7 @@ export function TicketDetailsPage() {
           <Card padding={false} className="p-5">
             <div className="text-eyebrow mb-3">Details</div>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between"><span className="text-slate">Priority</span><span>{humanize(ticket.priority || 'medium')}</span></div>
+              <div className="flex justify-between"><span className="text-slate">Priority</span><span>{humanize(ticket.priority || 'normal')}</span></div>
               {ticket.category && <div className="flex justify-between"><span className="text-slate">Category</span><span>{humanize(ticket.category)}</span></div>}
               <div className="flex justify-between"><span className="text-slate">Opened</span><span className="text-mono text-xs">{formatDate(ticket.createdAt, 'medium')}</span></div>
             </div>

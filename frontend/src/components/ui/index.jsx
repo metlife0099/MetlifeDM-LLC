@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useId } from 'react';
 import { cn } from '@/utils/format.js';
 
 /* --------------------- Card --------------------- */
@@ -19,24 +19,36 @@ export const Card = ({ className, hover = false, children, ...rest }) => (
 const inputBase =
   'w-full bg-transparent border-b border-ink/25 pb-2 pt-4 text-sm placeholder:text-slate transition-colors duration-300 focus:border-ultra focus:outline-none disabled:opacity-40';
 
-export const Input = forwardRef(function Input({ label, error, className, id, ...rest }, ref) {
-  const inputId = id || rest.name;
+export const Input = forwardRef(function Input({ label, error, className, id, 'aria-describedby': describedBy, ...rest }, ref) {
+  const generatedId = useId();
+  const inputId = id || rest.name || generatedId;
+  const errorId = `${inputId}-error`;
   return (
-    <label className="block group">
+    <label htmlFor={inputId} className="block group">
       {label && (
         <span className="text-eyebrow block mb-1 group-focus-within:text-ultra transition-colors">
           {label}
         </span>
       )}
-      <input ref={ref} id={inputId} className={cn(inputBase, error && 'border-danger', className)} {...rest} />
-      {error && <span className="text-mono text-xs text-danger mt-1 block">{error}</span>}
+      <input
+        ref={ref}
+        id={inputId}
+        aria-invalid={error ? 'true' : undefined}
+        aria-describedby={[describedBy, error ? errorId : null].filter(Boolean).join(' ') || undefined}
+        className={cn(inputBase, error && 'border-danger', className)}
+        {...rest}
+      />
+      {error && <span id={errorId} role="alert" className="text-mono text-xs text-danger mt-1 block">{error}</span>}
     </label>
   );
 });
 
-export const Textarea = forwardRef(function Textarea({ label, error, rows = 4, className, ...rest }, ref) {
+export const Textarea = forwardRef(function Textarea({ label, error, rows = 4, className, id, 'aria-describedby': describedBy, ...rest }, ref) {
+  const generatedId = useId();
+  const inputId = id || rest.name || generatedId;
+  const errorId = `${inputId}-error`;
   return (
-    <label className="block group">
+    <label htmlFor={inputId} className="block group">
       {label && (
         <span className="text-eyebrow block mb-1 group-focus-within:text-ultra transition-colors">
           {label}
@@ -44,18 +56,24 @@ export const Textarea = forwardRef(function Textarea({ label, error, rows = 4, c
       )}
       <textarea
         ref={ref}
+        id={inputId}
         rows={rows}
+        aria-invalid={error ? 'true' : undefined}
+        aria-describedby={[describedBy, error ? errorId : null].filter(Boolean).join(' ') || undefined}
         className={cn(inputBase, 'resize-none', error && 'border-danger', className)}
         {...rest}
       />
-      {error && <span className="text-mono text-xs text-danger mt-1 block">{error}</span>}
+      {error && <span id={errorId} role="alert" className="text-mono text-xs text-danger mt-1 block">{error}</span>}
     </label>
   );
 });
 
-export const Select = forwardRef(function Select({ label, error, options = [], className, ...rest }, ref) {
+export const Select = forwardRef(function Select({ label, error, options = [], className, id, 'aria-describedby': describedBy, ...rest }, ref) {
+  const generatedId = useId();
+  const inputId = id || rest.name || generatedId;
+  const errorId = `${inputId}-error`;
   return (
-    <label className="block group">
+    <label htmlFor={inputId} className="block group">
       {label && (
         <span className="text-eyebrow block mb-1 group-focus-within:text-ultra transition-colors">
           {label}
@@ -63,6 +81,9 @@ export const Select = forwardRef(function Select({ label, error, options = [], c
       )}
       <select
         ref={ref}
+        id={inputId}
+        aria-invalid={error ? 'true' : undefined}
+        aria-describedby={[describedBy, error ? errorId : null].filter(Boolean).join(' ') || undefined}
         className={cn(inputBase, 'cursor-pointer appearance-none pr-8', error && 'border-danger', className)}
         {...rest}
       >
@@ -72,24 +93,32 @@ export const Select = forwardRef(function Select({ label, error, options = [], c
           </option>
         ))}
       </select>
-      {error && <span className="text-mono text-xs text-danger mt-1 block">{error}</span>}
+      {error && <span id={errorId} role="alert" className="text-mono text-xs text-danger mt-1 block">{error}</span>}
     </label>
   );
 });
 
 /* --------------------- Checkbox --------------------- */
-export const Checkbox = forwardRef(function Checkbox({ label, error, className, ...rest }, ref) {
+export const Checkbox = forwardRef(function Checkbox({ label, error, className, id, 'aria-describedby': describedBy, ...rest }, ref) {
+  const generatedId = useId();
+  const inputId = id || rest.name || generatedId;
+  const errorId = `${inputId}-error`;
   return (
-    <label className={cn('flex items-start gap-3 cursor-pointer group', className)}>
-      <input
-        ref={ref}
-        type="checkbox"
-        className="mt-1 h-4 w-4 accent-ultra cursor-pointer"
-        {...rest}
-      />
-      <span className="text-sm text-ink/80 leading-snug group-hover:text-ink transition-colors">{label}</span>
-      {error && <span className="text-mono text-xs text-danger block">{error}</span>}
-    </label>
+    <div className={className}>
+      <label htmlFor={inputId} className="flex items-start gap-3 cursor-pointer group">
+        <input
+          ref={ref}
+          id={inputId}
+          type="checkbox"
+          aria-invalid={error ? 'true' : undefined}
+          aria-describedby={[describedBy, error ? errorId : null].filter(Boolean).join(' ') || undefined}
+          className="mt-1 h-4 w-4 accent-ultra cursor-pointer"
+          {...rest}
+        />
+        <span className="text-sm text-ink/80 leading-snug group-hover:text-ink transition-colors">{label}</span>
+      </label>
+      {error && <span id={errorId} role="alert" className="text-mono text-xs text-danger mt-1 block">{error}</span>}
+    </div>
   );
 });
 
@@ -118,6 +147,7 @@ export const Badge = ({ children, tone = 'default', className }) => {
 /* --------------------- Spinner --------------------- */
 export const Spinner = ({ size = 24, className }) => (
   <svg
+    aria-hidden="true"
     width={size}
     height={size}
     viewBox="0 0 24 24"
@@ -137,10 +167,28 @@ export const Spinner = ({ size = 24, className }) => (
 
 /* --------------------- Full-page loader --------------------- */
 export const PageLoader = ({ label = 'Loading' }) => (
-  <div className="fixed inset-0 grid place-items-center bg-ivory z-[100]">
+  <div className="fixed inset-0 grid place-items-center bg-ivory z-[100]" role="status" aria-live="polite">
     <div className="flex flex-col items-center gap-4">
       <Spinner size={32} className="text-ultra" />
       <span className="text-eyebrow">{label}</span>
     </div>
+  </div>
+);
+
+/* --------------------- Query error --------------------- */
+export const QueryError = ({
+  title = 'We could not load this content.',
+  message = 'Check your connection and try again.',
+  onRetry,
+  compact = false,
+}) => (
+  <div role="alert" className={cn('border border-danger/30 bg-danger/5 text-center', compact ? 'p-5' : 'px-6 py-14')}>
+    <h2 className={compact ? 'text-base font-medium' : 'text-display-sm'}>{title}</h2>
+    <p className="mx-auto mt-2 max-w-lg text-sm text-slate">{message}</p>
+    {onRetry && (
+      <button type="button" onClick={onRetry} className="mt-5 border border-ink px-4 py-2 text-mono text-xs uppercase tracking-widest hover:bg-ink hover:text-ivory">
+        Try again
+      </button>
+    )}
   </div>
 );

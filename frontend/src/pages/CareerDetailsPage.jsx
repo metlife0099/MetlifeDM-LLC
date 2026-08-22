@@ -13,11 +13,10 @@ import {
   CheckCircle2,
   Upload,
   Trash2,
-  Briefcase,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
-import { Spinner, Badge, Input, Textarea, Checkbox } from '@/components/ui/index.jsx';
+import { QueryError, Spinner, Badge, Input, Textarea, Checkbox } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { leadsApi } from '@/api/index.js';
@@ -43,9 +42,9 @@ export default function CareerDetailsPage() {
   const [submitted, setSubmitted] = useState(false);
   const fileRef = useRef(null);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['career', slug],
-    queryFn: () => leadsApi.getCareer(slug),
+    queryFn: () => leadsApi.getCareerBySlug(slug),
     enabled: !!slug,
   });
 
@@ -76,6 +75,9 @@ export default function CareerDetailsPage() {
 
   if (isLoading) {
     return <div className="grid place-items-center min-h-[60vh]"><Spinner size={32} className="text-ultra" /></div>;
+  }
+  if (error && error.response?.status !== 404) {
+    return <Section spacing="xl"><Container><QueryError title="This role could not be loaded." onRetry={refetch} /></Container></Section>;
   }
   if (error || !data?.job) {
     return (

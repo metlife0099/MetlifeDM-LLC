@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
-import { Spinner } from '@/components/ui/index.jsx';
+import { QueryError, Spinner } from '@/components/ui/index.jsx';
 import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
@@ -21,11 +21,12 @@ import { addItem } from '@/store/index.js';
 import { formatMoney } from '@/utils/format.js';
 import { SERVICE_CATEGORIES } from '@/utils/constants.js';
 import { cn } from '@/utils/format.js';
+import { billingCycleLabel, isPlanPurchasable } from '@/utils/commerce.js';
 
 const TRUST_POINTS = [
   { icon: Ban, label: 'No lock-in contracts' },
   { icon: ShieldCheck, label: 'Transparent, itemized pricing' },
-  { icon: Sparkles, label: 'Senior strategist on every plan' },
+  { icon: Sparkles, label: 'Scope confirmed before payment' },
 ];
 
 /* A few priced services have a richer, dedicated sales page (compare
@@ -80,9 +81,10 @@ const ECOSYSTEM_STAGES = [
  * turn the page into a wall of checkmarks. "See what's included" expands
  * it to the full itemized list.
  */
-function PricingPlanCard({ plan, billing, onAddToCart }) {
+function PricingPlanCard({ plan, onAddToCart }) {
   const [expanded, setExpanded] = useState(false);
-  const price = billing === 'yearly' ? plan.price * 12 * 0.85 : plan.price;
+  const price = plan.price;
+  const quoteOnly = !isPlanPurchasable(plan);
   const features = plan.features || [];
   const teaserCount = 2;
   const teaser = features.slice(0, teaserCount).map((f) => f.label).join(' → ');
@@ -113,10 +115,10 @@ function PricingPlanCard({ plan, billing, onAddToCart }) {
       )}
       <div className="mt-6 flex items-baseline gap-2">
         <span className={cn('text-display-md num-plate', plan.isPopular ? 'text-ivory' : 'text-ink')}>
-          {formatMoney(price)}
+          {quoteOnly ? 'Custom quote' : formatMoney(price)}
         </span>
         <span className={cn('text-mono text-xs uppercase', plan.isPopular ? 'text-ivory/60' : 'text-slate')}>
-          / {billing === 'yearly' ? 'year' : 'mo'}
+          {quoteOnly ? 'priced by proposal' : `/ ${billingCycleLabel(plan.billingCycle)}`}
         </span>
       </div>
 
@@ -155,13 +157,14 @@ function PricingPlanCard({ plan, billing, onAddToCart }) {
       </div>
 
       <Button
-        onClick={onAddToCart}
+        to={quoteOnly ? '/consultation' : undefined}
+        onClick={quoteOnly ? undefined : onAddToCart}
         variant={plan.isPopular ? 'inverse' : 'primary'}
         className="mt-8 w-full"
         size="md"
       >
-        <ShoppingBag size={14} strokeWidth={1.5} />
-        {plan.ctaLabel || 'Add to cart'}
+        {quoteOnly ? <ArrowUpRight size={14} strokeWidth={1.5} /> : <ShoppingBag size={14} strokeWidth={1.5} />}
+        {quoteOnly ? 'Get a quote' : plan.ctaLabel || 'Add to cart'}
       </Button>
     </div>
   );
@@ -170,10 +173,9 @@ function PricingPlanCard({ plan, billing, onAddToCart }) {
 export default function PricingPage() {
   const dispatch = useDispatch();
   const [category, setCategory] = useState('');
-  const [billing, setBilling] = useState('monthly');
   const [enquiryOpen, setEnquiryOpen] = useState(false);
 
-  const { data: services = [], isLoading } = useQuery({
+  const { data: services = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['services', 'pricing', category],
     queryFn: () =>
       contentApi
@@ -182,6 +184,10 @@ export default function PricingPage() {
   });
 
   const handleAddToCart = (service, plan = null) => {
+    if (plan && !isPlanPurchasable(plan)) {
+      setEnquiryOpen(true);
+      return;
+    }
     dispatch(addItem({ service, plan, quantity: 1 }));
     toast.success(`${plan?.name || service.title} added to cart`);
   };
@@ -243,24 +249,11 @@ export default function PricingPage() {
             <span className="text-italic-fraunces text-ultra-soft">verify in a spreadsheet.</span>
           </h1>
           <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
-            No lock-ins. No hidden fees. Cancel any time. Every plan includes a senior strategist, monthly review, and full dashboard access.
+            Plan prices and billing terms come directly from the current service catalog. Any custom scope is confirmed in writing before work begins.
           </p>
 
-          {/* Billing toggle */}
-          <div className="mt-12 inline-flex items-center border border-ivory/25 p-1">
-            {['monthly', 'yearly'].map((b) => (
-              <button
-                key={b}
-                onClick={() => setBilling(b)}
-                className={cn(
-                  'px-6 py-2 text-mono text-xs uppercase tracking-widest transition-colors',
-                  billing === b ? 'bg-ivory text-ink' : 'text-ivory/70 hover:text-ivory'
-                )}
-              >
-                {b}
-                {b === 'yearly' && <span className="text-ultra ml-2">−15%</span>}
-              </button>
-            ))}
+          <div className="mt-12 inline-flex border border-ivory/25 px-5 py-3 text-mono text-xs uppercase tracking-widest text-ivory/75">
+            Billing cycle shown on each plan
           </div>
 
           {/* Trust points */}
@@ -325,6 +318,8 @@ export default function PricingPage() {
             <div className="flex justify-center py-24">
               <Spinner size={28} className="text-ultra" />
             </div>
+          ) : isError ? (
+            <QueryError title="Current pricing is temporarily unavailable." message="We will never substitute placeholder prices. Please retry before choosing a plan." onRetry={refetch} />
           ) : services.filter((s) => !DIAGNOSTIC_SLUGS.has(s.slug)).length ? (
             <div className="space-y-10">
               {services.filter((s) => !DIAGNOSTIC_SLUGS.has(s.slug)).map((service, si) => (
@@ -365,7 +360,6 @@ export default function PricingPage() {
                         <PricingPlanCard
                           key={plan._id}
                           plan={plan}
-                          billing={billing}
                           onAddToCart={() => handleAddToCart(service, plan)}
                         />
                       ))}
@@ -378,7 +372,7 @@ export default function PricingPage() {
                         </div>
                         <div>
                           <div className="text-mono text-xs uppercase tracking-widest text-slate mb-2">Custom pricing</div>
-                          <div className="text-display-sm">Starting at {formatMoney(service.startingPrice)}/mo</div>
+                          <div className="text-display-sm">Pricing confirmed by proposal</div>
                         </div>
                       </div>
                       <Button to="/consultation" size="md">
@@ -398,7 +392,12 @@ export default function PricingPage() {
                             <Stethoscope size={16} strokeWidth={1.5} />
                           </div>
                           <div>
-                            <div className="text-sm font-medium">{diagPlan.name} <span className="text-slate font-normal">· one-time</span></div>
+                            <div className="text-sm font-medium">
+                              {diagPlan.name}{' '}
+                              <span className="text-slate font-normal">
+                                · {diagPlan.billingCycle === 'one_time' ? 'one-time' : billingCycleLabel(diagPlan.billingCycle)}
+                              </span>
+                            </div>
                             <p className="text-slate text-xs mt-0.5 max-w-md leading-relaxed">{diagPlan.tagline}</p>
                           </div>
                         </div>

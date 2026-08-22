@@ -28,7 +28,7 @@
 │ Atlas     │      │ (cache,   │      │ Stripe          │
 │           │      │  sessions,│      │ Cloudinary      │
 │           │      │  rate     │      │ Brevo SMTP      │
-│           │      │  limits)  │      │ OpenAI          │
+│           │      │  limits)  │      │ Gemini          │
 └───────────┘      └───────────┘      └─────────────────┘
 ```
 

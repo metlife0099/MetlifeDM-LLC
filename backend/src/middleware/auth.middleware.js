@@ -28,9 +28,17 @@ export const requireAuth = asyncHandler(async (req, res, next) => {
     throw ApiError.unauthorized(err.name === 'TokenExpiredError' ? 'Session expired' : 'Invalid token');
   }
 
-  const user = await User.findById(payload.sub).select('+status +role').lean();
+  const user = await User.findById(payload.sub)
+    .select('+status +role +passwordChangedAt +tokenVersion')
+    .lean();
   if (!user) throw ApiError.unauthorized('User no longer exists');
   if (user.status !== USER_STATUS.ACTIVE) throw ApiError.forbidden(`Account is ${user.status}`);
+  if (user.passwordChangedAt && user.passwordChangedAt.getTime() / 1000 > payload.iat) {
+    throw ApiError.unauthorized('Password changed; please sign in again');
+  }
+  if ((payload.ver || 0) !== (user.tokenVersion || 0)) {
+    throw ApiError.unauthorized('Session has been revoked');
+  }
 
   req.user = user;
   req.token = token;
@@ -46,8 +54,12 @@ export const optionalAuth = asyncHandler(async (req, res, next) => {
 
   try {
     const payload = verifyAccessToken(token);
-    const user = await User.findById(payload.sub).lean();
+    const user = await User.findById(payload.sub).select('+passwordChangedAt +tokenVersion').lean();
     if (user && user.status === USER_STATUS.ACTIVE) {
+      if (user.passwordChangedAt && user.passwordChangedAt.getTime() / 1000 > payload.iat) {
+        return next();
+      }
+      if ((payload.ver || 0) !== (user.tokenVersion || 0)) return next();
       req.user = user;
       req.token = token;
     }

@@ -49,7 +49,7 @@ export default function ContactPage() {
   const mutation = useMutation({
     mutationFn: leadsApi.submitContact,
     onSuccess: () => {
-      toast.success("Message sent. We'll reply within one business day.");
+      toast.success('Message received. We will review it and follow up by email.');
       reset();
     },
     onError: (e) => toast.error(getErrorMessage(e)),
@@ -78,7 +78,7 @@ export default function ContactPage() {
     <>
       <Seo
         title="Contact"
-        description="Get in touch with MetlifeDM. We respond to every inquiry within one business day."
+        description="Contact MetlifeDM about digital marketing, web development, account support, or a potential project."
         keywords="contact digital marketing agency, get a marketing quote, marketing agency contact, digital marketing consultation request"
       />
 
@@ -95,7 +95,7 @@ export default function ContactPage() {
             <span className="text-italic-fraunces text-ultra-soft">conversation.</span>
           </h1>
           <p className="text-ivory/75 text-lg mt-8 max-w-xl leading-relaxed">
-            Tell us about your business. We&apos;ll get back within one business day with next steps or thoughtful questions — no auto-responders, no drip campaigns.
+            Tell us about your business. We&apos;ll review the details and follow up with useful next steps or clarifying questions.
           </p>
         </Container>
       </Section>

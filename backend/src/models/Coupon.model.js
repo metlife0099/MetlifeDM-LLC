@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { isCurrencyAmount } from '../utils/money.js';
 
 const { Schema } = mongoose;
 
@@ -14,11 +15,21 @@ const couponSchema = new Schema(
     },
     description: String,
     type: { type: String, enum: ['percent', 'fixed'], required: true },
-    value: { type: Number, required: true, min: 0 },
+    value: {
+      type: Number,
+      required: true,
+      min: 0,
+      validate: {
+        validator(value) {
+          return this.type === 'percent' || isCurrencyAmount(value);
+        },
+        message: 'Fixed coupon value must use at most two decimal places',
+      },
+    },
 
     // Restrictions
-    minPurchase: { type: Number, default: 0 },
-    maxDiscount: Number, // cap for percent coupons
+    minPurchase: { type: Number, default: 0, validate: isCurrencyAmount },
+    maxDiscount: { type: Number, validate: isCurrencyAmount }, // cap for percent coupons
 
     // Usage
     usageLimit: { type: Number, default: null },     // null = unlimited
@@ -29,6 +40,16 @@ const couponSchema = new Schema(
         user: { type: Schema.Types.ObjectId, ref: 'User' },
         order: { type: Schema.Types.ObjectId, ref: 'Order' },
         at: { type: Date, default: Date.now },
+      },
+    ],
+    // Checkout reservations close the race between validating a coupon and
+    // Stripe confirming payment. Stale reservations are ignored/reclaimed.
+    reservations: [
+      {
+        user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        order: { type: Schema.Types.ObjectId, ref: 'Order', required: true },
+        expiresAt: { type: Date, required: true },
+        createdAt: { type: Date, default: Date.now },
       },
     ],
 
@@ -48,6 +69,7 @@ const couponSchema = new Schema(
     stripePromoCodeId: String,
 
     createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    deletedAt: Date,
   },
   { timestamps: true }
 );
@@ -60,6 +82,16 @@ couponSchema.methods.isValid = function () {
   if (this.usageLimit && this.usedCount >= this.usageLimit) return { valid: false, reason: 'Coupon usage limit reached' };
   return { valid: true };
 };
+
+couponSchema.pre('validate', function (next) {
+  if (this.type === 'percent' && this.value > 100) {
+    this.invalidate('value', 'Percentage coupon value cannot exceed 100');
+  }
+  if (this.startsAt && this.expiresAt && this.expiresAt <= this.startsAt) {
+    this.invalidate('expiresAt', 'Coupon expiry must be after its start date');
+  }
+  next();
+});
 
 couponSchema.methods.calculateDiscount = function (subtotal) {
   let discount = this.type === 'percent' ? (subtotal * this.value) / 100 : this.value;

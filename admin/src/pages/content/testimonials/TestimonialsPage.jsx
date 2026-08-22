@@ -74,7 +74,7 @@ export default function TestimonialsPage() {
       key: 'quote', label: 'Quote',
       render: (r) => (
         <div className="max-w-md">
-          <div className="text-italic-fraunces text-sm text-ink line-clamp-2">"{truncate(r.quote || r.content, 90)}"</div>
+          <div className="text-italic-fraunces text-sm text-ink line-clamp-2">&ldquo;{truncate(r.quote || r.content, 90)}&rdquo;</div>
         </div>
       ),
     },

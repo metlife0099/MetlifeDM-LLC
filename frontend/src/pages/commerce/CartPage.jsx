@@ -1,24 +1,25 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Trash2, ArrowUpRight, ArrowLeft, Tag, Plus, Minus } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { removeItem, updateQuantity, setCoupon, clearCart } from '@/store/index.js';
+import { removeItem, updateQuantity, replaceCartItems, setCoupon, clearCart } from '@/store/index.js';
 import {
   selectCartItems,
   selectCartSubtotal,
   selectCartDiscount,
   selectCartTotal,
 } from '@/store/selectors.js';
-import { commerceApi } from '@/api/index.js';
+import { commerceApi, contentApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
-import { Card, Input, Spinner } from '@/components/ui/index.jsx';
+import { Card, Spinner } from '@/components/ui/index.jsx';
 import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { formatMoney } from '@/utils/format.js';
+import { billingCycleLabel, reconcileCartItems } from '@/utils/commerce.js';
 
 export default function CartPage() {
   const items = useSelector(selectCartItems);
@@ -31,11 +32,30 @@ export default function CartPage() {
   const [couponCode, setCouponCode] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
+  const catalogue = useQuery({
+    queryKey: ['services', 'cart-validation'],
+    queryFn: () => contentApi.listServices({ limit: 100, sortBy: 'order', sortOrder: 'asc' }).then((result) => result.data),
+    enabled: items.length > 0,
+    staleTime: 0,
+  });
+
+  useEffect(() => {
+    if (!catalogue.data) return;
+    const result = reconcileCartItems(items, catalogue.data);
+    if (!result.changed) return;
+    dispatch(replaceCartItems(result.items));
+    const parts = [];
+    if (result.updatedCount) parts.push(`${result.updatedCount} price${result.updatedCount === 1 ? '' : 's'} updated`);
+    if (result.removedCount) parts.push(`${result.removedCount} unavailable item${result.removedCount === 1 ? '' : 's'} removed`);
+    toast(parts.join('; '), { icon: '↻' });
+  }, [catalogue.data, dispatch, items]);
+
   const validateCoupon = useMutation({
-    mutationFn: ({ code, subtotal }) => commerceApi.validateCoupon(code, subtotal),
+    mutationFn: ({ code, cartItems }) => commerceApi.validateCoupon(code, cartItems),
     onSuccess: (r) => {
-      dispatch(setCoupon({ code: r.code, discount: r.discount, description: r.description }));
-      toast.success(`Coupon applied: −${formatMoney(r.discount)}`);
+      const authoritativeDiscount = Number(r.discount ?? r.appliedDiscount ?? 0);
+      dispatch(setCoupon({ code: r.code, discount: authoritativeDiscount, description: r.description }));
+      toast.success(`Coupon applied: −${formatMoney(authoritativeDiscount)}`);
       setCouponCode('');
     },
     onError: (e) => toast.error(getErrorMessage(e)),
@@ -110,6 +130,12 @@ export default function CartPage() {
 
       <Section spacing="lg">
         <Container>
+          {catalogue.isError && (
+            <div role="alert" className="mb-8 border border-warn/30 bg-warn/5 p-4 text-sm text-ink">
+              We couldn&apos;t refresh current pricing. The server will verify availability and the final total before payment.{' '}
+              <button type="button" onClick={() => catalogue.refetch()} className="link-underline text-ultra">Try again</button>
+            </div>
+          )}
           <div className="grid gap-14 lg:grid-cols-[2fr_1fr]">
             {/* Items */}
             <div className="divide-editorial border-t border-hairline">
@@ -117,7 +143,9 @@ export default function CartPage() {
                 <div key={i} className="py-6 grid grid-cols-[auto_1fr_auto] gap-6 items-start">
                   <div className="text-4xl">{item.icon || '📦'}</div>
                   <div className="min-w-0">
-                    <div className="text-mono text-xs uppercase tracking-widest text-slate">{item.planName}</div>
+                    <div className="text-mono text-xs uppercase tracking-widest text-slate">
+                      {item.planName} · {billingCycleLabel(item.billingCycle)}
+                    </div>
                     <Link to={`/services/${item.slug}`} className="text-display-sm block mt-1 hover:text-ultra transition-colors truncate">
                       {item.serviceName}
                     </Link>
@@ -203,7 +231,7 @@ export default function CartPage() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => couponCode && validateCoupon.mutate({ code: couponCode, subtotal })}
+                        onClick={() => couponCode && validateCoupon.mutate({ code: couponCode, cartItems: items })}
                         disabled={!couponCode || validateCoupon.isPending}
                       >
                         {validateCoupon.isPending ? <Spinner size={12} /> : 'Apply'}
@@ -216,8 +244,9 @@ export default function CartPage() {
                   className="w-full mt-8"
                   size="lg"
                   onClick={() => navigate('/checkout')}
+                  disabled={catalogue.isFetching}
                 >
-                  Checkout <ArrowUpRight size={16} strokeWidth={1.5} />
+                  {catalogue.isFetching ? 'Checking current prices…' : 'Checkout'} <ArrowUpRight size={16} strokeWidth={1.5} />
                 </Button>
                 <p className="text-mono text-xs text-slate mt-4 text-center">
                   Secure checkout via Stripe

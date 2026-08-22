@@ -7,12 +7,11 @@ import toast from 'react-hot-toast';
 import { PageHeader, FilterBar, Breadcrumbs } from '@/components/ui/PageHeader.jsx';
 import DataTable from '@/components/ui/DataTable.jsx';
 import { StatusPill, Card, PageLoader, Badge, NewBadge } from '@/components/ui/index.jsx';
-import { Select, SearchInput, Textarea } from '@/components/form/index.jsx';
+import { Select, Textarea } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import { chatApi } from '@/api/index.js';
 import { getAccessToken, getErrorMessage } from '@/api/client.js';
 import { getSocketUrl } from '@/utils/socket.js';
-import { useDebounce } from '@/hooks/index.js';
 import { timeAgo, initials, truncate, humanize } from '@/utils/format.js';
 
 const CHAT_STATUSES = [
@@ -27,13 +26,11 @@ const CHAT_STATUSES = [
  * ============================================================ */
 export function ChatsListPage() {
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
-  const debounced = useDebounce(search, 300);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'chats', { page, debounced, status }],
-    queryFn: () => chatApi.list({ page, search: debounced, status, limit: 25 }),
+    queryKey: ['admin', 'chats', { page, status }],
+    queryFn: () => chatApi.list({ page, status, limit: 25 }),
     refetchInterval: 20_000,
   });
 
@@ -76,8 +73,7 @@ export function ChatsListPage() {
         actions={<NewBadge resourceType="chat" />}
       />
       <FilterBar>
-        <SearchInput value={search} onChange={setSearch} placeholder="Search conversations…" className="w-64" />
-        <Select className="w-44" options={[{ value: '', label: 'All statuses' }, ...CHAT_STATUSES]} value={status} onChange={(e) => setStatus(e.target.value)} />
+        <Select className="w-44" options={[{ value: '', label: 'All statuses' }, ...CHAT_STATUSES]} value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} />
       </FilterBar>
       <DataTable
         columns={columns} rows={data?.data || []} loading={isLoading}
@@ -98,7 +94,6 @@ export function ChatDetailPage() {
   const [reply, setReply] = useState('');
   const [messages, setMessages] = useState([]);
   const bottomRef = useRef(null);
-  const socketRef = useRef(null);
 
   const { data: chat, isLoading } = useQuery({
     queryKey: ['admin', 'chat', id],
@@ -108,6 +103,7 @@ export function ChatDetailPage() {
   const { data: chatMessages, isLoading: messagesLoading } = useQuery({
     queryKey: ['admin', 'chat', id, 'messages'],
     queryFn: () => chatApi.messages(id),
+    refetchInterval: 15_000,
   });
 
   const { data: suggestions, refetch: refetchSuggestions, isFetching: loadingSuggestions } = useQuery({
@@ -125,15 +121,14 @@ export function ChatDetailPage() {
   // (customer messages, bot replies, or other agents replying) without
   // waiting on a poll.
   useEffect(() => {
+    if (import.meta.env.VITE_ENABLE_REALTIME === 'false') return undefined;
     const token = getAccessToken();
-    if (!token) return;
+    if (!token) return undefined;
     const socket = io(getSocketUrl(), {
       path: '/socket.io',
       auth: { token },
       transports: ['websocket', 'polling'],
     });
-    socketRef.current = socket;
-
     socket.emit('chat:join', { chatId: id });
     const onMessage = (msg) => {
       if (msg.chat === id || msg.chat?.toString?.() === id) {
@@ -155,7 +150,11 @@ export function ChatDetailPage() {
 
   const send = useMutation({
     mutationFn: (content) => chatApi.send(id, content),
-    onSuccess: () => setReply(''),
+    onSuccess: () => {
+      setReply('');
+      qc.invalidateQueries({ queryKey: ['admin', 'chat', id, 'messages'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'chats'] });
+    },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
 

@@ -1,5 +1,8 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 
+let scrollLockCount = 0;
+let scrollLockOriginalOverflow = '';
+
 /* ————— useDebounce ————— */
 export function useDebounce(value, delay = 300) {
   const [debounced, setDebounced] = useState(value);
@@ -84,10 +87,12 @@ export function useEscape(handler, active = true) {
 export function useScrollLock(locked) {
   useEffect(() => {
     if (!locked) return;
-    const prev = document.body.style.overflow;
+    if (scrollLockCount === 0) scrollLockOriginalOverflow = document.body.style.overflow;
+    scrollLockCount += 1;
     document.body.style.overflow = 'hidden';
     return () => {
-      document.body.style.overflow = prev;
+      scrollLockCount = Math.max(0, scrollLockCount - 1);
+      if (scrollLockCount === 0) document.body.style.overflow = scrollLockOriginalOverflow;
     };
   }, [locked]);
 }

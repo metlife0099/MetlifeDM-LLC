@@ -33,6 +33,7 @@ const refreshTokenSchema = new Schema(
     token: { type: String, required: true },
     ip: String,
     userAgent: String,
+    rememberMe: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
     expiresAt: { type: Date, required: true },
     revokedAt: Date,
@@ -95,8 +96,23 @@ const userSchema = new Schema(
     },
 
     // Auth
+    stripeCustomerId: { type: String, unique: true, sparse: true, index: true, select: false },
+    firstOrderDiscountReservation: {
+      type: {
+        order: { type: Schema.Types.ObjectId, ref: 'Order' },
+        coupon: { type: Schema.Types.ObjectId, ref: 'Coupon' },
+        expiresAt: Date,
+      },
+      select: false,
+      _id: false,
+    },
+    firstOrderDiscountUsedAt: { type: Date, select: false },
+    firstOrderDiscountOrder: { type: Schema.Types.ObjectId, ref: 'Order', select: false },
     refreshTokens: { type: [refreshTokenSchema], select: false, default: [] },
+    tokenVersion: { type: Number, default: 0, select: false },
     passwordChangedAt: Date,
+    passwordResetTokenHash: { type: String, select: false },
+    passwordResetRequestedAt: { type: Date, select: false },
     lastLoginAt: Date,
     loginHistory: { type: [loginHistorySchema], select: false, default: [] },
     failedLoginAttempts: { type: Number, default: 0, select: false },
@@ -104,6 +120,13 @@ const userSchema = new Schema(
 
     // Marketing
     newsletterSubscribed: { type: Boolean, default: false },
+    legalAcceptance: {
+      acceptedAt: Date,
+      termsVersion: String,
+      privacyVersion: String,
+      ipAddress: String,
+      userAgent: String,
+    },
 
     // Wishlist
     wishlistServices: [{ type: Schema.Types.ObjectId, ref: 'Service' }],
@@ -130,19 +153,46 @@ const userSchema = new Schema(
     toJSON: {
       virtuals: true,
       transform: (_, ret) => {
+        ret.twoFactorEnabled = Boolean(ret.twoFactor?.enabled);
         delete ret.password;
         delete ret.refreshTokens;
         delete ret.twoFactor;
+        delete ret.firstOrderDiscountReservation;
+        delete ret.firstOrderDiscountUsedAt;
+        delete ret.firstOrderDiscountOrder;
+        delete ret.stripeCustomerId;
+        delete ret.tokenVersion;
         delete ret.__v;
         return ret;
       },
     },
-    toObject: { virtuals: true },
+    toObject: {
+      virtuals: true,
+      transform: (_, ret) => {
+        ret.twoFactorEnabled = Boolean(ret.twoFactor?.enabled);
+        delete ret.password;
+        delete ret.refreshTokens;
+        delete ret.twoFactor;
+        delete ret.firstOrderDiscountReservation;
+        delete ret.firstOrderDiscountUsedAt;
+        delete ret.firstOrderDiscountOrder;
+        delete ret.stripeCustomerId;
+        delete ret.tokenVersion;
+        delete ret.failedLoginAttempts;
+        delete ret.lockedUntil;
+        delete ret.__v;
+        return ret;
+      },
+    },
   }
 );
 
 userSchema.virtual('fullName').get(function () {
   return `${this.firstName} ${this.lastName}`.trim();
+});
+
+userSchema.virtual('twoFactorEnabled').get(function () {
+  return Boolean(this.twoFactor?.enabled);
 });
 
 userSchema.virtual('isLocked').get(function () {

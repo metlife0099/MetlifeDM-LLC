@@ -5,13 +5,13 @@ import toast from 'react-hot-toast';
 import { commerceApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { DashHeader, DashEmpty } from '@/components/dashboard/DashHeader.jsx';
-import { Spinner, Badge } from '@/components/ui/index.jsx';
+import { QueryError, Spinner, Badge } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { formatMoney, formatDate, downloadBlob } from '@/utils/format.js';
 
 export default function InvoicesPage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['payments', 'mine'],
     queryFn: () => commerceApi.listMyPayments({ limit: 30 }),
   });
@@ -41,6 +41,8 @@ export default function InvoicesPage() {
 
       {isLoading ? (
         <div className="flex justify-center py-24"><Spinner size={28} className="text-ultra" /></div>
+      ) : isError ? (
+        <QueryError title="Invoices could not be loaded." onRetry={refetch} />
       ) : payments.length === 0 ? (
         <DashEmpty
           title="No invoices yet"

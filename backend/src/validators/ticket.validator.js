@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const createTicketSchema = z.object({
   subject: z.string().min(3).max(200),
   description: z.string().min(10).max(5000),
-  category: z.enum(['general', 'billing', 'technical', 'account', 'refund', 'complaint', 'feature_request', 'other']).optional(),
+  category: z.enum(['general', 'billing', 'technical', 'sales', 'refund', 'complaint', 'other']).optional(),
   priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
   order: z.string().optional(),
   service: z.string().optional(),
@@ -11,13 +11,13 @@ export const createTicketSchema = z.object({
 });
 
 export const replyTicketSchema = z.object({
-  content: z.string().min(1),
+  content: z.string().trim().min(1).max(10000),
   isInternal: z.boolean().optional(),
 });
 
 export const updateTicketSchema = z.object({
   status: z.enum(['open', 'in_progress', 'waiting_customer', 'resolved', 'closed']).optional(),
   priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
-  assignedTo: z.string().optional(),
+  assignedTo: z.string().nullable().optional(),
   tags: z.array(z.string()).optional(),
 });

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,18 +24,34 @@ const BILLING_CYCLES = [
   { value: 'custom', label: 'Custom' },
 ];
 
+const BILLING_CYCLE_VALUES = ['one_time', 'monthly', 'quarterly', 'yearly', 'custom'];
+
 const planSchema = z.object({
   name: z.string().min(1, 'Required'),
   tagline: z.string().optional(),
   price: z.coerce.number().min(0),
   compareAtPrice: z.coerce.number().optional(),
   currency: z.string().optional(),
-  billingCycle: z.string().optional(),
+  billingCycle: z.enum(BILLING_CYCLE_VALUES),
+  stripePriceId: z
+    .union([z.literal(''), z.string().trim().regex(/^price_[A-Za-z0-9]+$/, 'Use a valid Stripe Price ID')])
+    .optional(),
+  stripeProductId: z
+    .union([z.literal(''), z.string().trim().regex(/^prod_[A-Za-z0-9]+$/, 'Use a valid Stripe Product ID')])
+    .optional(),
   ctaLabel: z.string().optional(),
   deliveryTimeDays: z.coerce.number().optional(),
   revisions: z.coerce.number().optional(),
   isPopular: z.boolean().optional(),
   features: z.array(z.object({ label: z.string().min(1, 'Required'), included: z.boolean().optional() })).optional(),
+}).superRefine((plan, context) => {
+  if (plan.billingCycle !== 'one_time' && !plan.stripePriceId?.trim()) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['stripePriceId'],
+      message: 'Stripe Price ID is required for recurring billing',
+    });
+  }
 });
 
 const schema = z.object({
@@ -406,6 +422,7 @@ export default function ServiceEditPage() {
                     register={register}
                     errors={errors}
                     index={i}
+                    billingCycle={watchedPlans[i]?.billingCycle}
                     onRemove={() => plansArr.remove(i)}
                   />
                 ))}
@@ -528,7 +545,7 @@ export default function ServiceEditPage() {
  * checklist needs its own useFieldArray — hooks can't be called inside a
  * loop callback in the parent.
  */
-function PricingPlanRow({ control, register, errors, index, onRemove }) {
+function PricingPlanRow({ control, register, errors, index, billingCycle, onRemove }) {
   const featuresArr = useFieldArray({ control, name: `pricingPlans.${index}.features` });
 
   return (
@@ -554,8 +571,29 @@ function PricingPlanRow({ control, register, errors, index, onRemove }) {
         <Input label="Currency" placeholder="USD" {...register(`pricingPlans.${index}.currency`)} />
         <Select
           label="Billing cycle"
+          required
           options={BILLING_CYCLES}
           {...register(`pricingPlans.${index}.billingCycle`)}
+          error={errors.pricingPlans?.[index]?.billingCycle?.message}
+        />
+        <Input
+          label="Stripe Price ID"
+          required={billingCycle !== 'one_time'}
+          placeholder="price_..."
+          hint={
+            billingCycle === 'one_time'
+              ? 'Optional for one-time plans'
+              : 'Required: use the recurring Price ID from the matching Stripe production product'
+          }
+          {...register(`pricingPlans.${index}.stripePriceId`)}
+          error={errors.pricingPlans?.[index]?.stripePriceId?.message}
+        />
+        <Input
+          label="Stripe Product ID"
+          placeholder="prod_..."
+          hint="Optional reference to the matching Stripe product"
+          {...register(`pricingPlans.${index}.stripeProductId`)}
+          error={errors.pricingPlans?.[index]?.stripeProductId?.message}
         />
         <Input label="CTA label" placeholder="Add to cart" {...register(`pricingPlans.${index}.ctaLabel`)} />
         <Input label="Delivery time (days)" type="number" {...register(`pricingPlans.${index}.deliveryTimeDays`)} />

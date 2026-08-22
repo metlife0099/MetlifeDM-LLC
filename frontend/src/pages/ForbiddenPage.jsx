@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShieldAlert, ArrowUpRight, Home } from 'lucide-react';
 import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';

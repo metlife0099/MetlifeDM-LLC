@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Search, ChevronDown, MessageCircleQuestion, Clock, ThumbsUp, Sparkles } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
-import { Spinner } from '@/components/ui/index.jsx';
+import { QueryError, Spinner } from '@/components/ui/index.jsx';
 import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
@@ -13,9 +13,9 @@ import { useDebounce } from '@/hooks/index.js';
 import { cn } from '@/utils/format.js';
 
 const SUPPORT_STATS = [
-  { icon: Clock, label: 'Avg. reply time', value: '< 4 hrs' },
-  { icon: ThumbsUp, label: 'Client satisfaction', value: '98%' },
-  { icon: Sparkles, label: 'Questions answered', value: '10K+' },
+  { icon: Clock, label: 'Response channel', value: 'Email + portal' },
+  { icon: ThumbsUp, label: 'Help topics', value: 'Account + services' },
+  { icon: Sparkles, label: 'Answer style', value: 'Plain language' },
 ];
 
 const CATEGORIES = [
@@ -37,7 +37,7 @@ export default function FaqPage() {
   const [openIdx, setOpenIdx] = useState(null);
   const debouncedQuery = useDebounce(query, 300);
 
-  const { data: faqs = [], isLoading } = useQuery({
+  const { data: faqs = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['faqs', 'all', category, debouncedQuery],
     queryFn: () =>
       contentApi
@@ -145,6 +145,8 @@ export default function FaqPage() {
             <div>
               {isLoading ? (
                 <div className="flex justify-center py-24"><Spinner size={28} className="text-ultra" /></div>
+              ) : isError ? (
+                <QueryError title="FAQs are temporarily unavailable." onRetry={refetch} />
               ) : faqs.length === 0 ? (
                 <div className="text-center py-24 text-slate">
                   No FAQs match your search.{' '}
@@ -214,7 +216,7 @@ export default function FaqPage() {
 
       <CtaBanner
         title="Still stuck?"
-        subtitle="If we didn't cover it, ping us — we reply within one business day."
+        subtitle="If we didn't cover it, send us your question and we'll review it."
       />
     </>
   );

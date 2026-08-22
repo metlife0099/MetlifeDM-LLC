@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { toSlug } from '../utils/helpers.js';
 import { BILLING_CYCLE } from '../utils/constants.js';
+import { isCurrencyAmount } from '../utils/money.js';
 
 const { Schema } = mongoose;
 
@@ -8,16 +9,16 @@ const pricingPlanSchema = new Schema(
   {
     name: { type: String, required: true },       // Starter, Growth, Enterprise
     tagline: String,
-    price: { type: Number, required: true, min: 0 },
-    compareAtPrice: { type: Number, min: 0 },
+    price: { type: Number, required: true, min: 0, validate: isCurrencyAmount },
+    compareAtPrice: { type: Number, min: 0, validate: isCurrencyAmount },
     currency: { type: String, default: 'USD', uppercase: true },
     billingCycle: {
       type: String,
       enum: Object.values(BILLING_CYCLE),
       default: BILLING_CYCLE.MONTHLY,
     },
-    stripePriceId: String,             // for subscriptions
-    stripeProductId: String,
+    stripePriceId: { type: String, match: /^price_[A-Za-z0-9]+$/ },
+    stripeProductId: { type: String, match: /^prod_[A-Za-z0-9]+$/ },
     features: [{ label: String, included: { type: Boolean, default: true } }],
     isPopular: { type: Boolean, default: false },
     ctaLabel: { type: String, default: 'Add to cart' },
@@ -105,7 +106,7 @@ const serviceSchema = new Schema(
 
     // Pricing
     pricingPlans: [pricingPlanSchema],
-    startingPrice: { type: Number, min: 0 },
+    startingPrice: { type: Number, min: 0, validate: isCurrencyAmount },
     comparisonTable: [comparisonRowSchema],
 
     // Relations
@@ -136,6 +137,28 @@ const serviceSchema = new Schema(
 
 serviceSchema.index({ title: 'text', shortDescription: 'text', description: 'text' });
 serviceSchema.index({ category: 1, isPublished: 1, order: 1 });
+
+serviceSchema.pre('validate', function (next) {
+  if (this.isPublished) {
+    const nonUsdPlan = this.pricingPlans?.find(
+      (plan) => plan.billingCycle !== BILLING_CYCLE.CUSTOM && plan.currency !== 'USD'
+    );
+    if (nonUsdPlan) {
+      this.invalidate('pricingPlans', `Published plan "${nonUsdPlan.name}" must use USD`);
+    }
+    const missingPrice = this.pricingPlans?.find(
+      (plan) => ![BILLING_CYCLE.ONE_TIME, BILLING_CYCLE.CUSTOM].includes(plan.billingCycle) &&
+        !plan.stripePriceId
+    );
+    if (missingPrice) {
+      this.invalidate(
+        'pricingPlans',
+        `Published recurring plan "${missingPrice.name}" requires a Stripe price ID`
+      );
+    }
+  }
+  next();
+});
 
 serviceSchema.pre('save', function (next) {
   if (this.isModified('title') && !this.slug) this.slug = toSlug(this.title);

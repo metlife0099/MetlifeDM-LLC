@@ -10,7 +10,6 @@ export default class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    // eslint-disable-next-line no-console
     console.error('UI ErrorBoundary:', error, info);
   }
 
@@ -22,11 +21,11 @@ export default class ErrorBoundary extends Component {
             <div className="text-eyebrow mb-6">Error / 500</div>
             <h1 className="text-display-md mb-4">Something broke on our end.</h1>
             <p className="text-slate text-sm mb-8">
-              We&apos;ve been notified. Try reloading — if it persists, please contact support.
+              Try reloading. If the problem persists, please contact support and describe what you were doing.
             </p>
             <div className="flex gap-3 justify-center">
               <Button onClick={() => window.location.reload()}>Reload</Button>
-              <Button to="/" variant="ghost">
+              <Button href="/" variant="ghost">
                 Go home
               </Button>
             </div>

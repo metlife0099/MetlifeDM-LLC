@@ -4,6 +4,7 @@ import ApiError from '../utils/ApiError.js';
 import { User, Service, Order } from '../models/index.js';
 import { getPaginationOptions, paginate } from '../utils/pagination.js';
 import { deleteFromCloudinary, uploadToCloudinary } from '../config/cloudinary.js';
+import { revokeAllTokens } from '../services/auth.service.js';
 
 /* ---------------- Self ---------------- */
 
@@ -107,20 +108,46 @@ export const getUserById = asyncHandler(async (req, res) => {
 });
 
 export const adminUpdateUser = asyncHandler(async (req, res) => {
+  const target = await User.findById(req.params.id);
+  if (!target) throw ApiError.notFound('User not found');
+  if (target.role === 'super_admin' && req.user.role !== 'super_admin') {
+    throw ApiError.forbidden('Only a super admin can modify a super admin');
+  }
+  if (req.body.role && req.user.role !== 'super_admin') {
+    throw ApiError.forbidden('Only a super admin can change roles');
+  }
+  if (
+    req.user._id.toString() === target._id.toString() &&
+    (req.body.role || (req.body.status && req.body.status !== 'active'))
+  ) {
+    throw ApiError.badRequest('You cannot demote or deactivate your own account');
+  }
   const user = await User.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
   });
   if (!user) throw ApiError.notFound('User not found');
+  if (req.body.role || (req.body.status && req.body.status !== 'active')) {
+    await revokeAllTokens(user._id);
+  }
   return ApiResponse.ok(res, { user }, 'User updated');
 });
 
 export const adminDeleteUser = asyncHandler(async (req, res) => {
+  const target = await User.findById(req.params.id);
+  if (!target) throw ApiError.notFound('User not found');
+  if (target._id.toString() === req.user._id.toString()) {
+    throw ApiError.badRequest('You cannot delete your own account');
+  }
+  if (target.role === 'super_admin' && req.user.role !== 'super_admin') {
+    throw ApiError.forbidden('Only a super admin can delete a super admin');
+  }
   const user = await User.findByIdAndUpdate(
     req.params.id,
     { status: 'deleted', deletedAt: new Date() },
-    { new: true }
+    { new: true, runValidators: true }
   );
   if (!user) throw ApiError.notFound('User not found');
+  await revokeAllTokens(user._id);
   return ApiResponse.ok(res, null, 'User soft-deleted');
 });

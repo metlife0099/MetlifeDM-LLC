@@ -100,7 +100,7 @@ Each of the three projects has its own `package.json`, `node_modules`, `.env`, a
 | Media | Cloudinary (auto-WebP, transformations) |
 | Email | Brevo SMTP via Nodemailer + Handlebars |
 | Realtime | Socket.io (tickets, chat, notifications) |
-| AI | OpenAI (`gpt-4o-mini`) — chat, content suggestions |
+| AI | Google Gemini (`gemini-2.5-flash`) — customer chat and human handoff |
 | Validation | Zod |
 | Logging | Winston + daily-rotate-file |
 | Security | Helmet, CORS, express-mongo-sanitize, xss, hpp, express-rate-limit |
@@ -203,9 +203,9 @@ SMTP_USER=...
 SMTP_PASS=...
 EMAIL_FROM="MetlifeDM <team@metlifedm.com>"
 
-# OpenAI (optional)
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4o-mini
+# Google Gemini (optional; disable chat when omitted)
+GEMINI_API_KEY=...
+GEMINI_MODEL=gemini-2.5-flash
 ```
 
 ### `frontend/.env`
@@ -291,13 +291,13 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full design token ref
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System diagram, data flow, design tokens |
 | [`docs/API.md`](docs/API.md) | REST API reference by module (auth, content, commerce…) |
 | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | Production deployment: Vercel/Railway/AWS + Stripe webhooks |
+| [`docs/PRODUCTION_CHECKLIST.md`](docs/PRODUCTION_CHECKLIST.md) | Required release gates and live payment smoke test |
 | [`docs/SEO.md`](docs/SEO.md) | SEO configuration: meta tags, structured data, Search Console |
 | [`docs/SITEMAP.md`](docs/SITEMAP.md) | Sitemap structure, dynamic generation, submission |
 | [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md) | Coding conventions, branch strategy, commit format |
 
 Each sub-project also has its own README:
 
-- [`backend/README.md`](backend/README.md)
 - [`frontend/README.md`](frontend/README.md)
 - [`admin/README.md`](admin/README.md)
 

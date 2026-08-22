@@ -3,12 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, ExternalLink, TrendingUp, TrendingDown } from 'lucide-react';
 import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
-import { Spinner, Badge } from '@/components/ui/index.jsx';
+import { QueryError, Spinner, Badge } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
 import { contentApi } from '@/api/index.js';
 import { cn } from '@/utils/format.js';
+import { sanitizeRichText } from '@/utils/sanitizeHtml.js';
 
 const fadeUp = {
   initial: { opacity: 0, y: 24 },
@@ -19,7 +20,7 @@ const fadeUp = {
 
 export default function PortfolioDetailsPage() {
   const { slug } = useParams();
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['portfolio', slug],
     queryFn: () => contentApi.getPortfolioBySlug(slug),
     enabled: !!slug,
@@ -27,6 +28,9 @@ export default function PortfolioDetailsPage() {
 
   if (isLoading) {
     return <div className="grid place-items-center min-h-[60vh]"><Spinner size={32} className="text-ultra" /></div>;
+  }
+  if (error && error.response?.status !== 404) {
+    return <Section spacing="xl"><Container><QueryError title="This project could not be loaded." onRetry={refetch} /></Container></Section>;
   }
   if (error || !data?.portfolio) {
     return (
@@ -166,7 +170,7 @@ export default function PortfolioDetailsPage() {
               <Eyebrow number="01">The story</Eyebrow>
               <div
                 className="prose prose-lg max-w-3xl text-lg text-slate leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: p.description }}
+                dangerouslySetInnerHTML={{ __html: sanitizeRichText(p.description) }}
               />
             </motion.div>
           </Container>

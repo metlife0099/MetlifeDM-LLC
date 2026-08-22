@@ -7,6 +7,7 @@ const { Schema } = mongoose;
 const refundSchema = new Schema(
   {
     stripeRefundId: String,
+    requestId: String,
     amount: Number,
     reason: String,
     status: String,
@@ -40,8 +41,10 @@ const paymentSchema = new Schema(
     },
 
     // Stripe
-    stripePaymentIntentId: { type: String, index: true },
-    stripeChargeId: String,
+    stripePaymentIntentId: { type: String, unique: true, sparse: true, index: true },
+    stripeChargeId: { type: String, sparse: true, index: true },
+    stripeInvoiceId: { type: String, unique: true, sparse: true, index: true },
+    stripeSubscriptionId: { type: String, sparse: true, index: true },
     stripeCustomerId: String,
     stripeReceiptUrl: String,
 
@@ -56,6 +59,16 @@ const paymentSchema = new Schema(
 
     refunds: [refundSchema],
 
+    dispute: {
+      stripeDisputeId: String,
+      status: String,
+      amount: Number,
+      reason: String,
+      openedAt: Date,
+      closedAt: Date,
+      lastNotifiedStatus: String,
+    },
+
     // Invoice PDF
     invoiceUrl: String,
     invoicePublicId: String,
@@ -63,6 +76,11 @@ const paymentSchema = new Schema(
 
     // Emails sent
     receiptEmailSentAt: Date,
+    receiptEmailLeaseUntil: { type: Date, select: false },
+    customerNotificationSentAt: Date,
+    customerNotificationLeaseUntil: { type: Date, select: false },
+    sideEffectsClaimedAt: Date,
+    purchaseStatsAppliedAt: Date,
 
     // Failure details
     failureCode: String,
@@ -77,6 +95,7 @@ const paymentSchema = new Schema(
 
 paymentSchema.index({ customer: 1, createdAt: -1 });
 paymentSchema.index({ status: 1, createdAt: -1 });
+paymentSchema.index({ 'refunds.requestId': 1 }, { unique: true, sparse: true });
 
 paymentSchema.virtual('netAmount').get(function () {
   return this.amount - this.amountRefunded;

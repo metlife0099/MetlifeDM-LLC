@@ -1,5 +1,4 @@
 import { Navigate, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import { useAuth } from '@/hooks/useAuth.js';
 import { getAccessToken } from '@/api/client.js';
 import { PageLoader } from '@/components/ui/index.jsx';
@@ -10,22 +9,20 @@ import { PageLoader } from '@/components/ui/index.jsx';
  */
 export default function ProtectedRoute({ children, roles }) {
   const location = useLocation();
-  const { user } = useAuth();
-  const isAuthenticated = useSelector((s) => s.auth.isAuthenticated);
+  const { user, isAuthenticated, loading } = useAuth();
   const hasToken = getAccessToken();
 
-  // No token → straight to login
-  if (!hasToken && !isAuthenticated) {
-    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
-  }
-
-  // Token exists but user not yet hydrated → wait
-  if (hasToken && !user) {
+  // Verify the HttpOnly refresh-cookie session before trusting a cached profile
+  // or deciding that the visitor is signed out.
+  if (loading) {
     return <PageLoader label="Verifying" />;
   }
 
-  // Role guard
-  if (roles && !roles.includes(user?.role)) {
+  if (!hasToken || !isAuthenticated || !user) {
+    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  }
+
+  if (roles && !roles.includes(user.role)) {
     return <Navigate to="/403" replace />;
   }
 

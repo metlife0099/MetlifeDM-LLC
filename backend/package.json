@@ -14,6 +14,8 @@
     "lint:fix": "eslint src --ext .js --fix",
     "format": "prettier --write \"src/**/*.js\"",
     "seed": "node src/jobs/seed.js",
+    "db:indexes": "node scripts/sync-indexes.js",
+    "stripe:sync-test-prices": "node scripts/sync-stripe-test-prices.js --apply",
     "test": "node --test"
   },
   "dependencies": {

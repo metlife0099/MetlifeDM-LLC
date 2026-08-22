@@ -7,20 +7,21 @@ import { motion, useScroll, useSpring } from 'framer-motion';
 import { Heart, MessageCircle, Clock, Share2, ArrowUpRight, Reply, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Container, Section, Eyebrow } from '@/components/ui/Layout.jsx';
-import { Spinner, Badge, Textarea } from '@/components/ui/index.jsx';
+import { QueryError, Spinner, Badge, Textarea } from '@/components/ui/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
 import { contentApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { formatDate, timeAgo, initials } from '@/utils/format.js';
+import { sanitizeRichText } from '@/utils/sanitizeHtml.js';
 
 export default function BlogDetailsPage() {
   const { slug } = useParams();
   const qc = useQueryClient();
   const user = useSelector((s) => s.auth.user);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['blog', slug],
     queryFn: () => contentApi.getPostBySlug(slug),
     enabled: !!slug,
@@ -86,6 +87,9 @@ export default function BlogDetailsPage() {
   if (isLoading) {
     return <div className="grid place-items-center min-h-[60vh]"><Spinner size={32} className="text-ultra" /></div>;
   }
+  if (error && error.response?.status !== 404) {
+    return <Section spacing="xl"><Container><QueryError title="This article could not be loaded." onRetry={refetch} /></Container></Section>;
+  }
   if (error || !data?.post) {
     return (
       <Section spacing="xl">
@@ -112,7 +116,7 @@ export default function BlogDetailsPage() {
         await navigator.clipboard.writeText(window.location.href);
         toast.success('Link copied');
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
   };
@@ -247,7 +251,7 @@ export default function BlogDetailsPage() {
         <Container className="max-w-3xl">
           <article
             className="prose prose-lg max-w-none"
-            dangerouslySetInnerHTML={{ __html: post.content }}
+            dangerouslySetInnerHTML={{ __html: sanitizeRichText(post.content) }}
           />
 
           {/* Tags */}

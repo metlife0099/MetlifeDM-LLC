@@ -11,6 +11,12 @@
  * controllers that were built for PATCH.
  */
 import { Router } from 'express';
+import { validate } from '../middleware/validate.middleware.js';
+import { refundSchema, manageSubscriptionSchema, updateOrderStatusSchema } from '../validators/order.validator.js';
+import { replyTicketSchema } from '../validators/ticket.validator.js';
+import { adminUpdateUserSchema, roleUpdateSchema } from '../validators/user.validator.js';
+import { serviceCreateSchema, serviceUpdateSchema } from '../validators/service.validator.js';
+import { createCouponSchema, updateCouponSchema } from '../validators/coupon.validator.js';
 
 // ————— existing controllers —————
 import * as legacyAdmin from '../controllers/admin.controller.js';
@@ -78,9 +84,9 @@ router.get('/analytics/services', adminPanel.analyticsServices);
 router.get('/services', serviceCtrl.listAllAdmin);
 router.post('/services/reorder', serviceCtrl.reorder);
 router.get('/services/:id', serviceCtrl.getById);
-router.post('/services', serviceCtrl.createService);
-router.put('/services/:id', serviceCtrl.updateService);
-router.patch('/services/:id', serviceCtrl.updateService);
+router.post('/services', validate(serviceCreateSchema), serviceCtrl.createService);
+router.put('/services/:id', validate(serviceUpdateSchema), serviceCtrl.updateService);
+router.patch('/services/:id', validate(serviceUpdateSchema), serviceCtrl.updateService);
 router.delete('/services/:id', serviceCtrl.deleteService);
 
 /* ═══════════════════════════════════════════════════════════
@@ -224,9 +230,14 @@ router.post('/campaigns/:id/test', campaignCtrl.sendTest);
  * ═══════════════════════════════════════════════════════════ */
 router.get('/orders', orderCtrl.listOrders);
 router.get('/orders/:id', orderCtrl.getOrder);
-router.put('/orders/:id', orderCtrl.updateStatus);
-router.patch('/orders/:id/status', orderCtrl.updateStatus);
-router.post('/orders/:id/refund', adminPanel.orderRefund);
+router.put('/orders/:id', validate(updateOrderStatusSchema), orderCtrl.updateStatus);
+router.patch('/orders/:id/status', validate(updateOrderStatusSchema), orderCtrl.updateStatus);
+router.post('/orders/:id/refund', validate(refundSchema), adminPanel.orderRefund);
+router.patch(
+  '/orders/:id/subscription',
+  validate(manageSubscriptionSchema),
+  orderCtrl.adminManageSubscription
+);
 
 /* ═══════════════════════════════════════════════════════════
  * PAYMENTS
@@ -240,9 +251,9 @@ router.get('/payments/:id/invoice', paymentCtrl.downloadInvoice);
  * ═══════════════════════════════════════════════════════════ */
 router.get('/coupons', couponCtrl.listCoupons);
 router.get('/coupons/:id', couponCtrl.getCoupon);
-router.post('/coupons', couponCtrl.createCoupon);
-router.put('/coupons/:id', couponCtrl.updateCoupon);
-router.patch('/coupons/:id', couponCtrl.updateCoupon);
+router.post('/coupons', validate(createCouponSchema), couponCtrl.createCoupon);
+router.put('/coupons/:id', validate(updateCouponSchema), couponCtrl.updateCoupon);
+router.patch('/coupons/:id', validate(updateCouponSchema), couponCtrl.updateCoupon);
 router.delete('/coupons/:id', couponCtrl.deleteCoupon);
 
 /* ═══════════════════════════════════════════════════════════
@@ -250,20 +261,20 @@ router.delete('/coupons/:id', couponCtrl.deleteCoupon);
  * ═══════════════════════════════════════════════════════════ */
 router.get('/tickets', ticketCtrl.listAll);
 router.get('/tickets/:id', ticketCtrl.get);
-router.post('/tickets/:id/reply', adminPanel.ticketReply);
+router.post('/tickets/:id/reply', validate(replyTicketSchema), ticketCtrl.reply);
 router.patch('/tickets/:id/status', adminPanel.ticketUpdateStatus);
 router.patch('/tickets/:id/assign', adminPanel.ticketAssign);
-router.post('/tickets/:id/note', adminPanel.ticketAddNote);
+router.post('/tickets/:id/note', ticketCtrl.addInternalNote);
 
 /* ═══════════════════════════════════════════════════════════
  * USERS
  * ═══════════════════════════════════════════════════════════ */
 router.get('/users', userCtrl.listUsers);
 router.get('/users/:id', userCtrl.getUserById);
-router.put('/users/:id', userCtrl.adminUpdateUser);
-router.patch('/users/:id', userCtrl.adminUpdateUser);
+router.put('/users/:id', validate(adminUpdateUserSchema), userCtrl.adminUpdateUser);
+router.patch('/users/:id', validate(adminUpdateUserSchema), userCtrl.adminUpdateUser);
 router.delete('/users/:id', userCtrl.adminDeleteUser);
-router.patch('/users/:id/role', adminPanel.userUpdateRole);
+router.patch('/users/:id/role', validate(roleUpdateSchema), adminPanel.userUpdateRole);
 router.post('/users/:id/suspend', adminPanel.userSuspend);
 router.post('/users/:id/activate', adminPanel.userActivate);
 

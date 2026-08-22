@@ -51,17 +51,24 @@ export const review = {
   }),
   create: asyncHandler(async (req, res) => {
     // Verify purchase
-    const purchased = await Order.exists({
+    const purchaseFilter = {
       customer: req.user._id,
       status: { $in: ['paid', 'completed', 'in_progress'] },
       'items.service': req.body.service,
-    });
+    };
+    if (req.body.order) purchaseFilter._id = req.body.order;
+    const purchased = await Order.exists(purchaseFilter);
     const existing = await Review.findOne({ customer: req.user._id, service: req.body.service });
     if (existing) throw ApiError.conflict('You already reviewed this service');
 
     const r = await Review.create({
-      ...req.body,
       customer: req.user._id,
+      service: req.body.service,
+      order: purchased?._id,
+      rating: req.body.rating,
+      title: req.body.title,
+      comment: req.body.comment,
+      images: req.body.images,
       isVerifiedPurchase: !!purchased,
     });
     return ApiResponse.created(res, { review: r }, 'Review submitted for approval');
@@ -70,7 +77,7 @@ export const review = {
     const r = await Review.findByIdAndUpdate(
       req.params.id,
       { isApproved: req.body.isApproved, isPublished: req.body.isPublished, isFeatured: req.body.isFeatured },
-      { new: true }
+      { new: true, runValidators: true }
     );
     if (!r) throw ApiError.notFound('Review not found');
     return ApiResponse.ok(res, { review: r }, 'Review moderated');
@@ -79,7 +86,7 @@ export const review = {
     const r = await Review.findByIdAndUpdate(
       req.params.id,
       { adminReply: { content: req.body.content, author: req.user._id, at: new Date() } },
-      { new: true }
+      { new: true, runValidators: true }
     );
     if (!r) throw ApiError.notFound('Review not found');
     return ApiResponse.ok(res, { review: r }, 'Reply posted');

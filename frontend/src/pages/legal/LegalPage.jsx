@@ -6,6 +6,14 @@ import Seo from '@/components/seo/Seo.jsx';
 import { contentApi } from '@/api/index.js';
 import { SITE } from '@/utils/constants.js';
 import { formatDate } from '@/utils/format.js';
+import { sanitizeRichText } from '@/utils/sanitizeHtml.js';
+
+const headingId = (heading = '') =>
+  heading
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
 
 /**
  * Renders a legal page (privacy/terms/cookies) driven by slug.
@@ -462,13 +470,13 @@ export default function LegalPage({ slug: slugProp }) {
             <article
               className="text-ink"
               style={{ fontFamily: 'var(--font-body)', lineHeight: 1.75 }}
-              dangerouslySetInnerHTML={{ __html: page.content }}
+              dangerouslySetInnerHTML={{ __html: sanitizeRichText(page.content) }}
             />
           ) : (
             /* Structured sections (from CMS or fallback) */
             <div className="divide-editorial border-t border-hairline">
               {sections.map((s, i) => (
-                <div key={i} className="py-10 grid gap-8 md:grid-cols-[auto_1fr]">
+                <div id={headingId(s.heading)} key={i} className="scroll-mt-32 py-10 grid gap-8 md:grid-cols-[auto_1fr]">
                   <div className="md:sticky md:top-32 md:self-start">
                     <div className="num-plate text-slate text-xs mb-3">
                       {String(i + 1).padStart(2, '0')}

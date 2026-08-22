@@ -1,10 +1,70 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import * as Icons from 'lucide-react';
+import {
+  BarChart3,
+  BookOpen,
+  Briefcase,
+  Building2,
+  Calendar,
+  Circle,
+  CreditCard,
+  DollarSign,
+  ExternalLink,
+  File,
+  FileCheck,
+  FileText,
+  FolderOpen,
+  Handshake,
+  HelpCircle,
+  Image as ImageIcon,
+  Layers,
+  LayoutDashboard,
+  LifeBuoy,
+  Mail,
+  MailCheck,
+  MailPlus,
+  MessageCircle,
+  Quote,
+  Send,
+  Settings,
+  ShoppingBag,
+  Tag,
+  Users,
+} from 'lucide-react';
 import { NAV_SECTIONS, NAV_NOTIFICATION_TYPES, SITE } from '@/utils/constants.js';
 import { notificationsApi } from '@/api/index.js';
 import { cn } from '@/utils/format.js';
+
+const NAV_ICONS = {
+  BarChart3,
+  BookOpen,
+  Briefcase,
+  Building2,
+  Calendar,
+  CreditCard,
+  DollarSign,
+  File,
+  FileCheck,
+  FileText,
+  FolderOpen,
+  Handshake,
+  HelpCircle,
+  Image: ImageIcon,
+  Layers,
+  LayoutDashboard,
+  LifeBuoy,
+  Mail,
+  MailCheck,
+  MailPlus,
+  MessageCircle,
+  Quote,
+  Send,
+  Settings,
+  ShoppingBag,
+  Tag,
+  Users,
+};
 
 export default function Sidebar({ mobile = false, onNavigate }) {
   const collapsed = useSelector((s) => (mobile ? false : s.ui.sidebarCollapsed));
@@ -74,7 +134,7 @@ export default function Sidebar({ mobile = false, onNavigate }) {
             )}
             <div className="space-y-0.5">
               {sec.items.map((item) => {
-                const Icon = Icons[item.icon] || Icons.Circle;
+                const Icon = NAV_ICONS[item.icon] || Circle;
                 const resourceType = NAV_NOTIFICATION_TYPES[item.href];
                 const count = resourceType ? byType[resourceType] || 0 : 0;
                 return (
@@ -122,7 +182,7 @@ export default function Sidebar({ mobile = false, onNavigate }) {
           rel="noopener noreferrer"
           className="sidebar-link"
         >
-          <Icons.ExternalLink size={15} strokeWidth={1.5} />
+          <ExternalLink size={15} strokeWidth={1.5} />
           {!collapsed && 'View public site'}
         </a>
       </div>

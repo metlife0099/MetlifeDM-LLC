@@ -3,13 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
-import { Spinner } from '@/components/ui/index.jsx';
+import { QueryError, Spinner } from '@/components/ui/index.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
 import { contentApi } from '@/api/index.js';
 
 export default function IndustriesPage() {
-  const { data: industries = [], isLoading } = useQuery({
+  const { data: industries = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['industries', 'list'],
     queryFn: () => contentApi.listIndustries({ limit: 30 }).then((r) => r.data),
   });
@@ -44,6 +44,8 @@ export default function IndustriesPage() {
         <Container>
           {isLoading ? (
             <div className="flex justify-center py-24"><Spinner size={28} className="text-ultra" /></div>
+          ) : isError ? (
+            <QueryError title="Industries are temporarily unavailable." onRetry={refetch} />
           ) : industries.length === 0 ? (
             <div className="text-center py-24 text-slate">No industries yet.</div>
           ) : (

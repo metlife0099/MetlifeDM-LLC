@@ -21,8 +21,8 @@ import {
   Bar,
   Cell,
 } from 'recharts';
-import { PageHeader, Tabs } from '@/components/ui/PageHeader.jsx';
-import { Card, Kpi, Badge, StatusPill, Spinner, EmptyState } from '@/components/ui/index.jsx';
+import { PageHeader } from '@/components/ui/PageHeader.jsx';
+import { Card, Kpi, Badge, StatusPill } from '@/components/ui/index.jsx';
 import { Select } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import { dashboardApi } from '@/api/index.js';
@@ -71,8 +71,8 @@ export default function DashboardPage() {
   const kpis = overview?.kpis || {};
   const revenueSeries = revenue?.series || [];
   const statuses = orderStatuses?.series || [];
-  const services = topServices?.data || [];
-  const activityFeed = activity?.data || [];
+  const services = Array.isArray(topServices) ? topServices : (topServices?.data || []);
+  const activityFeed = Array.isArray(activity) ? activity : (activity?.data || []);
 
   return (
     <>

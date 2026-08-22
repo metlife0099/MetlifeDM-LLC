@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Search, ArrowUpRight, Clock, MessageCircleOff } from 'lucide-react';
 import { Container, Section, Eyebrow, HeroImage } from '@/components/ui/Layout.jsx';
-import { Badge } from '@/components/ui/index.jsx';
+import { Badge, QueryError } from '@/components/ui/index.jsx';
 import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { CtaBanner } from '@/components/sections/index.jsx';
@@ -36,7 +36,7 @@ export default function BlogPage() {
   const [query, setQuery] = useState(search.get('q') || '');
   const debouncedQuery = useDebounce(query, 400);
 
-  const { data: posts = [], isLoading } = useQuery({
+  const { data: posts = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['blog', 'list', category, debouncedQuery],
     queryFn: () =>
       contentApi
@@ -137,6 +137,8 @@ export default function BlogPage() {
             <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => <PostSkeleton key={i} />)}
             </div>
+          ) : isError ? (
+            <QueryError title="Articles are temporarily unavailable." onRetry={refetch} />
           ) : posts.length === 0 ? (
             <div className="max-w-md mx-auto text-center py-20 border border-hairline bg-white px-8">
               <div className="w-14 h-14 mx-auto grid place-items-center bg-sand text-slate">

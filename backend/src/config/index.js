@@ -45,8 +45,12 @@ const envSchema = z.object({
   JWT_PASSWORD_RESET_EXPIRES: z.string().default('15m'),
 
   COOKIE_SECRET: z.string().min(8),
-  COOKIE_DOMAIN: z.string().default('localhost'),
+  COOKIE_DOMAIN: z.preprocess(
+    (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+    z.string().trim().min(1).optional()
+  ),
   COOKIE_SECURE: zBoolean(false),
+  TWO_FACTOR_ENCRYPTION_KEY: z.string().min(32).optional(),
 
   BCRYPT_SALT_ROUNDS: z.coerce.number().default(12),
 
@@ -85,13 +89,75 @@ const envSchema = z.object({
   CORS_ORIGINS: z.string(),
   TRUST_PROXY: z.coerce.number().default(1),
 
-  SEED_SUPER_ADMIN_EMAIL: z.string().email(),
-  SEED_SUPER_ADMIN_PASSWORD: z.string().min(8),
+  SEED_SUPER_ADMIN_EMAIL: z.string().email().optional(),
+  SEED_SUPER_ADMIN_PASSWORD: z.string().min(12).optional(),
   SEED_SUPER_ADMIN_NAME: z.string().default('Super Admin'),
 
   ENABLE_2FA: zBoolean(true),
-  ENABLE_SWAGGER: zBoolean(true),
+  ENABLE_SWAGGER: zBoolean(undefined),
   ENABLE_REDIS_CACHE: zBoolean(true),
+}).superRefine((env, context) => {
+  if (env.NODE_ENV !== 'production') return;
+
+  const strongSecrets = [
+    ['JWT_ACCESS_SECRET', env.JWT_ACCESS_SECRET],
+    ['JWT_REFRESH_SECRET', env.JWT_REFRESH_SECRET],
+    ['JWT_EMAIL_VERIFY_SECRET', env.JWT_EMAIL_VERIFY_SECRET],
+    ['JWT_PASSWORD_RESET_SECRET', env.JWT_PASSWORD_RESET_SECRET],
+    ['COOKIE_SECRET', env.COOKIE_SECRET],
+  ];
+  for (const [name, secret] of strongSecrets) {
+    if (secret.length < 32 || /change[_-]?me|example|placeholder|secret/i.test(secret)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: [name],
+        message: 'Production secret must be at least 32 characters and not an example value',
+      });
+    }
+  }
+  if (new Set(strongSecrets.map(([, secret]) => secret)).size !== strongSecrets.length) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['JWT_ACCESS_SECRET'],
+      message: 'JWT and cookie secrets must all be distinct in production',
+    });
+  }
+  if (!env.TWO_FACTOR_ENCRYPTION_KEY) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['TWO_FACTOR_ENCRYPTION_KEY'],
+      message: 'A dedicated 2FA encryption key is required in production',
+    });
+  }
+  if (!env.COOKIE_SECURE) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['COOKIE_SECURE'], message: 'Must be true in production' });
+  }
+  for (const field of ['CLIENT_URL', 'ADMIN_URL', 'SERVER_URL']) {
+    if (!env[field].startsWith('https://')) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: [field], message: 'Must use HTTPS in production' });
+    }
+  }
+  const origins = env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean);
+  if (!origins.length || origins.includes('*') || origins.some((origin) => !origin.startsWith('https://'))) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['CORS_ORIGINS'],
+      message: 'Production CORS origins must be explicit HTTPS origins',
+    });
+  }
+  const secretMode = env.STRIPE_SECRET_KEY.startsWith('sk_live_')
+    ? 'live'
+    : env.STRIPE_SECRET_KEY.startsWith('sk_test_') ? 'test' : null;
+  const publicMode = env.STRIPE_PUBLISHABLE_KEY.startsWith('pk_live_')
+    ? 'live'
+    : env.STRIPE_PUBLISHABLE_KEY.startsWith('pk_test_') ? 'test' : null;
+  if (!secretMode || !publicMode || secretMode !== publicMode) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['STRIPE_PUBLISHABLE_KEY'],
+      message: 'Stripe secret and publishable keys must use the same valid live/test mode',
+    });
+  }
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -146,6 +212,10 @@ export const config = {
     secret: env.COOKIE_SECRET,
     domain: env.COOKIE_DOMAIN,
     secure: env.COOKIE_SECURE,
+  },
+
+  security: {
+    twoFactorEncryptionKey: env.TWO_FACTOR_ENCRYPTION_KEY || env.COOKIE_SECRET,
   },
 
   bcrypt: {
@@ -209,7 +279,7 @@ export const config = {
 
   features: {
     twoFactorAuth: env.ENABLE_2FA,
-    swagger: env.ENABLE_SWAGGER,
+    swagger: env.ENABLE_SWAGGER ?? env.NODE_ENV !== 'production',
     redisCache: env.ENABLE_REDIS_CACHE,
   },
 };

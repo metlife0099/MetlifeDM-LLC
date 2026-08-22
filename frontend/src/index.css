@@ -118,18 +118,6 @@
     border-radius: 2px;
   }
 
-  /* ---------------- Hidden scrollbar (scroll still works) ---------------- */
-  html {
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* legacy Edge/IE */
-  }
-
-  ::-webkit-scrollbar {
-    display: none; /* Chrome / Safari / Chromium Edge */
-    width: 0;
-    height: 0;
-  }
-
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -367,6 +355,26 @@
  * together with no spacing at all.
  * ------------------------------------------------------------- */
 @layer components {
+  .skip-link {
+    position: fixed;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 200;
+    transform: translateY(-160%);
+    background: var(--color-ivory);
+    color: var(--color-ink);
+    border: 2px solid var(--color-ultra);
+    padding: 0.75rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .skip-link:focus {
+    transform: translateY(0);
+  }
+
   .prose {
     color: var(--color-ink);
     font-size: 1.0625rem;

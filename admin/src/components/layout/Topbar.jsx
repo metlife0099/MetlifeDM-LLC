@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { PanelLeft, Bell, LogOut, User, ChevronDown, Search, Menu, CheckCheck, X, Trash2 } from 'lucide-react';
+import { PanelLeft, Bell, LogOut, User, ChevronDown, Menu, CheckCheck, X, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toggleSidebar, toggleMobileMenu } from '@/store/index.js';
 import { notificationsApi } from '@/api/index.js';
@@ -70,10 +70,11 @@ export default function Topbar() {
   return (
     <header className="sticky top-0 z-30 bg-canvas border-b border-hairline">
       <div className="flex items-center justify-between h-14 px-5 gap-4">
-        {/* Left: sidebar toggle + search */}
-        <div className="flex items-center gap-3 flex-1 max-w-md">
+        {/* Left: navigation toggles */}
+        <div className="flex items-center gap-3 flex-1">
           {/* Desktop toggle */}
           <button
+            type="button"
             onClick={() => dispatch(toggleSidebar())}
             className="hidden md:grid place-items-center w-8 h-8 hover:bg-ivory-soft transition-colors"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -82,6 +83,7 @@ export default function Topbar() {
           </button>
           {/* Mobile menu */}
           <button
+            type="button"
             onClick={() => dispatch(toggleMobileMenu(true))}
             className="md:hidden grid place-items-center w-8 h-8 hover:bg-ivory-soft transition-colors"
             aria-label="Open menu"
@@ -89,18 +91,6 @@ export default function Topbar() {
             <Menu size={16} strokeWidth={1.5} />
           </button>
 
-          {/* Search (visual for now — command palette v2) */}
-          <div className="hidden md:flex flex-1 relative">
-            <Search size={14} strokeWidth={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate" />
-            <input
-              type="text"
-              placeholder="Search orders, users, content…"
-              className="w-full pl-9 pr-16 py-1.5 text-sm bg-surface border border-hairline placeholder:text-slate-soft focus:outline-none focus:border-ultra transition-colors"
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-mono text-[0.65rem] text-slate border border-hairline-strong px-1.5 py-0.5">
-              ⌘K
-            </span>
-          </div>
         </div>
 
         {/* Right: notifications + user */}
@@ -108,9 +98,12 @@ export default function Topbar() {
           {/* Notifications */}
           <div className="relative" ref={notifRef}>
             <button
+              type="button"
               onClick={() => setNotifOpen((o) => !o)}
               className="relative w-8 h-8 grid place-items-center hover:bg-ivory-soft transition-colors"
               aria-label="Notifications"
+              aria-expanded={notifOpen}
+              aria-controls="admin-notifications-menu"
             >
               <Bell size={16} strokeWidth={1.5} />
               {unreadCount > 0 && (
@@ -122,11 +115,12 @@ export default function Topbar() {
             <AnimatePresence>
               {notifOpen && (
                 <motion.div
+                  id="admin-notifications-menu"
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 top-full mt-2 w-96 bg-surface border border-hairline shadow-xl max-h-[80vh] overflow-y-auto"
+                  className="absolute right-0 top-full mt-2 w-[min(24rem,calc(100vw-2rem))] bg-surface border border-hairline shadow-xl max-h-[80vh] overflow-y-auto"
                 >
                   <div className="p-4 border-b border-hairline flex items-center justify-between gap-3">
                     <div className="text-eyebrow">Notifications</div>
@@ -136,6 +130,7 @@ export default function Topbar() {
                       )}
                       {unreadCount > 0 && (
                         <button
+                          type="button"
                           onClick={() => markAllRead.mutate()}
                           disabled={markAllRead.isPending}
                           className="flex items-center gap-1 text-mono text-[0.65rem] uppercase tracking-widest text-slate hover:text-ultra transition-colors"
@@ -146,6 +141,7 @@ export default function Topbar() {
                       )}
                       {items.length > 0 && (
                         <button
+                          type="button"
                           onClick={() => clearAll.mutate()}
                           disabled={clearAll.isPending}
                           className="flex items-center gap-1 text-mono text-[0.65rem] uppercase tracking-widest text-slate hover:text-danger transition-colors"
@@ -165,6 +161,7 @@ export default function Topbar() {
                       {items.map((n) => (
                         <li key={n._id} className="group relative">
                           <button
+                            type="button"
                             onClick={() => openNotification(n)}
                             className="w-full text-left p-4 pr-10 hover:bg-ivory-soft transition-colors"
                           >
@@ -185,9 +182,10 @@ export default function Topbar() {
                             </div>
                           </button>
                           <button
+                            type="button"
                             onClick={(e) => { e.stopPropagation(); removeOne.mutate(n._id); }}
                             aria-label="Delete notification"
-                            className="absolute right-3 top-4 p-1 text-slate opacity-0 group-hover:opacity-100 hover:text-danger transition-all"
+                            className="absolute right-3 top-4 p-1 text-slate opacity-0 group-hover:opacity-100 focus:opacity-100 hover:text-danger transition-all"
                           >
                             <X size={13} strokeWidth={1.5} />
                           </button>
@@ -203,8 +201,12 @@ export default function Topbar() {
           {/* User menu */}
           <div className="relative" ref={userRef}>
             <button
+              type="button"
               onClick={() => setUserOpen((o) => !o)}
               className="flex items-center gap-2 px-2 py-1 hover:bg-ivory-soft transition-colors"
+              aria-label="Open account menu"
+              aria-expanded={userOpen}
+              aria-controls="admin-account-menu"
             >
               <span className="w-7 h-7 grid place-items-center bg-ink text-ivory text-mono text-xs">
                 {user?.avatar?.url ? (
@@ -230,6 +232,7 @@ export default function Topbar() {
             <AnimatePresence>
               {userOpen && (
                 <motion.div
+                  id="admin-account-menu"
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
@@ -254,6 +257,7 @@ export default function Topbar() {
                   </div>
                   <div className="p-1 border-t border-hairline">
                     <button
+                      type="button"
                       onClick={logout}
                       className="w-full flex items-center gap-3 px-3 py-2 text-sm text-slate hover:text-danger hover:bg-ivory-soft transition-colors text-left"
                     >

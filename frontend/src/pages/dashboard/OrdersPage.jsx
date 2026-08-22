@@ -1,23 +1,24 @@
 import { useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowUpRight, Package, XCircle, Receipt, Download, CreditCard, FileText } from 'lucide-react';
+import { ArrowUpRight, XCircle, Receipt, Download, CreditCard, FileText, RotateCcw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { commerceApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { DashHeader, DashEmpty } from '@/components/dashboard/DashHeader.jsx';
-import { Spinner, Badge, Card } from '@/components/ui/index.jsx';
+import { QueryError, Spinner, Badge, Card } from '@/components/ui/index.jsx';
 import ScrollTabs from '@/components/ui/ScrollTabs.jsx';
 import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import Button from '@/components/ui/Button.jsx';
 import Seo from '@/components/seo/Seo.jsx';
 import { formatMoney, formatDate, timeAgo, cn, downloadBlob } from '@/utils/format.js';
+import { clearCheckoutIdempotencyKey } from '@/utils/idempotency.js';
 
-const STATUSES = ['all', 'pending', 'processing', 'paid', 'completed', 'cancelled'];
+const STATUSES = ['all', 'pending', 'processing', 'paid', 'in_progress', 'completed', 'failed', 'cancelled', 'refunded'];
 
 export const OrdersListPage = () => {
   const [status, setStatus] = useState('all');
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['orders', 'mine', status],
     queryFn: () => commerceApi.listMyOrders({ status: status === 'all' ? undefined : status, limit: 30 }),
   });
@@ -50,6 +51,8 @@ export const OrdersListPage = () => {
 
       {isLoading ? (
         <div className="flex justify-center py-24"><Spinner size={28} className="text-ultra" /></div>
+      ) : isError ? (
+        <QueryError title="Orders could not be loaded." onRetry={refetch} />
       ) : orders.length === 0 ? (
         <DashEmpty
           title="No orders yet"
@@ -78,7 +81,7 @@ export const OrdersListPage = () => {
               </div>
               <div className="text-mono text-sm">{formatMoney(o.total)}</div>
               <div className="flex items-center gap-3">
-                <Badge tone={o.status === 'paid' || o.status === 'completed' ? 'success' : o.status === 'cancelled' ? 'default' : 'ultra'}>
+                <Badge tone={['paid', 'in_progress', 'completed'].includes(o.status) ? 'success' : o.status === 'cancelled' ? 'default' : 'ultra'}>
                   {o.status}
                 </Badge>
                 <ArrowUpRight size={16} strokeWidth={1.25} className="text-slate group-hover:rotate-45 group-hover:text-ink transition-all" />
@@ -93,12 +96,12 @@ export const OrdersListPage = () => {
 
 export const OrderDetailsPage = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const qc = useQueryClient();
   const [downloadingInvoice, setDownloadingInvoice] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [subscriptionAction, setSubscriptionAction] = useState(null);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['order', id],
     queryFn: () => commerceApi.getOrder(id),
     enabled: !!id,
@@ -107,9 +110,26 @@ export const OrderDetailsPage = () => {
   const cancel = useMutation({
     mutationFn: () => commerceApi.cancelOrder(id),
     onSuccess: () => {
+      clearCheckoutIdempotencyKey(id);
       qc.invalidateQueries({ queryKey: ['order', id] });
       qc.invalidateQueries({ queryKey: ['orders'] });
       toast.success('Order cancelled');
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+
+  const manageSubscription = useMutation({
+    mutationFn: (action) => (
+      action === 'cancel'
+        ? commerceApi.cancelSubscription(id)
+        : commerceApi.resumeSubscription(id)
+    ),
+    onSuccess: (_, action) => {
+      qc.invalidateQueries({ queryKey: ['order', id] });
+      qc.invalidateQueries({ queryKey: ['orders'] });
+      toast.success(action === 'cancel'
+        ? 'Subscription cancellation scheduled'
+        : 'Subscription resumed');
     },
     onError: (e) => toast.error(getErrorMessage(e)),
   });
@@ -129,7 +149,20 @@ export const OrderDetailsPage = () => {
   if (isLoading) {
     return <div className="flex justify-center py-24"><Spinner size={28} className="text-ultra" /></div>;
   }
-  if (error || !data?.order) {
+  if (isError) {
+    return (
+      <>
+        <DashHeader title="Order unavailable" />
+        <QueryError
+          title="This order could not be loaded."
+          message="Check your connection and try again. If the problem continues, contact support."
+          onRetry={refetch}
+          compact
+        />
+      </>
+    );
+  }
+  if (!data?.order) {
     return (
       <>
         <DashHeader title="Order not found" />
@@ -139,6 +172,14 @@ export const OrderDetailsPage = () => {
   }
 
   const o = data.order;
+  const subscription = o.subscription || (o.stripeSubscriptionId ? {
+    id: o.stripeSubscriptionId,
+    status: o.subscriptionStatus,
+    cancelAtPeriodEnd: o.cancelAtPeriodEnd,
+    currentPeriodEnd: o.currentPeriodEnd,
+  } : null);
+  const subscriptionCanBeManaged = subscription
+    && !['canceled', 'incomplete_expired'].includes(subscription.status);
 
   return (
     <>
@@ -150,7 +191,7 @@ export const OrderDetailsPage = () => {
         eyebrow={`Order / ${o.orderNumber}`}
         title={<>Placed <span className="text-italic-fraunces text-ultra">{timeAgo(o.createdAt)}</span></>}
         actions={
-          ['pending', 'processing'].includes(o.status) && (
+          ['pending', 'processing', 'failed'].includes(o.status) && !subscription && (
             <Button
               variant="ghost"
               onClick={() => setShowCancelConfirm(true)}
@@ -193,10 +234,10 @@ export const OrderDetailsPage = () => {
                 {o.statusHistory.map((h, i) => (
                   <li key={i} className="py-4 border-b border-hairline flex items-start justify-between gap-4">
                     <div>
-                      <Badge tone={h.status === 'paid' ? 'success' : 'default'}>{h.status}</Badge>
+                      <Badge tone={['paid', 'in_progress', 'completed'].includes(h.status) ? 'success' : 'default'}>{h.status}</Badge>
                       {h.note && <p className="text-slate text-sm mt-2">{h.note}</p>}
                     </div>
-                    <div className="text-mono text-xs text-slate">{formatDate(h.timestamp, 'datetime')}</div>
+                    <div className="text-mono text-xs text-slate">{formatDate(h.at || h.timestamp, 'datetime')}</div>
                   </li>
                 ))}
               </ol>
@@ -233,22 +274,66 @@ export const OrderDetailsPage = () => {
           <div className="mt-8 pt-6 border-t border-hairline space-y-3 text-mono text-xs">
             <div className="flex justify-between">
               <span className="text-slate">Status</span>
-              <Badge tone={o.status === 'paid' ? 'success' : 'default'}>{o.status}</Badge>
+              <Badge tone={['paid', 'in_progress', 'completed'].includes(o.status) ? 'success' : 'default'}>{o.status}</Badge>
             </div>
             <div className="flex justify-between">
               <span className="text-slate">Placed</span>
               <span>{formatDate(o.createdAt, 'short')}</span>
             </div>
           </div>
-          {o.status === 'pending' && (
+          {['pending', 'failed'].includes(o.status) && (
             <Button
               to={`/checkout?order=${o._id}`}
               className="w-full mt-8"
             >
-              Complete payment <Receipt size={14} strokeWidth={1.5} />
+              {o.status === 'failed' ? 'Retry payment' : 'Complete payment'} <Receipt size={14} strokeWidth={1.5} />
             </Button>
           )}
         </Card>
+
+        {subscription && (
+          <Card>
+            <div className="text-eyebrow mb-6">Subscription</div>
+            <dl className="space-y-3 text-sm">
+              <div className="flex items-center justify-between gap-4">
+                <dt className="text-slate">Status</dt>
+                <dd>
+                  <Badge tone={['active', 'trialing'].includes(subscription.status) ? 'success' : 'default'}>
+                    {subscription.status || 'unknown'}
+                  </Badge>
+                </dd>
+              </div>
+              {subscription.currentPeriodEnd && (
+                <div className="flex justify-between gap-4">
+                  <dt className="text-slate">
+                    {subscription.cancelAtPeriodEnd ? 'Access ends' : 'Current period ends'}
+                  </dt>
+                  <dd className="text-right">{formatDate(subscription.currentPeriodEnd, 'medium')}</dd>
+                </div>
+              )}
+            </dl>
+            {subscription.cancelAtPeriodEnd && (
+              <p role="status" className="mt-5 border border-warn/30 bg-warn/5 p-3 text-sm text-slate">
+                Cancellation is scheduled for the end of the current billing period. You can resume before that date.
+              </p>
+            )}
+            {subscriptionCanBeManaged && (
+              <Button
+                type="button"
+                variant="ghost"
+                className="mt-6 w-full"
+                onClick={() => setSubscriptionAction(subscription.cancelAtPeriodEnd ? 'resume' : 'cancel')}
+                disabled={manageSubscription.isPending}
+              >
+                {subscription.cancelAtPeriodEnd ? (
+                  <><RotateCcw size={14} strokeWidth={1.5} /> Resume subscription</>
+                ) : (
+                  <><XCircle size={14} strokeWidth={1.5} /> Cancel at period end</>
+                )}
+              </Button>
+            )}
+          </Card>
+        )}
 
         {/* Contact & delivery details */}
         <Card>
@@ -357,6 +442,20 @@ export const OrderDetailsPage = () => {
         title="Cancel this order?"
         description="We'll stop processing this order. If you've already been charged, refunds are handled per our refund policy."
         confirmLabel="Cancel order"
+        variant="ultra"
+      />
+      <ConfirmDialog
+        open={Boolean(subscriptionAction)}
+        onClose={() => setSubscriptionAction(null)}
+        onConfirm={() => {
+          manageSubscription.mutate(subscriptionAction);
+          setSubscriptionAction(null);
+        }}
+        title={subscriptionAction === 'resume' ? 'Resume this subscription?' : 'Schedule cancellation?'}
+        description={subscriptionAction === 'resume'
+          ? 'Recurring billing will continue under the existing subscription schedule.'
+          : `Your subscription will remain active through ${subscription?.currentPeriodEnd ? formatDate(subscription.currentPeriodEnd, 'medium') : 'the end of the current billing period'} and will not renew after that.`}
+        confirmLabel={subscriptionAction === 'resume' ? 'Resume subscription' : 'Cancel at period end'}
         variant="ultra"
       />
     </>
