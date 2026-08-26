@@ -123,15 +123,19 @@ const drawSignatureBlock = (doc, { x, y, width, snapshot, signatureBuffer, sealB
  * ================================================================== */
 const renderClassicTheme = (doc, ctx) => {
   const { document, snapshot, logoBuffer, signatureBuffer, sealBuffer, qrBuffer } = ctx;
-  const MARGIN = 42;
-  const inner = MARGIN + 14;
+  const MARGIN = 24;
+  const inner = MARGIN + 10;
   const contentWidth = PAGE.width - inner * 2;
+  // The border must stay clear of the footer bar drawn at the very end —
+  // with a smaller MARGIN it would otherwise run the last few points of
+  // the frame underneath the navy footer.
+  const frameBottom = PAGE.height - FOOTER_HEIGHT - 6;
   const theme = { fontFamily: 'Helvetica', headingColor: NAVY, bodyColor: SLATE, mutedColor: MUTED, accentColor: GOLD, ruleColor: GOLD };
 
   const drawFrame = () => {
     doc.rect(0, 0, PAGE.width, PAGE.height).fill(WHITE);
-    doc.rect(MARGIN, MARGIN, PAGE.width - MARGIN * 2, PAGE.height - MARGIN * 2).lineWidth(2).strokeColor(GOLD).stroke();
-    doc.rect(MARGIN + 5, MARGIN + 5, PAGE.width - (MARGIN + 5) * 2, PAGE.height - (MARGIN + 5) * 2).lineWidth(0.5).strokeColor(GOLD_SOFT).stroke();
+    doc.rect(MARGIN, MARGIN, PAGE.width - MARGIN * 2, frameBottom - MARGIN).lineWidth(2).strokeColor(GOLD).stroke();
+    doc.rect(MARGIN + 5, MARGIN + 5, PAGE.width - (MARGIN + 5) * 2, frameBottom - MARGIN - 10).lineWidth(0.5).strokeColor(GOLD_SOFT).stroke();
   };
 
   const drawRunningHeader = () => {
@@ -171,23 +175,20 @@ const renderClassicTheme = (doc, ctx) => {
   doc.moveTo(PAGE.width / 2 - 30, y).lineTo(PAGE.width / 2 + 30, y).lineWidth(2).strokeColor(GOLD).stroke();
   y += 12;
 
-  doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(16).text(snapshot.recipientName || '—', inner, y, { width: contentWidth, align: 'center' });
-  y = doc.y + 10;
-
-  const bodyX = inner + 24;
-  const bodyWidth = contentWidth - 48;
+  const bodyX = inner + 10;
+  const bodyWidth = contentWidth - 20;
   // Only reserve room for one more line, not the whole signature block —
   // the check right after renderHtmlContent decides whether the signature
   // needs its own page based on what's *actually* left, so pre-reserving
   // its full height here just pushes content to a new page needlessly.
-  const pageBottom = PAGE.height - FOOTER_HEIGHT - 8;
+  const pageBottom = frameBottom - 6;
   y = renderHtmlContent(doc, snapshot.renderedBody, { x: bodyX, width: bodyWidth, startY: y, pageBottom, theme, onNewPage: drawRunningHeader });
 
   // Always follow content with a small fixed gap — never jump to a distant
   // fixed "near-bottom" position, which left an ugly empty gap whenever
   // content ended (or restarted, after an orphaned last line) high up a page.
   const rowY = y + 24;
-  if (rowY + 78 > PAGE.height - FOOTER_HEIGHT) {
+  if (rowY + 78 > frameBottom) {
     doc.addPage({ size: 'A4', margin: 0 });
     drawSignatureBlock(doc, { x: inner + 20, y: drawRunningHeader(), width: contentWidth - 40, snapshot, signatureBuffer, sealBuffer, qrBuffer, accent: GOLD, textColor: NAVY, mutedColor: MUTED });
   } else {

@@ -66,17 +66,37 @@ const fontFor = (fontFamily, { bold, italic }) => {
   return fontFamily;
 };
 
+// pdfkit's continued-text mode ("keep flowing on this line") does not treat
+// an embedded "\n" as a real line break — it just gets swallowed, so a <br>
+// (which collectRuns turns into a { text: '\n' } run) needs to actually end
+// the current continued block and restart on a fresh line, not be passed
+// through as literal run text.
 const drawRuns = (doc, runs, { x, y, width, fontFamily, fontSize, color, lineGap = 3, align = 'left' }) => {
   if (!runs.length) return;
   doc.fillColor(color).fontSize(fontSize);
-  runs.forEach((run, i) => {
-    doc.font(fontFor(fontFamily, run));
-    const opts = { lineGap, align, strike: !!run.strike, underline: !!run.underline };
-    if (i === 0) {
-      doc.text(run.text, x, y, { ...opts, width, continued: runs.length > 1 });
-    } else {
-      doc.text(run.text, { ...opts, continued: i < runs.length - 1 });
+
+  const lines = [[]];
+  for (const run of runs) {
+    if (run.text === '\n') lines.push([]);
+    else lines[lines.length - 1].push(run);
+  }
+
+  let cursorY = y;
+  lines.forEach((lineRuns, li) => {
+    if (!lineRuns.length) {
+      cursorY += fontSize * 1.3;
+      return;
     }
+    lineRuns.forEach((run, i) => {
+      doc.font(fontFor(fontFamily, run));
+      const opts = { lineGap, align, strike: !!run.strike, underline: !!run.underline };
+      if (i === 0) {
+        doc.text(run.text, x, cursorY, { ...opts, width, continued: lineRuns.length > 1 });
+      } else {
+        doc.text(run.text, { ...opts, continued: i < lineRuns.length - 1 });
+      }
+    });
+    if (li < lines.length - 1) cursorY = doc.y;
   });
 };
 
