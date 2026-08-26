@@ -2,6 +2,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
+  Award,
   BarChart3,
   BookOpen,
   Briefcase,
@@ -20,6 +21,7 @@ import {
   Image as ImageIcon,
   Layers,
   LayoutDashboard,
+  LayoutTemplate,
   LifeBuoy,
   Mail,
   MailCheck,
@@ -37,6 +39,7 @@ import { notificationsApi } from '@/api/index.js';
 import { cn } from '@/utils/format.js';
 
 const NAV_ICONS = {
+  Award,
   BarChart3,
   BookOpen,
   Briefcase,
@@ -53,6 +56,7 @@ const NAV_ICONS = {
   Image: ImageIcon,
   Layers,
   LayoutDashboard,
+  LayoutTemplate,
   LifeBuoy,
   Mail,
   MailCheck,

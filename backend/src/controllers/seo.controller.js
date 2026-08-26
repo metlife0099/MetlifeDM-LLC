@@ -41,6 +41,7 @@ export const sitemap = asyncHandler(async (req, res) => {
     { path: '/diagnostic', priority: 0.8, changefreq: 'weekly' },
     { path: '/pasco', priority: 0.8, changefreq: 'weekly' },
     { path: '/control', priority: 0.6, changefreq: 'monthly' },
+    { path: '/verify', priority: 0.5, changefreq: 'monthly' },
   ];
 
   const [services, blogs, portfolios, caseStudies, industries, pages] = await Promise.all([

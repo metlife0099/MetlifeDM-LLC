@@ -10,6 +10,7 @@ import Button from '@/components/ui/Button.jsx';
 import { settingsApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import SecuritySettings from './SecuritySettings.jsx';
+import DocumentSettings from './DocumentSettings.jsx';
 
 export default function SettingsPage() {
   const qc = useQueryClient();
@@ -109,6 +110,7 @@ export default function SettingsPage() {
         </Card>
       </div>
       </form>
+      <DocumentSettings />
       <SecuritySettings />
     </>
   );

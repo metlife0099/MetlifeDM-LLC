@@ -69,6 +69,21 @@ export const otpLimiter = rateLimit({
 });
 
 /**
+ * Public document-verification lookups. Strict — document numbers are
+ * sequential/guessable, so this guards against enumeration in a way the
+ * shared leadLimiter budget (built for repeatable, low-risk form submits)
+ * does not.
+ */
+export const verifyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler,
+  store: buildStore(),
+});
+
+/**
  * Chat / message limiter to prevent spam.
  */
 export const chatLimiter = rateLimit({

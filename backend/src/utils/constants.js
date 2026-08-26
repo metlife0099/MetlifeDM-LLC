@@ -161,3 +161,43 @@ export const LEGAL_VERSIONS = Object.freeze({
   TERMS: '2026-08-22',
   PRIVACY: '2026-08-22',
 });
+
+// Digital Document & Certificate Management
+export const DOCUMENT_TYPES = Object.freeze({
+  EXPERIENCE_CERTIFICATE: 'experience_certificate',
+  EXPERIENCE_LETTER: 'experience_letter',
+  OFFER_LETTER: 'offer_letter',
+  RECOMMENDATION_LETTER: 'recommendation_letter',
+  PROJECT_COMPLETION_CERTIFICATE: 'project_completion_certificate',
+  INTERNSHIP_CERTIFICATE: 'internship_certificate',
+  APPRECIATION_LETTER: 'appreciation_letter',
+  RELIEVING_LETTER: 'relieving_letter',
+  EMPLOYMENT_VERIFICATION_LETTER: 'employment_verification_letter',
+});
+
+// Short codes used in the human-readable document number: MLDM/{CODE}/{YEAR}/{seq}
+export const DOCUMENT_TYPE_CODES = Object.freeze({
+  [DOCUMENT_TYPES.EXPERIENCE_CERTIFICATE]: 'EXP',
+  [DOCUMENT_TYPES.EXPERIENCE_LETTER]: 'EXL',
+  [DOCUMENT_TYPES.OFFER_LETTER]: 'OFR',
+  [DOCUMENT_TYPES.RECOMMENDATION_LETTER]: 'LOR',
+  [DOCUMENT_TYPES.PROJECT_COMPLETION_CERTIFICATE]: 'PCC',
+  [DOCUMENT_TYPES.INTERNSHIP_CERTIFICATE]: 'INT',
+  [DOCUMENT_TYPES.APPRECIATION_LETTER]: 'APR',
+  [DOCUMENT_TYPES.RELIEVING_LETTER]: 'REL',
+  [DOCUMENT_TYPES.EMPLOYMENT_VERIFICATION_LETTER]: 'EVL',
+});
+
+// Document types that carry project-specific fields (name/description/tech).
+export const PROJECT_DOCUMENT_TYPES = Object.freeze([
+  DOCUMENT_TYPES.PROJECT_COMPLETION_CERTIFICATE,
+  DOCUMENT_TYPES.INTERNSHIP_CERTIFICATE,
+]);
+
+export const DOCUMENT_STATUS = Object.freeze({
+  DRAFT: 'draft',
+  ISSUED: 'issued',
+  REVOKED: 'revoked',
+  CANCELLED: 'cancelled',
+  REPLACED: 'replaced',
+});

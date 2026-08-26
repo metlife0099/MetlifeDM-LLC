@@ -28,6 +28,7 @@
     { "source": "/industries/:slug", "destination": "/index" },
     { "source": "/blog/:slug", "destination": "/index" },
     { "source": "/careers/:slug", "destination": "/index" },
+    { "source": "/verify/:token", "destination": "/index" },
     { "source": "/dashboard", "destination": "/index" },
     { "source": "/dashboard/:path*", "destination": "/index" }
   ]

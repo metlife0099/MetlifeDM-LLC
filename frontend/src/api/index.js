@@ -84,6 +84,10 @@ export const leadsApi = {
     apiClient.post(E.careers.apply(id), formData, { headers: { 'Content-Type': 'multipart/form-data' } }).then(unwrap),
 };
 
+export const verifyApi = {
+  checkDocument: (identifier) => apiClient.get(E.verify.check(identifier)).then(unwrap),
+};
+
 /* ===================== COMMERCE ===================== */
 export const commerceApi = {
   createOrder: (data, idempotencyKey) => apiClient.post(

@@ -32,3 +32,6 @@ export { default as Redirect } from './Redirect.model.js';
 export { default as EmailTemplate } from './EmailTemplate.model.js';
 export { default as Page } from './Page.model.js';
 export { default as Campaign } from './Campaign.model.js';
+export { default as Counter } from './Counter.model.js';
+export { default as DocumentTemplate } from './DocumentTemplate.model.js';
+export { default as Document } from './Document.model.js';

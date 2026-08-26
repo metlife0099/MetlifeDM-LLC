@@ -28,6 +28,7 @@ const routes = {
   '/faq': ['Frequently asked questions', 'Find answers about MetlifeDM services, proposals, billing, timelines, support, and working arrangements.'],
   '/careers': ['Careers', 'View current opportunities to work with MetlifeDM.'],
   '/contact': ['Contact MetlifeDM', 'Send MetlifeDM a question about services, an existing engagement, or a potential project.'],
+  '/verify': ['Verify a MetlifeDM document', 'Confirm the authenticity of a MetlifeDM-issued certificate or letter using its document number or QR code.'],
   '/consultation': ['Request a consultation', 'Share preferred dates and project context for a consultation request. Availability is confirmed separately.'],
   '/privacy': ['Privacy Policy', 'Read how MetlifeDM collects, uses, stores, and protects personal information.'],
   '/terms': ['Terms and Conditions', 'Read the terms that apply to MetlifeDM website use, purchases, subscriptions, cancellations, and refunds.'],

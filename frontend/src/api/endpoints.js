@@ -83,6 +83,9 @@ export const ENDPOINTS = {
     bySlug: (slug) => `/careers/slug/${slug}`,
     apply: (id) => `/careers/${id}/apply`,
   },
+  verify: {
+    check: (identifier) => `/verify/${encodeURIComponent(identifier)}`,
+  },
 
   // Commerce
   orders: {

@@ -112,6 +112,20 @@ const UserDetailsModule = lazy(() =>
   import('@/pages/users/UsersPage.jsx').then((m) => ({ default: m.UserDetailsPage }))
 );
 
+const DocumentsListModule = lazy(() =>
+  import('@/pages/documents/DocumentsPage.jsx').then((m) => ({ default: m.DocumentsListPage }))
+);
+const DocumentDetailModule = lazy(() =>
+  import('@/pages/documents/DocumentsPage.jsx').then((m) => ({ default: m.DocumentDetailPage }))
+);
+const DocumentFormModule = lazy(() => import('@/pages/documents/DocumentFormPage.jsx'));
+const DocumentTemplatesListModule = lazy(() =>
+  import('@/pages/documents/DocumentTemplatesPage.jsx').then((m) => ({ default: m.DocumentTemplatesListPage }))
+);
+const DocumentTemplateEditModule = lazy(() =>
+  import('@/pages/documents/DocumentTemplatesPage.jsx').then((m) => ({ default: m.DocumentTemplateEditPage }))
+);
+
 const MediaLibraryPage = lazy(() => import('@/pages/media/MediaLibraryPage.jsx'));
 const AnalyticsPage = lazy(() => import('@/pages/analytics/AnalyticsPage.jsx'));
 const SettingsPage = lazy(() => import('@/pages/settings/SettingsPage.jsx'));
@@ -209,6 +223,14 @@ export default function App() {
           {/* Users */}
           <Route path="/users" element={withSuspense(UsersListModule, 'Loading users')} />
           <Route path="/users/:id" element={withSuspense(UserDetailsModule, 'Loading user')} />
+
+          {/* Documents & Certificates */}
+          <Route path="/documents" element={withSuspense(DocumentsListModule, 'Loading documents')} />
+          <Route path="/documents/new" element={withSuspense(DocumentFormModule, 'New document')} />
+          <Route path="/documents/templates" element={withSuspense(DocumentTemplatesListModule, 'Loading templates')} />
+          <Route path="/documents/templates/:id" element={withSuspense(DocumentTemplateEditModule, 'Loading template')} />
+          <Route path="/documents/:id" element={withSuspense(DocumentDetailModule, 'Loading document')} />
+          <Route path="/documents/:id/edit" element={withSuspense(DocumentFormModule, 'Edit document')} />
 
           {/* Media */}
           <Route path="/media" element={withSuspense(MediaLibraryPage, 'Loading media')} />

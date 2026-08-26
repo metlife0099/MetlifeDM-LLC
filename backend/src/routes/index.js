@@ -21,6 +21,7 @@ import mediaRoutes from './media.routes.js';
 import settingsRoutes from './settings.routes.js';
 import pageRoutes from './page.routes.js';
 import seoRoutes from './seo.routes.js';
+import verifyRoutes from './verify.routes.js';
 import adminRoutes from './admin.routes.js';
 
 const router = Router();
@@ -77,6 +78,7 @@ router.use('/tickets', ticketRoutes);
 router.use('/media', mediaRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/seo', seoRoutes);
+router.use('/verify', verifyRoutes);
 router.use('/admin', adminRoutes);
 
 export default router;

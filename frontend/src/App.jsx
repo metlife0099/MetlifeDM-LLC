@@ -34,6 +34,7 @@ const IndustryDetailsPage = lazy(() => import('@/pages/IndustryDetailsPage.jsx')
 const PartnersPage = lazy(() => import('@/pages/PartnersPage.jsx'));
 const ContactPage = lazy(() => import('@/pages/ContactPage.jsx'));
 const ConsultationPage = lazy(() => import('@/pages/ConsultationPage.jsx'));
+const VerifyPage = lazy(() => import('@/pages/VerifyPage.jsx'));
 
 /* Route-split — Step 4 content */
 const BlogPage = lazy(() => import('@/pages/blog/BlogPage.jsx'));
@@ -146,6 +147,10 @@ export default function App() {
         {/* Contact */}
         <Route path="contact" element={withSuspense(ContactPage, 'Contact')} />
         <Route path="consultation" element={withSuspense(ConsultationPage, 'Consultation')} />
+
+        {/* Document verification */}
+        <Route path="verify" element={withSuspense(VerifyPage, 'Verify')} />
+        <Route path="verify/:token" element={withSuspense(VerifyPage, 'Verify')} />
 
         {/* Commerce */}
         <Route path="cart" element={withSuspense(CartPage, 'Cart')} />

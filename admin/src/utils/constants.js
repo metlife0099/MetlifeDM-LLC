@@ -91,6 +91,13 @@ export const NAV_SECTIONS = [
     items: [{ label: 'Analytics', href: '/analytics', icon: 'BarChart3' }],
   },
   {
+    section: 'Documents',
+    items: [
+      { label: 'Documents', href: '/documents', icon: 'Award' },
+      { label: 'Templates', href: '/documents/templates', icon: 'LayoutTemplate' },
+    ],
+  },
+  {
     section: 'System',
     items: [
       { label: 'Settings', href: '/settings', icon: 'Settings' },
@@ -234,6 +241,39 @@ export const SERVICE_CATEGORIES = [
   { value: 'ai_solutions', label: 'AI Solutions', icon: '🤖' },
   { value: 'video_marketing', label: 'Video', icon: '🎬' },
 ];
+
+/* ————— Documents & Certificates (matches backend utils/constants.js) ————— */
+export const DOCUMENT_TYPES = [
+  { value: 'experience_certificate', label: 'Experience Certificate', code: 'EXP' },
+  { value: 'experience_letter', label: 'Experience Letter', code: 'EXL' },
+  { value: 'offer_letter', label: 'Offer / Appointment Letter', code: 'OFR' },
+  { value: 'recommendation_letter', label: 'Letter of Recommendation (LOR)', code: 'LOR' },
+  { value: 'project_completion_certificate', label: 'Project Completion Certificate', code: 'PCC' },
+  { value: 'internship_certificate', label: 'Internship Certificate', code: 'INT' },
+  { value: 'appreciation_letter', label: 'Appreciation Letter', code: 'APR' },
+  { value: 'relieving_letter', label: 'Relieving Letter', code: 'REL' },
+  { value: 'employment_verification_letter', label: 'Employment Verification Letter', code: 'EVL' },
+];
+
+export const PROJECT_DOCUMENT_TYPES = ['project_completion_certificate', 'internship_certificate'];
+
+export const DOCUMENT_STATUSES = [
+  { value: 'draft', label: 'Draft' },
+  { value: 'issued', label: 'Issued' },
+  { value: 'revoked', label: 'Revoked' },
+  { value: 'cancelled', label: 'Cancelled' },
+  { value: 'replaced', label: 'Replaced' },
+];
+
+export const documentTypeLabel = (value) => DOCUMENT_TYPES.find((t) => t.value === value)?.label || value;
+
+export const documentStatusTone = (status) => ({
+  draft: 'default',
+  issued: 'success',
+  revoked: 'danger',
+  cancelled: 'danger',
+  replaced: 'info',
+}[status] || 'default');
 
 export const DATE_RANGES = [
   { value: '7d', label: 'Last 7 days' },

@@ -64,6 +64,19 @@ const settingsSchema = new Schema(
       registeredName: { type: String, default: 'MetlifeDM LLC' },
       ein: String,
       established: Number,
+      // Official document/certificate seal — mirrors site.logo's {url, publicId} shape.
+      sealImage: { url: String, publicId: String },
+      // Pick-list of authorized signatories for issued documents/certificates.
+      // A document snapshots the resolved name/title/image at issue time, so
+      // editing this list never retroactively changes an already-issued document.
+      signatories: [
+        {
+          name: String,
+          title: String,
+          signatureImage: { url: String, publicId: String },
+          isDefault: { type: Boolean, default: false },
+        },
+      ],
     },
 
     // Analytics IDs

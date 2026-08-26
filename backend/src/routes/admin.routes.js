@@ -17,6 +17,14 @@ import { replyTicketSchema } from '../validators/ticket.validator.js';
 import { adminUpdateUserSchema, roleUpdateSchema } from '../validators/user.validator.js';
 import { serviceCreateSchema, serviceUpdateSchema } from '../validators/service.validator.js';
 import { createCouponSchema, updateCouponSchema } from '../validators/coupon.validator.js';
+import {
+  createDocumentSchema,
+  updateDocumentSchema,
+  issueDocumentSchema,
+  reasonSchema,
+  replaceDocumentSchema,
+} from '../validators/document.validator.js';
+import { createTemplateSchema, updateTemplateSchema } from '../validators/documentTemplate.validator.js';
 
 // ————— existing controllers —————
 import * as legacyAdmin from '../controllers/admin.controller.js';
@@ -34,6 +42,8 @@ import { contact as contactCtrl, consultation as consultationCtrl, newsletter as
 import * as orderCtrl from '../controllers/order.controller.js';
 import * as paymentCtrl from '../controllers/payment.controller.js';
 import * as couponCtrl from '../controllers/coupon.controller.js';
+import * as documentCtrl from '../controllers/document.controller.js';
+import * as documentTemplateCtrl from '../controllers/documentTemplate.controller.js';
 import * as ticketCtrl from '../controllers/ticket.controller.js';
 import * as userCtrl from '../controllers/user.controller.js';
 import * as mediaCtrl from '../controllers/media.controller.js';
@@ -255,6 +265,31 @@ router.post('/coupons', validate(createCouponSchema), couponCtrl.createCoupon);
 router.put('/coupons/:id', validate(updateCouponSchema), couponCtrl.updateCoupon);
 router.patch('/coupons/:id', validate(updateCouponSchema), couponCtrl.updateCoupon);
 router.delete('/coupons/:id', couponCtrl.deleteCoupon);
+
+/* ═══════════════════════════════════════════════════════════
+ * DOCUMENTS & CERTIFICATES
+ * ═══════════════════════════════════════════════════════════ */
+router.get('/documents/stats', documentCtrl.getDocumentStats);
+router.get('/documents', documentCtrl.listDocuments);
+router.get('/documents/:id', documentCtrl.getDocument);
+router.get('/documents/:id/pdf', documentCtrl.downloadDocumentPdf);
+router.get('/documents/:id/qr', documentCtrl.getDocumentQrPreview);
+router.get('/documents/:id/audit', documentCtrl.getDocumentAuditHistory);
+router.post('/documents', validate(createDocumentSchema), documentCtrl.createDocument);
+router.put('/documents/:id', validate(updateDocumentSchema), documentCtrl.updateDocument);
+router.patch('/documents/:id', validate(updateDocumentSchema), documentCtrl.updateDocument);
+router.delete('/documents/:id', documentCtrl.deleteDocument);
+router.post('/documents/:id/issue', validate(issueDocumentSchema), documentCtrl.issueDocument);
+router.post('/documents/:id/revoke', validate(reasonSchema), documentCtrl.revokeDocument);
+router.post('/documents/:id/cancel', validate(reasonSchema), documentCtrl.cancelDocument);
+router.post('/documents/:id/replace', validate(replaceDocumentSchema), documentCtrl.replaceDocument);
+
+router.get('/document-templates', documentTemplateCtrl.list);
+router.get('/document-templates/:id', documentTemplateCtrl.get);
+router.post('/document-templates', validate(createTemplateSchema), documentTemplateCtrl.create);
+router.put('/document-templates/:id', validate(updateTemplateSchema), documentTemplateCtrl.update);
+router.patch('/document-templates/:id', validate(updateTemplateSchema), documentTemplateCtrl.update);
+router.delete('/document-templates/:id', documentTemplateCtrl.remove);
 
 /* ═══════════════════════════════════════════════════════════
  * TICKETS

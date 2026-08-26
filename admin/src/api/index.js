@@ -59,6 +59,21 @@ export const faqsApi = crud(E.faqs);
 export const pagesApi = crud(E.pages);
 export const couponsApi = crud(E.coupons);
 
+/* ————— DOCUMENTS & CERTIFICATES ————— */
+export const documentsApi = {
+  ...crud(E.documents),
+  stats: () => apiClient.get(E.documents.stats).then(unwrap),
+  issue: (id, data) => apiClient.post(E.documents.issue(id), data).then(unwrap),
+  revoke: (id, reason) => apiClient.post(E.documents.revoke(id), { reason }).then(unwrap),
+  cancel: (id, reason) => apiClient.post(E.documents.cancel(id), { reason }).then(unwrap),
+  replace: (id, data) => apiClient.post(E.documents.replace(id), data).then(unwrap),
+  downloadPdf: (id) => apiClient.get(E.documents.pdf(id), { responseType: 'blob' }),
+  qrPreview: (id) => apiClient.get(E.documents.qr(id)).then(unwrap),
+  auditHistory: (id) => apiClient.get(E.documents.audit(id)).then(unwrap),
+};
+
+export const documentTemplatesApi = crud(E.documentTemplates);
+
 /* ————— BLOG ————— */
 export const blogApi = {
   listPosts: (params) => apiClient.get(E.blog.posts, { params }).then(unwrapMeta),

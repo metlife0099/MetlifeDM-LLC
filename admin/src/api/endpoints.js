@@ -167,6 +167,30 @@ export const ENDPOINTS = {
     delete: (id) => `/admin/coupons/${id}`,
   },
 
+  /* ————— Documents & Certificates ————— */
+  documents: {
+    list: '/admin/documents',
+    stats: '/admin/documents/stats',
+    detail: (id) => `/admin/documents/${id}`,
+    create: '/admin/documents',
+    update: (id) => `/admin/documents/${id}`,
+    delete: (id) => `/admin/documents/${id}`,
+    issue: (id) => `/admin/documents/${id}/issue`,
+    revoke: (id) => `/admin/documents/${id}/revoke`,
+    cancel: (id) => `/admin/documents/${id}/cancel`,
+    replace: (id) => `/admin/documents/${id}/replace`,
+    pdf: (id) => `/admin/documents/${id}/pdf`,
+    qr: (id) => `/admin/documents/${id}/qr`,
+    audit: (id) => `/admin/documents/${id}/audit`,
+  },
+  documentTemplates: {
+    list: '/admin/document-templates',
+    detail: (id) => `/admin/document-templates/${id}`,
+    create: '/admin/document-templates',
+    update: (id) => `/admin/document-templates/${id}`,
+    delete: (id) => `/admin/document-templates/${id}`,
+  },
+
   /* ————— Support ————— */
   tickets: {
     list: '/admin/tickets',
