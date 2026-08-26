@@ -37,17 +37,36 @@ const resolveSignatory = (settings, signatoryId) => {
   return { name: match.name, title: match.title, signatureImageUrl: match.signatureImage?.url || null };
 };
 
-const buildTokenValues = (fields, issueDate) => ({
-  employeeName: fields.employeeName || '',
-  employeeId: fields.employeeId || '',
-  designation: fields.designation || '',
-  department: fields.department || '',
-  joiningDate: formatDate(fields.joiningDate),
-  endDate: fields.isCurrentlyEmployed ? 'Present' : formatDate(fields.endDate),
-  projectName: fields.projectName || '',
-  projectDescription: fields.projectDescription || '',
-  issueDate: formatDate(issueDate),
-});
+const escapeHtml = (value) =>
+  String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+// Plain-text tokens are escaped (they're substituted into <p> text nodes);
+// {{responsibilities}} and {{technologies}} substitute pre-built, already-
+// escaped HTML fragments instead, so an admin can drop a real bullet list or
+// inline tech list wherever the token appears in the rich body.
+const buildTokenValues = (fields, issueDate) => {
+  const responsibilities = fields.responsibilities || [];
+  const technologies = fields.technologies || [];
+  return {
+    employeeName: escapeHtml(fields.employeeName),
+    employeeId: escapeHtml(fields.employeeId),
+    designation: escapeHtml(fields.designation),
+    department: escapeHtml(fields.department),
+    joiningDate: escapeHtml(formatDate(fields.joiningDate)),
+    endDate: escapeHtml(fields.isCurrentlyEmployed ? 'Present' : formatDate(fields.endDate)),
+    projectName: escapeHtml(fields.projectName),
+    projectDescription: escapeHtml(fields.projectDescription),
+    issueDate: escapeHtml(formatDate(issueDate)),
+    responsibilities: responsibilities.length
+      ? `<ul>${responsibilities.map((r) => `<li>${escapeHtml(r)}</li>`).join('')}</ul>`
+      : '',
+    technologies: technologies.length ? escapeHtml(technologies.join(', ')) : '',
+  };
+};
 
 const renderTemplateBody = (bodyContent, tokenValues) =>
   bodyContent.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => (tokenValues[key] !== undefined ? tokenValues[key] : ''));
@@ -75,6 +94,7 @@ const performIssue = async (doc, { signatoryId, issueDate, actor }) => {
 
   const snapshot = {
     documentTypeLabel: DOCUMENT_TYPE_LABELS[doc.documentType],
+    theme: template.theme,
     recipientName: fields.employeeName,
     employeeId: fields.employeeId,
     designation: fields.designation,

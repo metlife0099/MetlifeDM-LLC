@@ -8,13 +8,14 @@ import { PageHeader, Breadcrumbs, FilterBar } from '@/components/ui/PageHeader.j
 import DataTable from '@/components/ui/DataTable.jsx';
 import { Card, Badge, PageLoader } from '@/components/ui/index.jsx';
 import { Input, Select, Textarea, Checkbox, SearchInput } from '@/components/form/index.jsx';
+import RichEditor from '@/components/ui/RichEditor.jsx';
 import Button from '@/components/ui/Button.jsx';
 import { documentTemplatesApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { useDebounce } from '@/hooks/index.js';
-import { DOCUMENT_TYPES, documentTypeLabel } from '@/utils/constants.js';
+import { DOCUMENT_TYPES, documentTypeLabel, DOCUMENT_THEMES, documentThemeLabel } from '@/utils/constants.js';
 
-const FIELD_TOKENS = ['employeeName', 'employeeId', 'designation', 'department', 'joiningDate', 'endDate', 'projectName', 'projectDescription', 'issueDate'];
+const FIELD_TOKENS = ['employeeName', 'employeeId', 'designation', 'department', 'joiningDate', 'endDate', 'projectName', 'projectDescription', 'responsibilities', 'technologies', 'issueDate'];
 
 /* ============================================================
  * TEMPLATES LIST
@@ -32,6 +33,7 @@ export function DocumentTemplatesListPage() {
   const columns = [
     { key: 'name', label: 'Name', render: (r) => <span className="text-sm">{r.name}</span> },
     { key: 'documentType', label: 'Document type', render: (r) => documentTypeLabel(r.documentType) },
+    { key: 'theme', label: 'Theme', render: (r) => documentThemeLabel(r.theme) },
     { key: 'isDefault', label: 'Default', render: (r) => r.isDefault && <Badge tone="ultra">Default</Badge> },
     { key: 'isActive', label: 'Status', render: (r) => <Badge tone={r.isActive ? 'success' : 'default'}>{r.isActive ? 'Active' : 'Inactive'}</Badge> },
   ];
@@ -67,6 +69,8 @@ export function DocumentTemplateEditPage() {
   const isNew = id === 'new';
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const [bodyContent, setBodyContent] = useState('');
+  const [bodyTouched, setBodyTouched] = useState(false);
 
   const { data: template, isLoading } = useQuery({
     queryKey: ['admin', 'document-template', id],
@@ -75,15 +79,21 @@ export function DocumentTemplateEditPage() {
   });
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
-    defaultValues: { documentType: DOCUMENT_TYPES[0].value, name: '', description: '', bodyContent: '', isDefault: false, isActive: true },
+    defaultValues: { documentType: DOCUMENT_TYPES[0].value, name: '', description: '', theme: 'classic', isDefault: false, isActive: true },
   });
 
   useEffect(() => {
-    if (template) reset(template);
+    if (template) {
+      reset(template);
+      setBodyContent(template.bodyContent || '');
+    }
   }, [template, reset]);
 
   const save = useMutation({
-    mutationFn: (data) => (isNew ? documentTemplatesApi.create(data) : documentTemplatesApi.update(id, data)),
+    mutationFn: (data) => {
+      const payload = { ...data, bodyContent };
+      return isNew ? documentTemplatesApi.create(payload) : documentTemplatesApi.update(id, payload);
+    },
     onSuccess: (result) => {
       qc.invalidateQueries({ queryKey: ['admin', 'document-templates'] });
       toast.success(isNew ? 'Template created' : 'Template updated');
@@ -94,8 +104,10 @@ export function DocumentTemplateEditPage() {
 
   if (!isNew && isLoading) return <PageLoader label="Loading template" />;
 
+  const bodyEmpty = bodyTouched && !bodyContent.replace(/<[^>]*>/g, '').trim();
+
   return (
-    <form onSubmit={handleSubmit((d) => save.mutate(d))}>
+    <form onSubmit={handleSubmit((d) => { setBodyTouched(true); if (bodyContent.replace(/<[^>]*>/g, '').trim()) save.mutate(d); })}>
       <Breadcrumbs items={[{ label: 'Documents', href: '/documents' }, { label: 'Templates', href: '/documents/templates' }, { label: isNew ? 'New' : template?.name || 'Edit' }]} />
       <PageHeader
         eyebrow={isNew ? 'Create · Template' : 'Editing · Template'}
@@ -114,14 +126,33 @@ export function DocumentTemplateEditPage() {
           <Select label="Document type" options={DOCUMENT_TYPES} {...register('documentType')} />
         </div>
         <Textarea label="Description" rows={2} {...register('description')} />
-        <Textarea
-          label="Body content"
-          required
-          rows={10}
-          {...register('bodyContent', { required: true })}
-          error={errors.bodyContent && 'Body content is required'}
-          hint={`Use {{token}} placeholders — available: ${FIELD_TOKENS.map((t) => `{{${t}}}`).join(', ')}`}
-        />
+
+        <div>
+          <div className="text-mono text-[0.65rem] uppercase tracking-widest text-slate mb-1.5">Body content</div>
+          <RichEditor
+            value={bodyContent}
+            onChange={(html) => { setBodyContent(html); setBodyTouched(true); }}
+            placeholder="This is to certify that {{employeeName}}…"
+            minHeight={280}
+          />
+          {bodyEmpty && <div className="text-mono text-xs text-danger mt-1.5">Body content is required</div>}
+          <div className="text-mono text-xs text-slate mt-2">
+            Use {`{{token}}`} placeholders — available: {FIELD_TOKENS.map((t) => `{{${t}}}`).join(', ')}.
+            {' '}{`{{responsibilities}}`} inserts a real bullet list; {`{{technologies}}`} inserts a comma-separated list.
+          </div>
+        </div>
+
+        <div>
+          <Select
+            label="Theme"
+            options={DOCUMENT_THEMES.map((t) => ({ value: t.value, label: t.label }))}
+            {...register('theme')}
+          />
+          <p className="text-mono text-xs text-slate mt-2">
+            {DOCUMENT_THEMES.map((t) => `${t.label} — ${t.description}`).join('  ·  ')}
+          </p>
+        </div>
+
         <div className="flex items-center gap-8">
           <Checkbox label="Default template for this document type" {...register('isDefault')} />
           <Checkbox label="Active" {...register('isActive')} />

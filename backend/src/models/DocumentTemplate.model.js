@@ -1,13 +1,16 @@
 import mongoose from 'mongoose';
-import { DOCUMENT_TYPES } from '../utils/constants.js';
+import { DOCUMENT_TYPES, DOCUMENT_THEMES } from '../utils/constants.js';
 
 const { Schema } = mongoose;
 
 /**
- * Reusable content template per document type. bodyContent is plain text with
- * {{placeholder}} tokens (not HTML) — pdfkit has no HTML renderer, so template
- * bodies are resolved by simple string substitution, mirroring the exact
- * convention already used by EmailTemplate.model.js.
+ * Reusable content template per document type. bodyContent is real HTML,
+ * authored via the admin RichEditor (TipTap), with {{placeholder}} tokens
+ * substituted as plain text before rendering — the tokens live inside <p>
+ * text nodes, so simple string substitution on the raw HTML works the same
+ * way it would on plain text. Rendered to PDF by
+ * backend/src/services/pdfHtmlRenderer.js, which walks a constrained tag set
+ * (p, h1-h3, ul/ol>li, blockquote, hr, br + inline marks).
  */
 const documentTemplateSchema = new Schema(
   {
@@ -15,11 +18,11 @@ const documentTemplateSchema = new Schema(
     name: { type: String, required: true },
     description: String,
 
-    bodyContent: { type: String, required: true }, // e.g. "This is to certify that {{employeeName}}..."
+    bodyContent: { type: String, required: true }, // HTML, e.g. "<p>This is to certify that <strong>{{employeeName}}</strong>...</p>"
     // Documented tokens the body/UI can reference — mirrors EmailTemplate.model.js's `variables`.
     variables: [{ key: String, description: String, example: String }],
-    // Optional structured extra sections, e.g. a responsibilities table.
-    sections: [{ heading: String, items: [String] }],
+    // Visual layout for the generated PDF — see pdfHtmlRenderer.js / certificatePdf.service.js.
+    theme: { type: String, enum: Object.values(DOCUMENT_THEMES), default: DOCUMENT_THEMES.CLASSIC },
 
     isDefault: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true, index: true },

@@ -4,12 +4,12 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { Check, Save, ArrowLeft, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { PageHeader, Breadcrumbs, Tabs } from '@/components/ui/PageHeader.jsx';
-import { Card, PageLoader } from '@/components/ui/index.jsx';
+import { Card, PageLoader, Spinner } from '@/components/ui/index.jsx';
 import { ConfirmDialog } from '@/components/ui/Modal.jsx';
 import { Select } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import DocumentFieldsForm from '@/components/documents/DocumentFieldsForm.jsx';
-import { documentsApi, settingsApi } from '@/api/index.js';
+import { documentsApi, settingsApi, documentTemplatesApi } from '@/api/index.js';
 import { getErrorMessage } from '@/api/client.js';
 import { DOCUMENT_TYPES, documentTypeLabel } from '@/utils/constants.js';
 
@@ -19,6 +19,71 @@ const STEPS = [
   { value: 2, label: '03 · Preview' },
   { value: 3, label: '04 · Confirm & Issue' },
 ];
+
+const NAVY = '#0A2342';
+const GOLD = '#D4AF37';
+
+const escapeHtml = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+// Client-side approximation of the backend's buildTokenValues/renderTemplateBody
+// (document.controller.js) — for live preview only; the real substitution and
+// rendering happens server-side at issue time.
+const buildPreviewHtml = (bodyContent, fields) => {
+  const responsibilities = fields.responsibilities || [];
+  const technologies = fields.technologies || [];
+  const tokenValues = {
+    employeeName: escapeHtml(fields.employeeName),
+    employeeId: escapeHtml(fields.employeeId),
+    designation: escapeHtml(fields.designation),
+    department: escapeHtml(fields.department),
+    joiningDate: escapeHtml(fields.joiningDate),
+    endDate: escapeHtml(fields.isCurrentlyEmployed ? 'Present' : fields.endDate),
+    projectName: escapeHtml(fields.projectName),
+    projectDescription: escapeHtml(fields.projectDescription),
+    issueDate: escapeHtml(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })),
+    responsibilities: responsibilities.length ? `<ul>${responsibilities.map((r) => `<li>${escapeHtml(r)}</li>`).join('')}</ul>` : '',
+    technologies: technologies.length ? escapeHtml(technologies.join(', ')) : '',
+  };
+  return (bodyContent || '').replace(/\{\{\s*(\w+)\s*\}\}/g, (_, key) => (tokenValues[key] !== undefined ? tokenValues[key] : ''));
+};
+
+function ThemedPreview({ theme, documentType, fields, html }) {
+  const label = documentTypeLabel(documentType);
+  const body = <div className="prose prose-sm max-w-none" style={{ color: '#5B6479' }} dangerouslySetInnerHTML={{ __html: html }} />;
+
+  if (theme === 'modern') {
+    return (
+      <div className="border-l-8 bg-white p-10" style={{ borderColor: NAVY }}>
+        <div className="text-mono text-xs uppercase tracking-widest mb-1" style={{ color: '#8890A3' }}>MetlifeDM LLC</div>
+        <div className="text-display-md mb-2" style={{ color: NAVY }}>{label}</div>
+        <div className="w-16 h-0.75 mb-6" style={{ backgroundColor: GOLD }} />
+        {body}
+      </div>
+    );
+  }
+  if (theme === 'elegant') {
+    return (
+      <div className="bg-white border border-hairline">
+        <div className="p-6" style={{ backgroundColor: NAVY }}>
+          <div className="text-sm uppercase tracking-widest" style={{ color: '#fff' }}>MetlifeDM LLC</div>
+        </div>
+        <div className="h-1" style={{ backgroundColor: GOLD }} />
+        <div className="p-10">
+          <div className="text-mono text-xs uppercase tracking-widest mb-4" style={{ color: '#8890A3' }}>{label}</div>
+          {body}
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="border-2 p-10 text-center" style={{ borderColor: GOLD, backgroundColor: '#FAFAF7' }}>
+      <div className="text-mono text-xs uppercase tracking-widest mb-1" style={{ color: NAVY }}>MetlifeDM LLC</div>
+      <div className="text-display-sm mb-4" style={{ color: NAVY }}>{label}</div>
+      <div className="text-display-md mb-6" style={{ color: NAVY }}>{fields.employeeName || 'Recipient name'}</div>
+      <div className="text-left">{body}</div>
+    </div>
+  );
+}
 
 export default function DocumentFormPage() {
   const { id } = useParams();
@@ -40,6 +105,12 @@ export default function DocumentFormPage() {
     queryKey: ['admin', 'settings'],
     queryFn: () => settingsApi.get(),
   });
+  const { data: templates, isLoading: templatesLoading } = useQuery({
+    queryKey: ['admin', 'document-templates', 'byType', documentType],
+    queryFn: () => documentTemplatesApi.list({ documentType, limit: 50 }),
+    enabled: step === 2 && !!documentType,
+  });
+  const activeTemplate = (templates?.data || []).find((t) => t.isActive && t.isDefault) || (templates?.data || []).find((t) => t.isActive);
 
   useEffect(() => {
     if (existing) {
@@ -148,28 +219,26 @@ export default function DocumentFormPage() {
           <div>
             <div className="text-eyebrow mb-4">Preview</div>
             <p className="text-mono text-xs text-slate mb-4">
-              This is an approximate preview. Final wording is generated from the official template at issuance.
+              Rendered live from the active template for this document type, in its selected theme. The real PDF is generated at issuance.
             </p>
-            <div className="border-2 p-8" style={{ borderColor: '#D4AF37', backgroundColor: '#FAFAF7' }}>
-              <div className="text-mono text-xs uppercase tracking-widest mb-1" style={{ color: '#0A2342' }}>MetlifeDM LLC</div>
-              <div className="text-display-sm mb-6" style={{ color: '#0A2342' }}>{documentTypeLabel(documentType)}</div>
-              <div className="text-display-md text-center mb-6" style={{ color: '#0A2342' }}>{fields.employeeName || 'Recipient name'}</div>
-              <p className="text-slate text-sm leading-relaxed">
-                This is to certify that <strong>{fields.employeeName || '—'}</strong>
-                {fields.designation ? <> served as <strong>{fields.designation}</strong></> : null}
-                {fields.department ? <> in the <strong>{fields.department}</strong> department</> : null}
-                {fields.joiningDate ? <> from <strong>{fields.joiningDate}</strong></> : null}
-                {fields.isCurrentlyEmployed ? <> to <strong>Present</strong></> : fields.endDate ? <> to <strong>{fields.endDate}</strong></> : null}.
-              </p>
-              {fields.projectName && (
-                <p className="text-slate text-sm leading-relaxed mt-3">
-                  Project: <strong>{fields.projectName}</strong> — {fields.projectDescription}
-                </p>
-              )}
-            </div>
+            {templatesLoading ? (
+              <div className="flex justify-center py-16"><Spinner size={24} className="text-ultra" /></div>
+            ) : !activeTemplate ? (
+              <div className="border border-dashed border-hairline p-8 text-center">
+                <p className="text-sm text-slate mb-4">No active template found for {documentTypeLabel(documentType)}.</p>
+                <Button to="/documents/templates/new" variant="ghost" size="sm">Create a template</Button>
+              </div>
+            ) : (
+              <ThemedPreview
+                theme={activeTemplate.theme}
+                documentType={documentType}
+                fields={fields}
+                html={buildPreviewHtml(activeTemplate.bodyContent, fields)}
+              />
+            )}
             <div className="flex items-center justify-between mt-8 pt-6 border-t border-hairline">
               <Button variant="ghost" icon={ArrowLeft} onClick={() => setStep(1)}>Back to fields</Button>
-              <Button icon={ArrowRight} onClick={() => goTo(3)}>Continue to issue</Button>
+              <Button icon={ArrowRight} disabled={!activeTemplate} onClick={() => goTo(3)}>Continue to issue</Button>
             </div>
           </div>
         )}

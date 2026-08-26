@@ -201,3 +201,10 @@ export const DOCUMENT_STATUS = Object.freeze({
   CANCELLED: 'cancelled',
   REPLACED: 'replaced',
 });
+
+// Visual PDF layouts a DocumentTemplate can use — see pdfHtmlRenderer.js / certificatePdf.service.js.
+export const DOCUMENT_THEMES = Object.freeze({
+  CLASSIC: 'classic',
+  MODERN: 'modern',
+  ELEGANT: 'elegant',
+});

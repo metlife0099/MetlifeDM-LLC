@@ -3,10 +3,12 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
+import Underline from '@tiptap/extension-underline';
 import Placeholder from '@tiptap/extension-placeholder';
 import {
   Bold,
   Italic,
+  UnderlineIcon,
   Strikethrough,
   Code,
   Heading1,
@@ -39,6 +41,7 @@ export default function RichEditor({ value = '', onChange, placeholder = 'Start 
         HTMLAttributes: { class: 'text-ultra underline' },
       }),
       Image,
+      Underline,
       Placeholder.configure({ placeholder }),
     ],
     content: value,
@@ -101,6 +104,7 @@ export default function RichEditor({ value = '', onChange, placeholder = 'Start 
       <div className="flex flex-wrap border-b border-hairline">
         {btn(editor.isActive('bold'), () => editor.chain().focus().toggleBold().run(), Bold, 'Bold')}
         {btn(editor.isActive('italic'), () => editor.chain().focus().toggleItalic().run(), Italic, 'Italic')}
+        {btn(editor.isActive('underline'), () => editor.chain().focus().toggleUnderline().run(), UnderlineIcon, 'Underline')}
         {btn(editor.isActive('strike'), () => editor.chain().focus().toggleStrike().run(), Strikethrough, 'Strike')}
         {btn(editor.isActive('code'), () => editor.chain().focus().toggleCode().run(), Code, 'Inline code')}
         {btn(editor.isActive('heading', { level: 1 }), () => editor.chain().focus().toggleHeading({ level: 1 }).run(), Heading1, 'Heading 1')}

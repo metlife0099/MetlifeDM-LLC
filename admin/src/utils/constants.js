@@ -267,6 +267,14 @@ export const DOCUMENT_STATUSES = [
 
 export const documentTypeLabel = (value) => DOCUMENT_TYPES.find((t) => t.value === value)?.label || value;
 
+export const DOCUMENT_THEMES = [
+  { value: 'classic', label: 'Classic', description: 'Bordered certificate — gold frame, navy header, centered title. Best for certificates.' },
+  { value: 'modern', label: 'Modern', description: 'Clean & minimal — slim navy accent bar, left-aligned. Best for understated letters.' },
+  { value: 'elegant', label: 'Elegant', description: 'Formal letterhead — navy band, gold rules, traditional letter closing. Best for official letters.' },
+];
+
+export const documentThemeLabel = (value) => DOCUMENT_THEMES.find((t) => t.value === value)?.label || value;
+
 export const documentStatusTone = (status) => ({
   draft: 'default',
   issued: 'success',

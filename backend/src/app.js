@@ -112,7 +112,7 @@ app.use(
     },
   })
 );
-app.use(xssClean(['content', 'description', 'html', 'body'])); // skip rich-text fields
+app.use(xssClean(['content', 'description', 'html', 'body', 'bodyContent'])); // skip rich-text fields
 app.use(hpp({ whitelist: ['tags', 'category', 'services', 'sort'] }));
 
 /* ---------------------------------------------------------------
