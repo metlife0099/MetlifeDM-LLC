@@ -22,7 +22,9 @@ const collectRuns = (node, marks = {}) => {
   const runs = [];
   for (const child of node.childNodes) {
     if (child.nodeType === TEXT_NODE) {
-      if (child.rawText) runs.push({ text: child.rawText, ...marks });
+      // .text (not .rawText) decodes HTML entities — rawText would leave a
+      // literal "&amp;" in the drawn PDF text instead of "&".
+      if (child.text) runs.push({ text: child.text, ...marks });
       continue;
     }
     if (child.nodeType !== ELEMENT_NODE) continue;
@@ -87,19 +89,31 @@ const BLOCK_STYLE = {
   P: { fontSize: 10.5, bold: false, gapAfter: 10 },
 };
 
+// TipTap renders an intentional blank line (pressing Enter twice) as an
+// empty <p></p>. A browser still gives that empty paragraph a full line's
+// height; pdfkit's heightOfString('') collapses to ~0 and doc.text('') is
+// unreliable, so an empty block is measured/drawn as a fixed blank line
+// instead of falling through to the normal text path — otherwise the
+// admin's deliberate spacing silently vanishes in the PDF.
+const isBlockEmpty = (node) => !(node.text || '').trim();
+const blankLineHeight = (fontSize) => fontSize * 1.3;
+
 const measureBlock = (doc, node, { width, theme }) => {
   const tag = node.tagName;
   if (tag === 'HR') return 14;
   if (tag === 'UL' || tag === 'OL') {
-    const items = node.childNodes.filter((c) => c.tagName === 'LI');
+    const items = node.childNodes.filter((c) => c.tagName === 'LI' && (c.text || '').trim());
+    if (!items.length) return 0;
     doc.font(theme.fontFamily).fontSize(10.5);
     return items.reduce((sum, li) => sum + doc.heightOfString(li.text || ' ', { width: width - 22, lineGap: 3 }) + 6, 0) + 4;
   }
   if (tag === 'BLOCKQUOTE') {
+    if (isBlockEmpty(node)) return 0;
     doc.font(`${theme.fontFamily}-Oblique`).fontSize(10.5);
     return doc.heightOfString(node.text || ' ', { width: width - 24, lineGap: 3 }) + 16;
   }
   const style = BLOCK_STYLE[tag] || BLOCK_STYLE.P;
+  if (isBlockEmpty(node)) return blankLineHeight(style.fontSize) + style.gapAfter;
   doc.font(style.bold ? `${theme.fontFamily}-Bold` : theme.fontFamily).fontSize(style.fontSize);
   return doc.heightOfString(node.text || ' ', { width, lineGap: 3 }) + style.gapAfter;
 };
@@ -113,7 +127,8 @@ const drawBlock = (doc, node, { x, y, width, theme }) => {
   }
 
   if (tag === 'UL' || tag === 'OL') {
-    const items = node.childNodes.filter((c) => c.tagName === 'LI');
+    const items = node.childNodes.filter((c) => c.tagName === 'LI' && (c.text || '').trim());
+    if (!items.length) return y;
     let cursorY = y;
     items.forEach((li, i) => {
       const marker = tag === 'OL' ? `${i + 1}.` : '•';
@@ -128,6 +143,7 @@ const drawBlock = (doc, node, { x, y, width, theme }) => {
   }
 
   if (tag === 'BLOCKQUOTE') {
+    if (isBlockEmpty(node)) return y;
     const textHeight = doc.font(`${theme.fontFamily}-Oblique`).fontSize(10.5).heightOfString(node.text || '', { width: width - 24, lineGap: 3 });
     doc.rect(x, y, 3, textHeight + 12).fill(theme.accentColor);
     doc.font(`${theme.fontFamily}-Oblique`).fontSize(10.5).fillColor(theme.mutedColor || theme.bodyColor)
@@ -136,6 +152,7 @@ const drawBlock = (doc, node, { x, y, width, theme }) => {
   }
 
   const style = BLOCK_STYLE[tag] || BLOCK_STYLE.P;
+  if (isBlockEmpty(node)) return y + blankLineHeight(style.fontSize) + style.gapAfter;
   const runs = collectRuns(node, { bold: style.bold });
   const color = style.bold ? theme.headingColor : theme.bodyColor;
   drawRuns(doc, runs.length ? runs : [{ text: node.text || '', bold: style.bold }], {

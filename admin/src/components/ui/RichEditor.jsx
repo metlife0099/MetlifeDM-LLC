@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { forwardRef, useEffect, useImperativeHandle } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -29,8 +29,12 @@ import { cn } from '@/utils/format.js';
  * Simple TipTap-based rich text editor for blog posts, page content, etc.
  * value: HTML string
  * onChange(html): callback
+ * ref: exposes { insertContent(text) } — inserts plain text at the current
+ * cursor position (falls back to the end if the editor isn't focused), used
+ * e.g. by document template editing to insert {{token}} placeholders without
+ * requiring the admin to type the exact syntax by hand.
  */
-export default function RichEditor({ value = '', onChange, placeholder = 'Start writing…', minHeight = 320 }) {
+const RichEditor = forwardRef(function RichEditor({ value = '', onChange, placeholder = 'Start writing…', minHeight = 320 }, ref) {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -65,6 +69,13 @@ export default function RichEditor({ value = '', onChange, placeholder = 'Start 
       editor.commands.setContent(next, false);
     }
   }, [value, editor]);
+
+  useImperativeHandle(ref, () => ({
+    insertContent: (text) => {
+      if (!editor) return;
+      editor.chain().focus().insertContent(text).run();
+    },
+  }), [editor]);
 
   if (!editor) return null;
 
@@ -131,4 +142,6 @@ export default function RichEditor({ value = '', onChange, placeholder = 'Start 
       </div>
     </div>
   );
-}
+});
+
+export default RichEditor;
