@@ -83,20 +83,19 @@ const drawRuns = (doc, runs, { x, y, width, fontFamily, fontSize, color, lineGap
 // ---- block measurement + drawing -------------------------------------------
 
 const BLOCK_STYLE = {
-  H1: { fontSize: 18, bold: true, gapAfter: 10 },
-  H2: { fontSize: 15, bold: true, gapAfter: 8 },
-  H3: { fontSize: 13, bold: true, gapAfter: 6 },
-  P: { fontSize: 10.5, bold: false, gapAfter: 10 },
+  H1: { fontSize: 18, bold: true, gapAfter: 8 },
+  H2: { fontSize: 15, bold: true, gapAfter: 6 },
+  H3: { fontSize: 13, bold: true, gapAfter: 5 },
+  P: { fontSize: 10.5, bold: false, gapAfter: 5 },
 };
 
-// TipTap renders an intentional blank line (pressing Enter twice) as an
-// empty <p></p>. A browser still gives that empty paragraph a full line's
-// height; pdfkit's heightOfString('') collapses to ~0 and doc.text('') is
-// unreliable, so an empty block is measured/drawn as a fixed blank line
-// instead of falling through to the normal text path — otherwise the
-// admin's deliberate spacing silently vanishes in the PDF.
+// TipTap renders a blank line (pressing Enter) as an empty <p></p>. It's
+// measured/drawn as a normal paragraph gap rather than falling through to
+// pdfkit's unreliable doc.text('') path — and renderHtmlContent collapses
+// any *run* of consecutive empty blocks down to a single one first, so
+// pressing Enter multiple times (or once) always reads as one ordinary
+// paragraph break, not a stack of extra blank lines.
 const isBlockEmpty = (node) => !(node.text || '').trim();
-const blankLineHeight = (fontSize) => fontSize * 1.3;
 
 const measureBlock = (doc, node, { width, theme }) => {
   const tag = node.tagName;
@@ -105,7 +104,7 @@ const measureBlock = (doc, node, { width, theme }) => {
     const items = node.childNodes.filter((c) => c.tagName === 'LI' && (c.text || '').trim());
     if (!items.length) return 0;
     doc.font(theme.fontFamily).fontSize(10.5);
-    return items.reduce((sum, li) => sum + doc.heightOfString(li.text || ' ', { width: width - 22, lineGap: 3 }) + 6, 0) + 4;
+    return items.reduce((sum, li) => sum + doc.heightOfString(li.text || ' ', { width: width - 22, lineGap: 3 }) + 4, 0) + 3;
   }
   if (tag === 'BLOCKQUOTE') {
     if (isBlockEmpty(node)) return 0;
@@ -113,7 +112,7 @@ const measureBlock = (doc, node, { width, theme }) => {
     return doc.heightOfString(node.text || ' ', { width: width - 24, lineGap: 3 }) + 16;
   }
   const style = BLOCK_STYLE[tag] || BLOCK_STYLE.P;
-  if (isBlockEmpty(node)) return blankLineHeight(style.fontSize) + style.gapAfter;
+  if (isBlockEmpty(node)) return style.gapAfter;
   doc.font(style.bold ? `${theme.fontFamily}-Bold` : theme.fontFamily).fontSize(style.fontSize);
   return doc.heightOfString(node.text || ' ', { width, lineGap: 3 }) + style.gapAfter;
 };
@@ -137,9 +136,9 @@ const drawBlock = (doc, node, { x, y, width, theme }) => {
       drawRuns(doc, runs.length ? runs : [{ text: li.text || '' }], {
         x: x + 20, y: cursorY, width: width - 20, fontFamily: theme.fontFamily, fontSize: 10.5, color: theme.bodyColor,
       });
-      cursorY = Math.max(doc.y, cursorY) + 6;
+      cursorY = Math.max(doc.y, cursorY) + 4;
     });
-    return cursorY + 4;
+    return cursorY + 3;
   }
 
   if (tag === 'BLOCKQUOTE') {
@@ -152,7 +151,7 @@ const drawBlock = (doc, node, { x, y, width, theme }) => {
   }
 
   const style = BLOCK_STYLE[tag] || BLOCK_STYLE.P;
-  if (isBlockEmpty(node)) return y + blankLineHeight(style.fontSize) + style.gapAfter;
+  if (isBlockEmpty(node)) return y + style.gapAfter;
   const runs = collectRuns(node, { bold: style.bold });
   const color = style.bold ? theme.headingColor : theme.bodyColor;
   drawRuns(doc, runs.length ? runs : [{ text: node.text || '', bold: style.bold }], {
@@ -167,12 +166,28 @@ const drawBlock = (doc, node, { x, y, width, theme }) => {
  * header/chrome and return the new content start-y) whenever a block would
  * cross `pageBottom`. Returns the final y position after the last block.
  */
+const isBlankLineBlock = (node) =>
+  ['P', 'H1', 'H2', 'H3'].includes(node.tagName) && isBlockEmpty(node);
+
 export const renderHtmlContent = (doc, html, { x, width, startY, pageBottom, theme, onNewPage }) => {
   const root = parse(html || '', { blockTextElements: { pre: true } });
-  let y = startY;
+  const elements = root.childNodes.filter((n) => n.nodeType === ELEMENT_NODE);
 
-  for (const node of root.childNodes) {
-    if (node.nodeType !== ELEMENT_NODE) continue;
+  // Collapse a run of consecutive blank-line blocks (pressing Enter more
+  // than once) down to a single one, so the gap between two real paragraphs
+  // never stacks into multiple blank lines regardless of how many empty
+  // paragraphs are in between.
+  const blocks = [];
+  let prevWasBlankLine = false;
+  for (const node of elements) {
+    const blankLine = isBlankLineBlock(node);
+    if (blankLine && prevWasBlankLine) continue;
+    blocks.push(node);
+    prevWasBlankLine = blankLine;
+  }
+
+  let y = startY;
+  for (const node of blocks) {
     const height = measureBlock(doc, node, { width, theme });
     if (y + height > pageBottom) {
       doc.addPage({ size: 'A4', margin: 0 });

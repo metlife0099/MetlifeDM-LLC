@@ -160,27 +160,34 @@ const renderClassicTheme = (doc, ctx) => {
   doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(9).text(document.documentNumber, 0, y + 2, { width: PAGE.width - inner, align: 'right' });
   doc.fillColor(MUTED).font('Helvetica').fontSize(8).text(`Issued ${formatDate(snapshot.issueDate)}`, 0, y + 15, { width: PAGE.width - inner, align: 'right' });
 
-  y += logoHeight + 26;
+  y += logoHeight + 14;
   doc.moveTo(inner, y).lineTo(PAGE.width - inner, y).lineWidth(1).strokeColor(GOLD).stroke();
-  y += 26;
+  y += 14;
 
   doc.fillColor(MUTED).font('Helvetica-Bold').fontSize(9).text('THIS DOCUMENT CERTIFIES', inner, y, { width: contentWidth, align: 'center', characterSpacing: 2.5 });
-  y += 20;
-  doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(23).text(snapshot.documentTypeLabel || 'Certificate', inner, y, { width: contentWidth, align: 'center' });
-  y = doc.y + 6;
+  y += 14;
+  doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(21).text(snapshot.documentTypeLabel || 'Certificate', inner, y, { width: contentWidth, align: 'center' });
+  y = doc.y + 5;
   doc.moveTo(PAGE.width / 2 - 30, y).lineTo(PAGE.width / 2 + 30, y).lineWidth(2).strokeColor(GOLD).stroke();
-  y += 22;
+  y += 12;
 
-  doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(18).text(snapshot.recipientName || '—', inner, y, { width: contentWidth, align: 'center' });
-  y = doc.y + 20;
+  doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(16).text(snapshot.recipientName || '—', inner, y, { width: contentWidth, align: 'center' });
+  y = doc.y + 10;
 
   const bodyX = inner + 24;
   const bodyWidth = contentWidth - 48;
-  const pageBottom = PAGE.height - FOOTER_HEIGHT - 130;
+  // Only reserve room for one more line, not the whole signature block —
+  // the check right after renderHtmlContent decides whether the signature
+  // needs its own page based on what's *actually* left, so pre-reserving
+  // its full height here just pushes content to a new page needlessly.
+  const pageBottom = PAGE.height - FOOTER_HEIGHT - 8;
   y = renderHtmlContent(doc, snapshot.renderedBody, { x: bodyX, width: bodyWidth, startY: y, pageBottom, theme, onNewPage: drawRunningHeader });
 
-  const rowY = Math.max(y + 24, PAGE.height - FOOTER_HEIGHT - 110);
-  if (rowY + 100 > PAGE.height - FOOTER_HEIGHT) {
+  // Always follow content with a small fixed gap — never jump to a distant
+  // fixed "near-bottom" position, which left an ugly empty gap whenever
+  // content ended (or restarted, after an orphaned last line) high up a page.
+  const rowY = y + 24;
+  if (rowY + 78 > PAGE.height - FOOTER_HEIGHT) {
     doc.addPage({ size: 'A4', margin: 0 });
     drawSignatureBlock(doc, { x: inner + 20, y: drawRunningHeader(), width: contentWidth - 40, snapshot, signatureBuffer, sealBuffer, qrBuffer, accent: GOLD, textColor: NAVY, mutedColor: MUTED });
   } else {
@@ -239,11 +246,11 @@ const renderModernTheme = (doc, ctx) => {
   doc.moveTo(contentX, y).lineTo(contentX + 60, y).lineWidth(2.5).strokeColor(GOLD).stroke();
   y += 28;
 
-  const pageBottom = PAGE.height - FOOTER_HEIGHT - 120;
+  const pageBottom = PAGE.height - FOOTER_HEIGHT - 8;
   y = renderHtmlContent(doc, snapshot.renderedBody, { x: contentX, width: contentWidth, startY: y, pageBottom, theme, onNewPage: drawRunningHeader });
 
-  const rowY = Math.max(y + 24, PAGE.height - FOOTER_HEIGHT - 100);
-  if (rowY + 100 > PAGE.height - FOOTER_HEIGHT) {
+  const rowY = y + 24;
+  if (rowY + 78 > PAGE.height - FOOTER_HEIGHT) {
     doc.addPage({ size: 'A4', margin: 0 });
     const newY = drawRunningHeader();
     drawSignatureBlock(doc, { x: contentX, y: newY, width: contentWidth, snapshot, signatureBuffer, sealBuffer, qrBuffer, accent: NAVY, textColor: NAVY, mutedColor: MUTED });
@@ -301,10 +308,10 @@ const renderElegantTheme = (doc, ctx) => {
   doc.fillColor(MUTED).font('Helvetica-Bold').fontSize(9).text(snapshot.documentTypeLabel?.toUpperCase() || 'DOCUMENT', MARGIN, y, { characterSpacing: 2 });
   y += 22;
 
-  const pageBottom = PAGE.height - FOOTER_HEIGHT - 140;
+  const pageBottom = PAGE.height - FOOTER_HEIGHT - 8;
   y = renderHtmlContent(doc, snapshot.renderedBody, { x: MARGIN, width: contentWidth, startY: y, pageBottom, theme, onNewPage: drawRunningHeader });
 
-  const rowY = Math.max(y + 30, PAGE.height - FOOTER_HEIGHT - 120);
+  const rowY = y + 30;
   if (rowY + 110 > PAGE.height - FOOTER_HEIGHT) {
     doc.addPage({ size: 'A4', margin: 0 });
     const newY = drawRunningHeader();

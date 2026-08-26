@@ -130,6 +130,7 @@ const performIssue = async (doc, { signatoryId, issueDate, actor }) => {
     type: 'authenticated',
     public_id: toSlug(documentNumber),
     format: 'pdf',
+    invalidate: true, // CDN-bust this public_id — a document number is never reused in normal operation, but this guarantees a stale cached PDF can never be served under it
     quality: undefined,
     fetch_format: undefined,
   });
