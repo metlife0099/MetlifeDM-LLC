@@ -19,7 +19,7 @@ import { PageHeader, FilterBar, Breadcrumbs } from '@/components/ui/PageHeader.j
 import DataTable from '@/components/ui/DataTable.jsx';
 import { Card, Badge, PageLoader, Kpi, Spinner } from '@/components/ui/index.jsx';
 import { Modal } from '@/components/ui/Modal.jsx';
-import { Select, SearchInput, Textarea } from '@/components/form/index.jsx';
+import { Select, SearchInput, Textarea, Input } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import DocumentFieldsForm from '@/components/documents/DocumentFieldsForm.jsx';
 import { documentsApi } from '@/api/index.js';
@@ -117,6 +117,7 @@ export function DocumentDetailPage() {
   const [replaceOpen, setReplaceOpen] = useState(false);
   const [replaceReason, setReplaceReason] = useState('');
   const [replaceFields, setReplaceFields] = useState({});
+  const [replaceIssueDate, setReplaceIssueDate] = useState('');
   const [qrOpen, setQrOpen] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
@@ -151,7 +152,7 @@ export function DocumentDetailPage() {
     onError: (e) => toast.error(getErrorMessage(e)),
   });
   const replace = useMutation({
-    mutationFn: () => documentsApi.replace(id, { reason: replaceReason, fields: replaceFields }),
+    mutationFn: () => documentsApi.replace(id, { reason: replaceReason, fields: replaceFields, issueDate: replaceIssueDate || undefined }),
     onSuccess: (result) => {
       invalidate();
       toast.success('Document replaced');
@@ -209,7 +210,7 @@ export function DocumentDetailPage() {
                 <Button variant="ghost" icon={Download} onClick={downloadPdf} loading={downloading}>PDF</Button>
                 <Button variant="danger_ghost" icon={ShieldAlert} onClick={() => setReasonModal('revoke')}>Revoke</Button>
                 <Button variant="danger_ghost" icon={Ban} onClick={() => setReasonModal('cancel')}>Cancel</Button>
-                <Button variant="ghost" icon={RefreshCw} onClick={() => { setReplaceFields(document.fields || {}); setReplaceOpen(true); }}>Replace</Button>
+                <Button variant="ghost" icon={RefreshCw} onClick={() => { setReplaceFields(document.fields || {}); setReplaceIssueDate(''); setReplaceOpen(true); }}>Replace</Button>
               </>
             )}
           </>
@@ -366,6 +367,13 @@ export function DocumentDetailPage() {
             value={replaceReason}
             onChange={(e) => setReplaceReason(e.target.value)}
             error={replaceReason !== '' && !replaceReasonValid ? 'Enter at least 10 characters' : undefined}
+          />
+          <Input
+            label="Issue date"
+            type="date"
+            value={replaceIssueDate}
+            onChange={(e) => setReplaceIssueDate(e.target.value)}
+            hint="Leave blank to use today's date"
           />
           <DocumentFieldsForm documentType={document.documentType} value={replaceFields} onChange={setReplaceFields} />
         </div>

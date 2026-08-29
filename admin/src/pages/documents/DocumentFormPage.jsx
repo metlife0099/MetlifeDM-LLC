@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { PageHeader, Breadcrumbs, Tabs } from '@/components/ui/PageHeader.jsx';
 import { Card, PageLoader, Spinner } from '@/components/ui/index.jsx';
 import { ConfirmDialog } from '@/components/ui/Modal.jsx';
-import { Select } from '@/components/form/index.jsx';
+import { Select, Input } from '@/components/form/index.jsx';
 import Button from '@/components/ui/Button.jsx';
 import DocumentFieldsForm from '@/components/documents/DocumentFieldsForm.jsx';
 import { documentsApi, settingsApi, documentTemplatesApi } from '@/api/index.js';
@@ -94,6 +94,7 @@ export default function DocumentFormPage() {
   const [documentType, setDocumentType] = useState('');
   const [fields, setFields] = useState({});
   const [signatoryId, setSignatoryId] = useState('');
+  const [issueDate, setIssueDate] = useState('');
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const { data: existing, isLoading } = useQuery({
@@ -139,7 +140,7 @@ export default function DocumentFormPage() {
     onError: (e) => toast.error(getErrorMessage(e)),
   });
   const issueDoc = useMutation({
-    mutationFn: () => documentsApi.issue(draftId, { signatoryId: signatoryId || undefined }),
+    mutationFn: () => documentsApi.issue(draftId, { signatoryId: signatoryId || undefined, issueDate: issueDate || undefined }),
     onSuccess: () => { toast.success('Document issued'); setConfirmOpen(false); navigate(`/documents/${draftId}`); },
     onError: (e) => { toast.error(getErrorMessage(e)); setConfirmOpen(false); },
   });
@@ -259,6 +260,13 @@ export default function DocumentFormPage() {
                   ...signatories.map((s) => ({ value: String(s._id), label: `${s.name}${s.title ? ` — ${s.title}` : ''}` })),
                 ]}
                 hint={!signatories.length ? 'Add signatories under Settings → Documents to appear here' : undefined}
+              />
+              <Input
+                label="Issue date"
+                type="date"
+                value={issueDate}
+                onChange={(e) => setIssueDate(e.target.value)}
+                hint="Leave blank to use today's date"
               />
             </div>
             <div className="flex items-center justify-between mt-8 pt-6 border-t border-hairline">

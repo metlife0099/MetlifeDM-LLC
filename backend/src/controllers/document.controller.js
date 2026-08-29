@@ -316,7 +316,7 @@ export const replaceDocument = asyncHandler(async (req, res) => {
     updatedBy: req.user._id,
     replaces: oldDocument._id,
   });
-  await performIssue(newDocument, { actor: req.user });
+  await performIssue(newDocument, { actor: req.user, signatoryId: req.body.signatoryId, issueDate: req.body.issueDate });
 
   oldDocument.replacedBy = newDocument._id;
   oldDocument.updatedBy = req.user._id;

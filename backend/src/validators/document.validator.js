@@ -60,4 +60,6 @@ export const reasonSchema = z.object({
 
 export const replaceDocumentSchema = reasonSchema.extend({
   fields: documentFields.optional(),
+  signatoryId: objectId.optional(),
+  issueDate: z.coerce.date().optional(),
 });
