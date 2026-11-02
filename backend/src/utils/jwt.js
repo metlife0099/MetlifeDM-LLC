@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken';
 import { config } from '../config/index.js';
 
-export const signAccessToken = (payload) =>
+export const signAccessToken = (payload, expiresIn = config.jwt.access.expiresIn) =>
   jwt.sign(payload, config.jwt.access.secret, {
-    expiresIn: config.jwt.access.expiresIn,
+    expiresIn,
     issuer: 'metlifedm',
     audience: 'metlifedm-client',
   });

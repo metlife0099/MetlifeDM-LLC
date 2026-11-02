@@ -6,6 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
 const KEYS = {
   ACCESS: 'mdm_admin_access_token',
   USER: 'mdm_admin_user',
+  SESSION_EXPIRY: 'mdm_admin_session_expiry',
 };
 
 const storedLocalToken =
@@ -14,6 +15,32 @@ const storedSessionToken =
   typeof window !== 'undefined' ? sessionStorage.getItem(KEYS.ACCESS) : null;
 let accessToken = storedLocalToken || storedSessionToken;
 let accessTokenPersistent = !!storedLocalToken;
+let sessionExpiryTimer = null;
+let sessionExpiresAt =
+  typeof window !== 'undefined' ? localStorage.getItem(KEYS.SESSION_EXPIRY) : null;
+
+export const setSessionExpiresAt = (value) => {
+  if (sessionExpiryTimer) clearTimeout(sessionExpiryTimer);
+  sessionExpiryTimer = null;
+  sessionExpiresAt = value || null;
+  if (typeof window === 'undefined') return;
+  if (!value) {
+    localStorage.removeItem(KEYS.SESSION_EXPIRY);
+    return;
+  }
+  localStorage.setItem(KEYS.SESSION_EXPIRY, value);
+
+  const remaining = new Date(value).getTime() - Date.now();
+  if (!Number.isFinite(remaining)) return;
+  const expire = () => window.dispatchEvent(new Event('admin:logout'));
+  if (remaining <= 0) {
+    expire();
+    return;
+  }
+  sessionExpiryTimer = window.setTimeout(expire, remaining);
+};
+
+export const getSessionExpiresAt = () => sessionExpiresAt;
 
 export const setAccessToken = (t, persistent) => {
   accessToken = t;
@@ -67,7 +94,9 @@ apiClient.interceptors.response.use(
             .post(`${API_URL}/auth/refresh`, {}, { withCredentials: true })
             .then((r) => {
               const token = r.data?.data?.accessToken || r.data?.accessToken;
+              const sessionExpiresAt = r.data?.data?.sessionExpiresAt || r.data?.sessionExpiresAt;
               setAccessToken(token);
+              setSessionExpiresAt(sessionExpiresAt);
               return token;
             })
             .finally(() => {

@@ -109,13 +109,13 @@ export const login = asyncHandler(async (req, res) => {
 
   await user.resetFailedAttempts();
 
-  const { accessToken, refreshToken, sessionMaxAge } =
+  const { accessToken, refreshToken, sessionMaxAge, sessionExpiresAt } =
     await auth.issueTokens(user, req, Boolean(rememberMe));
   setRefreshCookie(res, refreshToken, sessionMaxAge);
 
   return ApiResponse.ok(
     res,
-    { user: sanitizeUser(user), accessToken },
+    { user: sanitizeUser(user), accessToken, sessionExpiresAt },
     'Logged in successfully'
   );
 });
@@ -125,10 +125,11 @@ export const refresh = asyncHandler(async (req, res) => {
   const token = req.cookies?.[REFRESH_COOKIE_NAME];
   if (!token) throw ApiError.unauthorized('No refresh token provided');
 
-  const { accessToken, refreshToken, sessionMaxAge } = await auth.rotateRefreshToken(token, req);
+  const { accessToken, refreshToken, sessionMaxAge, sessionExpiresAt } =
+    await auth.rotateRefreshToken(token, req);
   setRefreshCookie(res, refreshToken, sessionMaxAge);
 
-  return ApiResponse.ok(res, { accessToken }, 'Token refreshed');
+  return ApiResponse.ok(res, { accessToken, sessionExpiresAt }, 'Token refreshed');
 });
 
 /* GET /auth/session

@@ -3,7 +3,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { authApi } from '@/api/index.js';
-import { setAccessToken, getAccessToken, STORAGE } from '@/api/client.js';
+import {
+  setAccessToken,
+  getAccessToken,
+  setSessionExpiresAt,
+  getSessionExpiresAt,
+  STORAGE,
+} from '@/api/client.js';
 import { setUser, clearAuth, setLoading } from '@/store/index.js';
 import { ADMIN_ROLES } from '@/utils/constants.js';
 
@@ -28,6 +34,9 @@ const doHydrate = (dispatch, queryClient) => {
 
   hydrationPromise = Promise.resolve()
     .then(async () => {
+      const storedExpiry = getSessionExpiresAt();
+      if (storedExpiry && new Date(storedExpiry).getTime() <= Date.now()) return null;
+      if (storedExpiry) setSessionExpiresAt(storedExpiry);
       let token = getAccessToken();
       if (!token) {
         const session = await authApi.session();
@@ -35,6 +44,7 @@ const doHydrate = (dispatch, queryClient) => {
         const refreshed = await authApi.refresh();
         token = refreshed?.accessToken;
         if (!token) return null;
+        setSessionExpiresAt(refreshed?.sessionExpiresAt);
         // Keep the short-lived bearer token in this browser tab. The durable,
         // HttpOnly refresh cookie restores the 2-day staff session next time.
         setAccessToken(token, false);
@@ -43,6 +53,8 @@ const doHydrate = (dispatch, queryClient) => {
     })
     .then((res) => {
       if (!res) {
+        setAccessToken(null);
+        setSessionExpiresAt(null);
         clearStoredUser();
         queryClient.clear();
         dispatch(clearAuth());
@@ -90,6 +102,7 @@ export function useAuth() {
   const endSession = useCallback(() => {
     resetHydration();
     setAccessToken(null);
+    setSessionExpiresAt(null);
     clearStoredUser();
     queryClient.clear();
     dispatch(clearAuth());
@@ -113,6 +126,7 @@ export function useAuth() {
       const res = await authApi.login(data);
       if (res?.requires2FA) return res;
       if (res?.accessToken) setAccessToken(res.accessToken, Boolean(data.rememberMe));
+      setSessionExpiresAt(res?.sessionExpiresAt);
       const me = res?.user || res;
       if (!me?.role || !ADMIN_ROLES.includes(me.role)) {
         await authApi.logout().catch(() => {});

@@ -87,7 +87,7 @@ Frontends unwrap `r.data.data` via `unwrap(r)` and `{ data: r.data.data, meta: r
 Two-token JWT with rotation:
 
 - **Access token** — 15 min TTL, sent in `Authorization: Bearer <token>`, stored in `localStorage` on client.
-- **Refresh token** — 7-day sliding session for customers and 2-day sliding session for staff, stored as a hash in MongoDB and sent in a host-only `httpOnly` cookie (`SameSite=Lax`, `Secure` in production). It rotates on every refresh and the consumed token is revoked atomically.
+- **Refresh token** — 7-day sliding session for customers and an absolute 24-hour session for staff, stored as a hash in MongoDB and sent in a host-only `httpOnly` cookie (`SameSite=Lax`, `Secure` in production). It rotates on every refresh and the consumed token is revoked atomically; staff rotation never extends the original deadline.
 
 **Silent refresh:** the axios response interceptor catches 401 and retries after hitting `/auth/refresh`. If refresh fails, dispatches a global logout event (`auth:logout` on public, `admin:logout` on admin — separate so both apps can be signed in on the same origin without conflict).
 

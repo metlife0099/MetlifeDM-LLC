@@ -28,22 +28,52 @@ export const getRefreshSessionDuration = (role) =>
     ? config.jwt.refresh.adminExpiresIn
     : config.jwt.refresh.expiresIn;
 
-/** Issue access + refresh tokens and persist the refresh hash. */
-export const issueTokens = async (user, req, rememberMe = Boolean(req?.body?.rememberMe)) => {
+export const getSessionTiming = (role, absoluteSessionExpiresAt, now = Date.now()) => {
+  const configuredSessionMs = parseDuration(getRefreshSessionDuration(role));
+  const isStaff = STAFF_ROLES.has(role);
+  const suppliedDeadline = Number(absoluteSessionExpiresAt);
+  const sessionExpiresAt = isStaff && Number.isFinite(suppliedDeadline)
+    ? Math.min(suppliedDeadline, now + configuredSessionMs)
+    : now + configuredSessionMs;
+  return {
+    isStaff,
+    sessionExpiresAt,
+    sessionMaxAge: sessionExpiresAt - now,
+  };
+};
+
+/** Issue access + refresh tokens and persist the refresh hash.
+ * Staff tokens retain one absolute deadline across rotations. Customer
+ * sessions keep their configured sliding duration.
+ */
+export const issueTokens = async (
+  user,
+  req,
+  rememberMe = Boolean(req?.body?.rememberMe),
+  absoluteSessionExpiresAt
+) => {
   const payload = {
     sub: user._id.toString(),
     role: user.role,
     email: user.email,
     ver: user.tokenVersion || 0,
   };
+  const now = Date.now();
   const sessionExpiresIn = getRefreshSessionDuration(user.role);
-  const sessionMaxAge = parseDuration(sessionExpiresIn);
-  const accessToken = signAccessToken(payload);
+  const { isStaff, sessionExpiresAt, sessionMaxAge } =
+    getSessionTiming(user.role, absoluteSessionExpiresAt, now);
+  if (sessionMaxAge <= 0) throw ApiError.unauthorized('Session expired. Please sign in again.');
+
+  const accessMaxAge = isStaff
+    ? Math.min(parseDuration(config.jwt.access.expiresIn), sessionMaxAge)
+    : parseDuration(config.jwt.access.expiresIn);
+  const accessToken = signAccessToken(payload, Math.max(1, Math.floor(accessMaxAge / 1000)));
   const refreshToken = signRefreshToken({
     sub: user._id.toString(),
     ver: user.tokenVersion || 0,
     jti: crypto.randomUUID(),
-  }, sessionExpiresIn);
+    ...(isStaff ? { sessionExp: Math.floor(sessionExpiresAt / 1000) } : {}),
+  }, Math.max(1, Math.floor(sessionMaxAge / 1000)));
 
   await User.findByIdAndUpdate(user._id, {
     $push: {
@@ -52,12 +82,19 @@ export const issueTokens = async (user, req, rememberMe = Boolean(req?.body?.rem
         ip: req?.ip,
         userAgent: req?.headers?.['user-agent'],
         rememberMe,
-        expiresAt: new Date(Date.now() + sessionMaxAge),
+        expiresAt: new Date(sessionExpiresAt),
       },
     },
     $set: { lastLoginAt: new Date() },
   });
-  return { accessToken, refreshToken, rememberMe, sessionExpiresIn, sessionMaxAge };
+  return {
+    accessToken,
+    refreshToken,
+    rememberMe,
+    sessionExpiresIn,
+    sessionMaxAge,
+    sessionExpiresAt: new Date(sessionExpiresAt).toISOString(),
+  };
 };
 
 /** Atomically consume the old refresh token before issuing its replacement. */
@@ -108,7 +145,12 @@ export const rotateRefreshToken = async (oldToken, req) => {
     throw ApiError.unauthorized('Session has been revoked');
   }
   const consumed = user.refreshTokens.find((refreshToken) => refreshToken.token === oldHash);
-  return issueTokens(user, req, Boolean(consumed?.rememberMe));
+  return issueTokens(
+    user,
+    req,
+    Boolean(consumed?.rememberMe),
+    payload.sessionExp ? payload.sessionExp * 1000 : undefined
+  );
 };
 
 export const revokeAllTokens = async (userId) => {
