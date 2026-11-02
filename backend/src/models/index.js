@@ -35,3 +35,4 @@ export { default as Campaign } from './Campaign.model.js';
 export { default as Counter } from './Counter.model.js';
 export { default as DocumentTemplate } from './DocumentTemplate.model.js';
 export { default as Document } from './Document.model.js';
+export { default as Quotation } from './Quotation.model.js';

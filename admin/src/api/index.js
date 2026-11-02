@@ -74,6 +74,13 @@ export const documentsApi = {
 
 export const documentTemplatesApi = crud(E.documentTemplates);
 
+export const quotationsApi = {
+  ...crud(E.quotations),
+  downloadPdf: (id) => apiClient.get(E.quotations.pdf(id), { responseType: 'blob' }),
+  send: (id, data) => apiClient.post(E.quotations.send(id), data).then(unwrap),
+  cancel: (id) => apiClient.post(E.quotations.cancel(id)).then(unwrap),
+};
+
 /* ————— BLOG ————— */
 export const blogApi = {
   listPosts: (params) => apiClient.get(E.blog.posts, { params }).then(unwrapMeta),

@@ -125,6 +125,12 @@ const DocumentTemplatesListModule = lazy(() =>
 const DocumentTemplateEditModule = lazy(() =>
   import('@/pages/documents/DocumentTemplatesPage.jsx').then((m) => ({ default: m.DocumentTemplateEditPage }))
 );
+const QuotationsListModule = lazy(() =>
+  import('@/pages/quotations/QuotationsPage.jsx').then((m) => ({ default: m.QuotationsListPage }))
+);
+const QuotationEditorModule = lazy(() =>
+  import('@/pages/quotations/QuotationsPage.jsx').then((m) => ({ default: m.QuotationEditorPage }))
+);
 
 const MediaLibraryPage = lazy(() => import('@/pages/media/MediaLibraryPage.jsx'));
 const AnalyticsPage = lazy(() => import('@/pages/analytics/AnalyticsPage.jsx'));
@@ -225,6 +231,9 @@ export default function App() {
           <Route path="/users/:id" element={withSuspense(UserDetailsModule, 'Loading user')} />
 
           {/* Documents & Certificates */}
+          <Route path="/quotations" element={withSuspense(QuotationsListModule, 'Loading quotations')} />
+          <Route path="/quotations/new" element={withSuspense(QuotationEditorModule, 'New quotation')} />
+          <Route path="/quotations/:id" element={withSuspense(QuotationEditorModule, 'Loading quotation')} />
           <Route path="/documents" element={withSuspense(DocumentsListModule, 'Loading documents')} />
           <Route path="/documents/new" element={withSuspense(DocumentFormModule, 'New document')} />
           <Route path="/documents/templates" element={withSuspense(DocumentTemplatesListModule, 'Loading templates')} />

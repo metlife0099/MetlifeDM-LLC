@@ -1,5 +1,5 @@
 import connectDatabase, { disconnectDatabase } from '../src/config/database.js';
-import { User, Order, Payment } from '../src/models/index.js';
+import { User, Order, Payment, Quotation } from '../src/models/index.js';
 import logger from '../src/config/logger.js';
 
 const scalarUniqueFields = [
@@ -9,6 +9,7 @@ const scalarUniqueFields = [
   [Order, 'stripeSubscriptionId'],
   [Payment, 'stripePaymentIntentId'],
   [Payment, 'stripeInvoiceId'],
+  [Quotation, 'quotationNumber'],
 ];
 
 const findDuplicates = async (model, field, unwind) => {
@@ -46,7 +47,7 @@ const run = async () => {
 
   // createIndexes adds missing declared indexes and does not drop unrelated
   // indexes. This script is intentionally operator-run, never startup-run.
-  for (const model of [User, Order, Payment]) await model.createIndexes();
+  for (const model of [User, Order, Payment, Quotation]) await model.createIndexes();
   logger.info('Unique-index preflight passed and declared indexes were created');
 };
 

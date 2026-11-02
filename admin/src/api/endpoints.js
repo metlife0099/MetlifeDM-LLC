@@ -190,6 +190,16 @@ export const ENDPOINTS = {
     update: (id) => `/admin/document-templates/${id}`,
     delete: (id) => `/admin/document-templates/${id}`,
   },
+  quotations: {
+    list: '/admin/quotations',
+    detail: (id) => `/admin/quotations/${id}`,
+    create: '/admin/quotations',
+    update: (id) => `/admin/quotations/${id}`,
+    delete: (id) => `/admin/quotations/${id}`,
+    pdf: (id) => `/admin/quotations/${id}/pdf`,
+    send: (id) => `/admin/quotations/${id}/send`,
+    cancel: (id) => `/admin/quotations/${id}/cancel`,
+  },
 
   /* ————— Support ————— */
   tickets: {

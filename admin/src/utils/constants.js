@@ -93,6 +93,7 @@ export const NAV_SECTIONS = [
   {
     section: 'Documents',
     items: [
+      { label: 'Quotations', href: '/quotations', icon: 'ReceiptText' },
       { label: 'Documents', href: '/documents', icon: 'Award' },
       { label: 'Templates', href: '/documents/templates', icon: 'LayoutTemplate' },
     ],

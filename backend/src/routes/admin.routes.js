@@ -25,6 +25,11 @@ import {
   replaceDocumentSchema,
 } from '../validators/document.validator.js';
 import { createTemplateSchema, updateTemplateSchema } from '../validators/documentTemplate.validator.js';
+import {
+  createQuotationSchema,
+  updateQuotationSchema,
+  sendQuotationSchema,
+} from '../validators/quotation.validator.js';
 
 // ————— existing controllers —————
 import * as legacyAdmin from '../controllers/admin.controller.js';
@@ -44,6 +49,7 @@ import * as paymentCtrl from '../controllers/payment.controller.js';
 import * as couponCtrl from '../controllers/coupon.controller.js';
 import * as documentCtrl from '../controllers/document.controller.js';
 import * as documentTemplateCtrl from '../controllers/documentTemplate.controller.js';
+import * as quotationCtrl from '../controllers/quotation.controller.js';
 import * as ticketCtrl from '../controllers/ticket.controller.js';
 import * as userCtrl from '../controllers/user.controller.js';
 import * as mediaCtrl from '../controllers/media.controller.js';
@@ -290,6 +296,17 @@ router.post('/document-templates', validate(createTemplateSchema), documentTempl
 router.put('/document-templates/:id', validate(updateTemplateSchema), documentTemplateCtrl.update);
 router.patch('/document-templates/:id', validate(updateTemplateSchema), documentTemplateCtrl.update);
 router.delete('/document-templates/:id', documentTemplateCtrl.remove);
+
+/* Quotations */
+router.get('/quotations', quotationCtrl.list);
+router.get('/quotations/:id', quotationCtrl.get);
+router.get('/quotations/:id/pdf', quotationCtrl.downloadPdf);
+router.post('/quotations', validate(createQuotationSchema), quotationCtrl.create);
+router.put('/quotations/:id', validate(updateQuotationSchema), quotationCtrl.update);
+router.patch('/quotations/:id', validate(updateQuotationSchema), quotationCtrl.update);
+router.post('/quotations/:id/send', validate(sendQuotationSchema), quotationCtrl.send);
+router.post('/quotations/:id/cancel', quotationCtrl.cancel);
+router.delete('/quotations/:id', quotationCtrl.remove);
 
 /* ═══════════════════════════════════════════════════════════
  * TICKETS
