@@ -13,6 +13,15 @@ const lineItemSchema = new Schema(
   { _id: true }
 );
 
+const serviceSectionSchema = new Schema(
+  {
+    title: { type: String, required: true, trim: true, maxlength: 200 },
+    scope: [{ type: String, trim: true, maxlength: 500 }],
+    deliverables: [{ type: String, trim: true, maxlength: 500 }],
+  },
+  { _id: true }
+);
+
 const sentHistorySchema = new Schema(
   {
     recipientEmail: { type: String, required: true },
@@ -53,7 +62,8 @@ const quotationSchema = new Schema(
     total: { type: Number, required: true, min: 0 },
     scope: [{ type: String, trim: true, maxlength: 500 }],
     deliverables: [{ type: String, trim: true, maxlength: 500 }],
-    timeline: { type: String, trim: true, maxlength: 1000 },
+    serviceSections: { type: [serviceSectionSchema], default: [] },
+    timeline: { type: String, trim: true, maxlength: 5000 },
     paymentTerms: { type: String, trim: true, maxlength: 2000 },
     terms: { type: String, trim: true, maxlength: 5000 },
     notes: { type: String, trim: true, maxlength: 2000 },

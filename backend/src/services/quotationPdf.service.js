@@ -95,19 +95,48 @@ const sectionTitle = (doc, title) => {
   doc.moveDown(0.45);
 };
 
-const drawList = (doc, title, items, quotation, logoBuffer) => {
-  if (!items?.length) return;
-  ensureSpace(doc, 55, quotation, logoBuffer);
-  sectionTitle(doc, title);
-  doc.fillColor(SLATE).font('Helvetica').fontSize(9);
-  for (const item of items) {
-    ensureSpace(doc, 24, quotation, logoBuffer);
-    const y = doc.y;
-    doc.fillColor(GOLD).circle(MARGIN + 3, y + 5, 2).fill();
-    doc.fillColor(SLATE).text(item, MARGIN + 13, y, { width: CONTENT_WIDTH - 13, lineGap: 2 });
-    doc.moveDown(0.3);
-  }
-  doc.moveDown(0.6);
+const drawServiceSections = (doc, quotation, logoBuffer) => {
+  const sections = quotation.serviceSections?.length
+    ? quotation.serviceSections
+    : (quotation.scope?.length || quotation.deliverables?.length)
+      ? [{ title: quotation.projectTitle || 'Project services', scope: quotation.scope, deliverables: quotation.deliverables }]
+      : [];
+  if (!sections.length) return;
+
+  ensureSpace(doc, 60, quotation, logoBuffer);
+  sectionTitle(doc, 'Service scope & deliverables');
+  sections.forEach((service, index) => {
+    ensureSpace(doc, 58, quotation, logoBuffer);
+    const headingY = doc.y;
+    doc.rect(MARGIN, headingY, CONTENT_WIDTH, 25).fill(SOFT);
+    doc.fillColor(GOLD).font('Helvetica-Bold').fontSize(8)
+      .text(String(index + 1).padStart(2, '0'), MARGIN + 9, headingY + 8, { width: 24 });
+    doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(10)
+      .text(service.title, MARGIN + 39, headingY + 7, { width: CONTENT_WIDTH - 48 });
+    doc.y = headingY + 34;
+
+    const groups = [
+      ['Scope of work', service.scope],
+      ['Deliverables', service.deliverables],
+    ];
+    groups.forEach(([label, points]) => {
+      if (!points?.length) return;
+      ensureSpace(doc, 30, quotation, logoBuffer);
+      doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(8)
+        .text(label.toUpperCase(), MARGIN + 8, doc.y, { characterSpacing: 0.8 });
+      doc.moveDown(0.35);
+      points.forEach((point) => {
+        ensureSpace(doc, 22, quotation, logoBuffer);
+        const pointY = doc.y;
+        doc.fillColor(GOLD).circle(MARGIN + 12, pointY + 4.5, 1.8).fill();
+        doc.fillColor(SLATE).font('Helvetica').fontSize(9)
+          .text(point, MARGIN + 22, pointY, { width: CONTENT_WIDTH - 30, lineGap: 2 });
+        doc.moveDown(0.22);
+      });
+      doc.moveDown(0.35);
+    });
+    doc.moveDown(0.65);
+  });
 };
 
 const drawTableHeader = (doc) => {
@@ -244,8 +273,7 @@ export const generateQuotationPdf = async (quotationInput) => {
     doc.moveDown(1);
 
     drawPricing(doc, quotation, logoBuffer);
-    drawList(doc, 'Scope of work', quotation.scope, quotation, logoBuffer);
-    drawList(doc, 'Deliverables', quotation.deliverables, quotation, logoBuffer);
+    drawServiceSections(doc, quotation, logoBuffer);
 
     const textSections = [
       ['Timeline', quotation.timeline],

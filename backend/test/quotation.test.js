@@ -13,6 +13,11 @@ const payload = () => ({
     { title: 'Management', description: 'Ongoing work', quantity: 2, unitPrice: 750.25 },
   ],
   currency: 'USD', discount: 100.5, taxRate: 10,
+  serviceSections: [
+    { title: 'Web Development', scope: ['Responsive website'], deliverables: ['Production website'] },
+    { title: 'SEO', scope: ['Technical optimization'], deliverables: ['SEO report'] },
+    { title: 'Social Media Marketing', scope: ['Campaign management'], deliverables: ['Monthly content plan'] },
+  ],
   validUntil: new Date(Date.now() + 86_400_000),
 });
 
@@ -27,7 +32,19 @@ test('quotation validation accepts structured project pricing and rejects invali
   const unsupportedCurrency = payload();
   unsupportedCurrency.currency = 'EUR';
   assert.equal(createQuotationSchema.safeParse(unsupportedCurrency).success, false);
+  const titleOnlyService = payload();
+  titleOnlyService.serviceSections[0].scope = [];
+  titleOnlyService.serviceSections[0].deliverables = [];
+  assert.equal(createQuotationSchema.safeParse(titleOnlyService).success, true);
+  const automaticallyTitled = payload();
+  automaticallyTitled.serviceSections[0].title = '';
+  const automaticallyTitledResult = createQuotationSchema.safeParse(automaticallyTitled);
+  assert.equal(automaticallyTitledResult.success, true);
+  assert.equal(automaticallyTitledResult.data.serviceSections[0].title, 'Service 1');
   assert.equal(sendQuotationSchema.safeParse({ recipientEmail: 'bad', subject: 'Quote', message: 'Attached' }).success, false);
+  const detailedTimeline = payload();
+  detailedTimeline.timeline = 'Multi-service delivery milestone. '.repeat(100);
+  assert.equal(createQuotationSchema.safeParse(detailedTimeline).success, true);
 });
 
 test('quotation totals are calculated by the server with currency-safe rounding', () => {
@@ -44,7 +61,6 @@ test('quotation PDF is a valid generated PDF document', async () => {
   const pdf = await generateQuotationPdf({
     ...payload(), ...pricing,
     quotationNumber: 'MLDM/QTN/2026/0001', version: 1, createdAt: new Date(),
-    scope: ['Discovery'], deliverables: ['Roadmap'],
     branding: { companyName: 'MetlifeDM LLC', email: 'metlifedm4u@gmail.com', signatory: { name: 'CEO', title: 'Chief Executive Officer' } },
   });
   assert.equal(pdf.subarray(0, 4).toString(), '%PDF');

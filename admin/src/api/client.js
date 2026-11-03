@@ -143,12 +143,16 @@ export const unwrapMeta = (r) => ({
 /* ————— Error message extractor ————— */
 export const getErrorMessage = (err) => {
   if (!err) return 'Something went wrong.';
-  return (
+  const message = (
     err.response?.data?.error?.message ||
     err.response?.data?.message ||
     err.message ||
     'Something went wrong.'
   );
+  const validationError = err.response?.data?.errors?.[0];
+  if (!validationError?.message) return message;
+  const field = validationError.field ? `${validationError.field}: ` : '';
+  return `${message} — ${field}${validationError.message}`;
 };
 
 export const STORAGE = KEYS;

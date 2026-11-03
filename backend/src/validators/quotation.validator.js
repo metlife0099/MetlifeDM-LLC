@@ -7,6 +7,14 @@ const money = z.coerce.number().nonnegative().max(999999.99).refine(
 );
 const optionalText = (max) => z.string().trim().max(max).optional().default('');
 const list = z.array(z.string().trim().min(1).max(500)).max(50).optional().default([]);
+const serviceSections = z.array(z.object({
+  title: z.string().trim().max(200).optional().default(''),
+  scope: list,
+  deliverables: list,
+})).max(20).optional().default([]).transform((sections) => sections.map((section, index) => ({
+  ...section,
+  title: section.title || `Service ${index + 1}`,
+})));
 
 const quotationFields = z.object({
   client: z.object({
@@ -29,7 +37,8 @@ const quotationFields = z.object({
   taxRate: z.coerce.number().min(0).max(100).optional().default(0),
   scope: list,
   deliverables: list,
-  timeline: optionalText(1000),
+  serviceSections,
+  timeline: optionalText(5000),
   paymentTerms: optionalText(2000),
   terms: optionalText(5000),
   notes: optionalText(2000),

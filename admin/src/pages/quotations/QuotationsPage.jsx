@@ -20,12 +20,13 @@ const inThirtyDays = () => {
   date.setDate(date.getDate() + 30);
   return date.toISOString().slice(0, 10);
 };
+const emptyServiceSection = () => ({ title: '', scopeText: '', deliverablesText: '' });
 const emptyForm = () => ({
   client: { name: '', email: '', company: '', phone: '', address: '' },
   projectTitle: '', projectSummary: '',
   lineItems: [{ title: '', description: '', quantity: 1, unitPrice: 0 }],
   currency: 'USD', discount: 0, taxRate: 0,
-  scopeText: '', deliverablesText: '', timeline: '',
+  serviceSections: [emptyServiceSection()], timeline: '',
   paymentTerms: '50% upfront to commence work; remaining balance due according to agreed project milestones.',
   terms: 'This quotation is valid until the date shown. Work begins after written approval and receipt of the initial payment. Any work outside the stated scope requires a written change request and may affect pricing and delivery dates.',
   notes: '', validUntil: inThirtyDays(), signatoryId: '',
@@ -79,12 +80,25 @@ export function QuotationEditorPage() {
 
   useEffect(() => {
     if (!quotation) return;
+    const serviceSections = quotation.serviceSections?.length
+      ? quotation.serviceSections.map((section) => ({
+        title: section.title || '',
+        scopeText: (section.scope || []).join('\n'),
+        deliverablesText: (section.deliverables || []).join('\n'),
+      }))
+      : (quotation.scope?.length || quotation.deliverables?.length)
+        ? [{
+          title: quotation.projectTitle || 'Project services',
+          scopeText: (quotation.scope || []).join('\n'),
+          deliverablesText: (quotation.deliverables || []).join('\n'),
+        }]
+        : [emptyServiceSection()];
     setForm({
       client: quotation.client || emptyForm().client,
       projectTitle: quotation.projectTitle || '', projectSummary: quotation.projectSummary || '',
       lineItems: quotation.lineItems?.length ? quotation.lineItems.map(({ title, description, quantity, unitPrice }) => ({ title, description: description || '', quantity, unitPrice })) : emptyForm().lineItems,
       currency: quotation.currency || 'USD', discount: quotation.discount || 0, taxRate: quotation.taxRate || 0,
-      scopeText: (quotation.scope || []).join('\n'), deliverablesText: (quotation.deliverables || []).join('\n'),
+      serviceSections,
       timeline: quotation.timeline || '', paymentTerms: quotation.paymentTerms || '', terms: quotation.terms || '', notes: quotation.notes || '',
       validUntil: quotation.validUntil?.slice(0, 10) || inThirtyDays(), signatoryId: quotation.signatoryId || '',
     });
@@ -106,7 +120,15 @@ export function QuotationEditorPage() {
   const payload = () => ({
     client: form.client, projectTitle: form.projectTitle, projectSummary: form.projectSummary,
     lineItems: form.lineItems, currency: form.currency, discount: Number(form.discount) || 0, taxRate: Number(form.taxRate) || 0,
-    scope: lines(form.scopeText), deliverables: lines(form.deliverablesText), timeline: form.timeline,
+    scope: [], deliverables: [],
+    serviceSections: form.serviceSections
+      .filter((section) => section.title.trim() || lines(section.scopeText).length || lines(section.deliverablesText).length)
+      .map((section) => ({
+        title: section.title,
+        scope: lines(section.scopeText),
+        deliverables: lines(section.deliverablesText),
+      })),
+    timeline: form.timeline,
     paymentTerms: form.paymentTerms, terms: form.terms, notes: form.notes,
     validUntil: form.validUntil, signatoryId: form.signatoryId || undefined,
   });
@@ -136,6 +158,17 @@ export function QuotationEditorPage() {
   const setItem = (index, key, value) => setForm((current) => ({ ...current, lineItems: current.lineItems.map((item, itemIndex) => itemIndex === index ? { ...item, [key]: value } : item) }));
   const addItem = () => setForm((current) => ({ ...current, lineItems: [...current.lineItems, { title: '', description: '', quantity: 1, unitPrice: 0 }] }));
   const removeItem = (index) => setForm((current) => ({ ...current, lineItems: current.lineItems.filter((_, itemIndex) => itemIndex !== index) }));
+  const setServiceSection = (index, key, value) => setForm((current) => ({
+    ...current,
+    serviceSections: current.serviceSections.map((section, sectionIndex) => sectionIndex === index ? { ...section, [key]: value } : section),
+  }));
+  const addServiceSection = () => setForm((current) => ({ ...current, serviceSections: [...current.serviceSections, emptyServiceSection()] }));
+  const removeServiceSection = (index) => setForm((current) => ({
+    ...current,
+    serviceSections: current.serviceSections.length === 1
+      ? [emptyServiceSection()]
+      : current.serviceSections.filter((_, sectionIndex) => sectionIndex !== index),
+  }));
   const openSend = () => {
     setEmail({
       recipientEmail: quotation?.client?.email || form.client.email,
@@ -162,7 +195,7 @@ export function QuotationEditorPage() {
         <Card><div className="text-eyebrow mb-5">01 / Client</div><div className="grid gap-4 md:grid-cols-2"><Input label="Client name" required value={form.client.name} onChange={(e) => setClient('name', e.target.value)} /><Input label="Client email (optional)" type="email" hint="Required only when sending the quotation by email" value={form.client.email} onChange={(e) => setClient('email', e.target.value)} /><Input label="Company" value={form.client.company} onChange={(e) => setClient('company', e.target.value)} /><Input label="Phone" value={form.client.phone} onChange={(e) => setClient('phone', e.target.value)} /><Textarea className="md:col-span-2" label="Billing address" rows={2} value={form.client.address} onChange={(e) => setClient('address', e.target.value)} /></div></Card>
         <Card><div className="text-eyebrow mb-5">02 / Project</div><div className="space-y-4"><Input label="Project title" required value={form.projectTitle} onChange={(e) => setForm({ ...form, projectTitle: e.target.value })} /><Textarea label="Project overview" required rows={5} value={form.projectSummary} onChange={(e) => setForm({ ...form, projectSummary: e.target.value })} /></div></Card>
         <Card><div className="flex items-center justify-between mb-5"><div className="text-eyebrow">03 / Pricing</div><Button size="sm" variant="ghost" icon={Plus} onClick={addItem}>Add item</Button></div><div className="mb-5 max-w-xs"><Select label="Quotation currency" value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value })} options={[{ value: 'USD', label: 'USD — US Dollar ($)' }, { value: 'INR', label: 'INR — Indian Rupee (₹)' }]} hint="All line items and totals use this currency" /></div><div className="space-y-4">{form.lineItems.map((item, index) => <div key={index} className="border border-hairline bg-ivory-soft p-4"><div className="grid gap-3 md:grid-cols-[1fr_90px_140px_44px]"><Input label="Service / deliverable" required value={item.title} onChange={(e) => setItem(index, 'title', e.target.value)} /><Input label="Qty" type="number" min="0.01" step="0.01" value={item.quantity} onChange={(e) => setItem(index, 'quantity', e.target.value)} /><Input label="Unit price" type="number" min="0" step="0.01" prefix={form.currency === 'INR' ? '₹' : '$'} value={item.unitPrice} onChange={(e) => setItem(index, 'unitPrice', e.target.value)} /><button type="button" aria-label="Remove item" className="mt-7 h-10 border border-hairline text-slate hover:text-danger hover:border-danger" disabled={form.lineItems.length === 1} onClick={() => removeItem(index)}><Trash2 size={15} className="mx-auto" /></button></div><Textarea className="mt-3" label="Description" rows={2} value={item.description} onChange={(e) => setItem(index, 'description', e.target.value)} /></div>)}</div><div className="grid gap-4 md:grid-cols-2 mt-5"><Input label="Discount" type="number" min="0" step="0.01" prefix={form.currency === 'INR' ? '₹' : '$'} value={form.discount} onChange={(e) => setForm({ ...form, discount: e.target.value })} /><Input label="Tax rate" type="number" min="0" max="100" step="0.01" suffix="%" value={form.taxRate} onChange={(e) => setForm({ ...form, taxRate: e.target.value })} /></div></Card>
-        <Card><div className="text-eyebrow mb-5">04 / Scope & terms</div><div className="space-y-4"><Textarea label="Scope of work" hint="One item per line" rows={5} value={form.scopeText} onChange={(e) => setForm({ ...form, scopeText: e.target.value })} /><Textarea label="Deliverables" hint="One item per line" rows={5} value={form.deliverablesText} onChange={(e) => setForm({ ...form, deliverablesText: e.target.value })} /><Textarea label="Timeline" rows={3} value={form.timeline} onChange={(e) => setForm({ ...form, timeline: e.target.value })} /><Textarea label="Payment terms" rows={4} value={form.paymentTerms} onChange={(e) => setForm({ ...form, paymentTerms: e.target.value })} /><Textarea label="Terms & conditions" rows={5} value={form.terms} onChange={(e) => setForm({ ...form, terms: e.target.value })} /><Textarea label="Additional notes" rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div></Card>
+        <Card><div className="flex items-center justify-between mb-5"><div><div className="text-eyebrow">04 / Service scope & terms</div><p className="text-xs text-slate mt-2">Create a separate titled section for every service included in this quotation.</p></div><Button size="sm" variant="ghost" icon={Plus} onClick={addServiceSection}>Add service</Button></div><div className="space-y-5">{form.serviceSections.map((section, index) => <div key={index} className="border border-hairline bg-ivory-soft p-4"><div className="flex items-end gap-3"><Input className="flex-1" label={`Service ${index + 1} title`} placeholder="e.g. Web Development, SEO, or Social Media Marketing" value={section.title} onChange={(e) => setServiceSection(index, 'title', e.target.value)} /><button type="button" aria-label={`Remove service ${index + 1}`} className="h-10 w-11 border border-hairline text-slate hover:text-danger hover:border-danger" onClick={() => removeServiceSection(index)}><Trash2 size={15} className="mx-auto" /></button></div><div className="grid gap-4 mt-4 lg:grid-cols-2"><Textarea label="Scope of work" hint="Enter one point per line" rows={6} value={section.scopeText} onChange={(e) => setServiceSection(index, 'scopeText', e.target.value)} /><Textarea label="Deliverables" hint="Enter one point per line" rows={6} value={section.deliverablesText} onChange={(e) => setServiceSection(index, 'deliverablesText', e.target.value)} /></div></div>)}<div className="pt-2 border-t border-hairline space-y-4"><Textarea label="Timeline" rows={3} value={form.timeline} onChange={(e) => setForm({ ...form, timeline: e.target.value })} /><Textarea label="Payment terms" rows={4} value={form.paymentTerms} onChange={(e) => setForm({ ...form, paymentTerms: e.target.value })} /><Textarea label="Terms & conditions" rows={5} value={form.terms} onChange={(e) => setForm({ ...form, terms: e.target.value })} /><Textarea label="Additional notes" rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div></div></Card>
       </div>
       <aside className="space-y-6"><Card><div className="text-eyebrow mb-4">Quotation settings</div><div className="space-y-4"><Input label="Valid until" type="date" required value={form.validUntil} onChange={(e) => setForm({ ...form, validUntil: e.target.value })} /><Select label="Authorized signatory" value={form.signatoryId} onChange={(e) => setForm({ ...form, signatoryId: e.target.value })} options={[{ value: '', label: 'Default signatory' }, ...signatories.map((item) => ({ value: item._id, label: `${item.name}${item.title ? ` — ${item.title}` : ''}` }))]} hint="CEO signature is taken from Settings → Documents" />{quotation && <div className="pt-3 border-t border-hairline"><Badge tone={statusTone(quotation.status)}>{humanize(quotation.status)}</Badge>{quotation.lastSentAt && <p className="text-xs text-slate mt-2">Last sent {formatDate(quotation.lastSentAt, 'datetime')}</p>}</div>}</div></Card><Card><div className="text-eyebrow mb-4">Investment summary · {form.currency}</div><div className="space-y-2 text-sm"><div className="flex justify-between"><span className="text-slate">Subtotal</span><span>{formatMoney(totals.subtotal, { currency: form.currency, decimals: 2 })}</span></div>{totals.discount > 0 && <div className="flex justify-between"><span className="text-slate">Discount</span><span>−{formatMoney(totals.discount, { currency: form.currency, decimals: 2 })}</span></div>}{totals.tax > 0 && <div className="flex justify-between"><span className="text-slate">Tax</span><span>{formatMoney(totals.tax, { currency: form.currency, decimals: 2 })}</span></div>}<div className="flex justify-between border-t border-hairline pt-3 mt-3 text-base font-medium"><span>Total</span><span>{formatMoney(totals.total, { currency: form.currency, decimals: 2 })}</span></div></div><p className="text-xs text-slate mt-4">Final amounts are recalculated by the server before saving and emailing.</p></Card></aside>
     </div>
