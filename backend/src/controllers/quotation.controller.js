@@ -63,7 +63,7 @@ const resolveBranding = async (signatoryId) => {
       name: configuredCoFounder?.name || 'Ahad Javed Shaikh',
       title: configuredCoFounder?.title || 'Co-Founder',
       signatureImageUrl: configuredCoFounder?.signatureImage?.url || null,
-      digitalMark: !configuredCoFounder?.signatureImage?.url,
+      digitalMark: false,
     },
   };
 };

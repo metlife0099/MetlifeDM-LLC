@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FALLBACK_LOGO = path.join(__dirname, '../assets/logo.png');
+const CO_FOUNDER_SIGNATURE = path.join(__dirname, '../assets/co-founder-signature.png');
 const NAVY = '#0A2342';
 const GOLD = '#D4AF37';
 const SLATE = '#526070';
@@ -179,17 +180,9 @@ const drawSignature = (doc, quotation, signatureBuffer, coFounderSignatureBuffer
   doc.fillColor(MUTED).font('Helvetica').fontSize(8)
     .text(brand.signatory?.title || 'MetlifeDM LLC', MARGIN, y + 82);
 
-  const coFounder = brand.coFounder || { name: 'Ahad Javed Shaikh', title: 'Co-Founder', digitalMark: true };
+  const coFounder = brand.coFounder || { name: 'Ahad Javed Shaikh', title: 'Co-Founder' };
   const coFounderX = 222;
-  if (!image(doc, coFounderSignatureBuffer, coFounderX, y + 13, { fit: [115, 42] })) {
-    // Stable, explicitly labelled approval mark. This is intentionally not a
-    // generated handwritten/legal signature; upload the real signature under
-    // Settings → Documents when one is authorized for use.
-    doc.fillColor(NAVY).font('Helvetica-Oblique').fontSize(18)
-      .text('AJS', coFounderX, y + 24, { width: 115, align: 'center' });
-    doc.fillColor(MUTED).font('Helvetica').fontSize(5.5)
-      .text('DIGITAL APPROVAL MARK', coFounderX, y + 47, { width: 115, align: 'center', characterSpacing: 0.5 });
-  }
+  image(doc, coFounderSignatureBuffer || CO_FOUNDER_SIGNATURE, coFounderX, y + 13, { fit: [115, 42] });
   doc.moveTo(coFounderX, y + 61).lineTo(coFounderX + 165, y + 61).lineWidth(0.6).strokeColor(LINE).stroke();
   doc.fillColor(NAVY).font('Helvetica-Bold').fontSize(10)
     .text(coFounder.name, coFounderX, y + 68, { width: 165 });
